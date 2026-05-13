@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Agentes (atendentes) ─────────────────────────────────────────────────────
+model Agent {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         AgentRole @default(AGENT)
+  avatarColor  String    @default("#25D366")
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  conversations Conversation[] @relation("AssignedAgent")
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+// ─── Contatos ─────────────────────────────────────────────────────────────────
+model Contact {
+  id         String   @id @default(uuid())
+  phone      String   @unique
+  name       String?
+  profilePic String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  conversations Conversation[]
+}
+
+// ─── Conversas ────────────────────────────────────────────────────────────────
+model Conversation {
+  id            String     @id @default(uuid())
+  contactId     String
+  contact       Contact    @relation(fields: [contactId], references: [id])
+  status        ConvStatus @default(OPEN)
+  assignedToId  String?
+  assignedAgent Agent?     @relation("AssignedAgent", fields: [assignedToId], references: [id])
+  lastMessage   String?
+  lastMessageAt DateTime?
+  unreadCount   Int        @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  messages Message[]
+}
+
+// ─── Mensagens ────────────────────────────────────────────────────────────────
+model Message {
+  id             String      @id @default(uuid())
+  waMessageId    String?     @unique
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  direction      Direction
+  type           MessageType @default(TEXT)
+  content        String
+  mediaUrl       String?
+  status         MsgStatus   @default(SENT)
+  sentByAgentId  String?
+  timestamp      DateTime    @default(now())
+  createdAt      DateTime    @default(now())
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+enum AgentRole {
+  ADMIN
+  AGENT
+}
+
+enum ConvStatus {
+  OPEN
+  PENDING
+  RESOLVED
+}
+
+enum Direction {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  AUDIO
+  VIDEO
+  DOCUMENT
+  TEMPLATE
+}
+
+enum MsgStatus {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}

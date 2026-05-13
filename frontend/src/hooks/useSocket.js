@@ -10,14 +10,7 @@ let socketInstance = null;
 function getSocket(accessToken) {
   if (socketInstance?.connected) return socketInstance;
 
-  socketInstance = io('/', {
-    auth: { token: accessToken },
-    reconnection: true,
-    reconnectionAttempts: 10,
-    reconnectionDelay: 1500,
-    transports: ['websocket', 'polling'],
-  });
-
+  socketInstance = io(import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app', {
   return socketInstance;
 }
 

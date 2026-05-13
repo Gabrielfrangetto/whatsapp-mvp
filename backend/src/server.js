@@ -45,6 +45,26 @@ if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
 app.use('/webhook', express.json());
 app.use('/api', express.json({ limit: '10mb' }));
 
+app.get('/setup', async (req, res) => {
+  const secret = req.query.secret;
+  if (secret !== process.env.SETUP_SECRET) return res.status(403).json({ error: 'Proibido' });
+  try {
+    const { PrismaClient } = require('@prisma/client');
+    const bcrypt = require('bcryptjs');
+    const prisma = new PrismaClient();
+    await prisma.$executeRawUnsafe('SELECT 1'); // testa conexão
+    const exists = await prisma.agent.findUnique({ where: { email: process.env.ADMIN_EMAIL || 'admin@empresa.com' } });
+    if (exists) return res.json({ message: 'Admin já existe', email: exists.email });
+    const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'Admin@1234', 12);
+    const agent = await prisma.agent.create({
+      data: { name: process.env.ADMIN_NAME || 'Admin', email: process.env.ADMIN_EMAIL || 'admin@empresa.com', passwordHash: hash, role: 'ADMIN', avatarColor: '#075E54' }
+    });
+    res.json({ message: 'Admin criado!', email: agent.email });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ─── Health Check ─────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

@@ -55,7 +55,7 @@ app.get('/setup', async (req, res) => {
     const bcrypt = require('bcryptjs');
 
     // Roda as migrations
-    execSync('npx prisma migrate deploy', { stdio: 'inherit' });
+    execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
 
     const prisma = new PrismaClient();
 

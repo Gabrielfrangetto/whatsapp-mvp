@@ -4,7 +4,10 @@ import axios from 'axios';
 
 const AuthContext = createContext(null);
 
-const api = axios.create({ baseURL: '/api', withCredentials: true });
+const api = axios.create({ 
+  baseURL: `${import.meta.env.VITE_API_URL || ''}/api`, 
+  withCredentials: true 
+});
 
 export function AuthProvider({ children }) {
   const [agent, setAgent] = useState(null);

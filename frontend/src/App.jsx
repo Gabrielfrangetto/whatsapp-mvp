@@ -240,6 +240,16 @@ function ChatPanel({ conversationId, socketControls }) {
           {sending ? '⏳' : '➤'}
         </button>
       </div>
+      {showTemplates && (
+          <TemplateModal
+            conversationId={conversationId}
+            onClose={() => setShowTemplates(false)}
+            onSent={() => { setShowTemplates(false); loadMessages(conversationId); }}
+          />
+        )}
+      </div>  {/* ← fechamento do div principal do ChatPanel */}
+    );
+  }
     </div>
   );
 }
@@ -368,13 +378,6 @@ function Inbox() {
         ? <Agents />
         : <ChatPanel conversationId={selected} socketControls={socketControls} />
       }
-      {showTemplates && (
-  <TemplateModal
-    conversationId={conversationId}
-    onClose={() => setShowTemplates(false)}
-    onSent={() => { setShowTemplates(false); loadMessages(conversationId); }}
-  />
-)}
     </div>
   );
 }

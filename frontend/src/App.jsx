@@ -280,18 +280,21 @@ function Inbox() {
 
   socketControls._registerChatHandlers = (handlers) => { chatHandlersRef.current = handlers; };
 
-  const loadConvs = useCallback(async () => {
-    try {
-      const { data } = await api.get('/conversations', { params: filter ? { status: filter } : {} });
-      setConversations(data.data || []);
-    } catch {}
-  }, [filter]);
+  const loadConvs = async (f = filter) => {
+  try {
+    const { data } = await api.get('/conversations', { params: f ? { status: f } : {} });
+    setConversations(data.data || []);
+  } catch {}
+};
 
   const loadStats = useCallback(async () => {
     try { const { data } = await api.get('/conversations/stats'); setStats(data); } catch {}
   }, []);
 
-  useEffect(() => { loadConvs(); loadStats(); }, [loadConvs, loadStats]);
+  useEffect(() => {
+  loadConvs(filter);
+  loadStats();
+}, [filter]);
 
   const handleLogout = async () => { disconnectSocket(); await logout(); };
 

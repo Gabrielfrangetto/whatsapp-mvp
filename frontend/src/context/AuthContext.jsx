@@ -2,6 +2,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app';
+
 const AuthContext = createContext(null);
 
 const api = axios.create({ 
@@ -65,9 +67,9 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     async function restoreSession() {
       try {
-        const { data } = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+        const { data } = await axios.post(`${BACKEND_URL}/api/auth/refresh`, {}, { withCredentials: true });
         setAccessToken(data.accessToken);
-        const me = await axios.get('/api/auth/me', {
+        const me = await axios.get(`${BACKEND_URL}/api/auth/me`, {
           headers: { Authorization: `Bearer ${data.accessToken}` },
           withCredentials: true,
         });

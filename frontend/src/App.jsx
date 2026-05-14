@@ -247,7 +247,7 @@ function ChatPanel({ conversationId, socketControls }) {
             onSent={() => { setShowTemplates(false); loadMessages(conversationId); }}
           />
         )}
-      </div>  {/* ← fechamento do div principal do ChatPanel */}
+      </div>
     );
   }
     </div>

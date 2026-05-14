@@ -55,6 +55,17 @@ app.use('/api', express.json({ limit: '10mb' }));
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+// Rota temporária de migração — remover após executar
+app.get('/migrate', async (req, res) => {
+  if (req.query.secret !== process.env.SETUP_SECRET) return res.status(403).json({ error: 'Proibido' });
+  try {
+    const { execSync } = require('child_process');
+    execSync('npx prisma db push --accept-data-loss', { stdio: 'pipe' });
+    res.json({ message: '✅ Migrations executadas com sucesso!' });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 // Webhook: sem autenticação (Meta não envia tokens)

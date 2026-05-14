@@ -58,7 +58,13 @@ async function sendMessage(req, res) {
     const conversation = await prisma.conversation.findUnique({ where: { id }, include: { contact: true } });
     if (!conversation) return res.status(404).json({ error: 'Conversa não encontrada' });
 
-    const waResponse = await whatsappService.sendTextMessage(conversation.contact.phone, text);
+    let waResponse;
+try {
+  waResponse = await whatsappService.sendTextMessage(conversation.contact.phone, text);
+} catch (e) {
+  console.error('[sendMessage] WhatsApp API error:', e.response?.data || e.message);
+  return res.status(500).json({ error: 'Erro ao enviar via WhatsApp: ' + (e.response?.data?.error?.message || e.message) });
+}
     const waMessageId = waResponse.messages?.[0]?.id;
 
     const message = await prisma.message.create({

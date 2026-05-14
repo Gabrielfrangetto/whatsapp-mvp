@@ -11,8 +11,13 @@ const cookieParser = require('cookie-parser');
 const webhookRoutes = require('./routes/webhook.routes');
 const conversationsRoutes = require('./routes/conversations.routes');
 const authRoutes = require('./routes/auth.routes');
+const templatesRoutes = require('./routes/templates.routes');
+// ... após as outras rotas:
+app.use('/api/templates', apiLimiter, templatesRoutes);
+app.use('/api/templates/conversations', apiLimiter, requireAuth, templatesRoutes);
 const { requireAuth } = require('./middleware/auth.middleware');
 const { initSocket }  = require('./socket/socket.server');
+
 
 const app    = express();
 // Necessário para Railway/Render (proxy reverso)

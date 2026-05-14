@@ -282,14 +282,22 @@ function Inbox() {
 
   const loadConvs = async (f = filter) => {
   try {
-    const { data } = await api.get('/conversations', { params: f ? { status: f } : {} });
+    const { data } = await api.get('/conversations', {
+      params: f ? { status: f } : {},
+      headers: { Authorization: `Bearer ${accessToken}` }, // força o token
+    });
     setConversations(data.data || []);
   } catch {}
 };
 
-  const loadStats = useCallback(async () => {
-    try { const { data } = await api.get('/conversations/stats'); setStats(data); } catch {}
-  }, []);
+const loadStats = async () => {
+  try {
+    const { data } = await api.get('/conversations/stats', {
+      headers: { Authorization: `Bearer ${accessToken}` }, // força o token
+    });
+    setStats(data);
+  } catch {}
+};
 
   useEffect(() => {
   if (!accessToken) return;

@@ -32,7 +32,7 @@ export function AuthProvider({ children }) {
         if (err.response?.status === 401 && err.response?.data?.code === 'TOKEN_EXPIRED' && !original._retry) {
           original._retry = true;
           try {
-            const { data } = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+            const { data } = await axios.post(`${BACKEND_URL}/api/auth/refresh`, {}, { withCredentials: true });
             setAccessToken(data.accessToken);
             original.headers.Authorization = `Bearer ${data.accessToken}`;
             return api(original);
@@ -51,7 +51,7 @@ export function AuthProvider({ children }) {
     clearTimeout(refreshTimerRef.current);
     refreshTimerRef.current = setTimeout(async () => {
       try {
-        const { data } = await axios.post('/api/auth/refresh', {}, { withCredentials: true });
+        const { data } = await axios.post(`${BACKEND_URL}/api/auth/refresh`, {}, { withCredentials: true });
         setAccessToken(data.accessToken);
         scheduleRefresh();
       } catch {
@@ -92,7 +92,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     clearTimeout(refreshTimerRef.current);
-    try { await axios.post('/api/auth/logout', {}, { withCredentials: true }); } catch {}
+    try { await axios.post(`${BACKEND_URL}/api/auth/logout`, {}, { withCredentials: true }); } catch {}
     setAccessToken(null);
     setAgent(null);
   }, []);

@@ -69,7 +69,7 @@ async function sendMessage(req, res) {
         type: 'TEXT',
         content: text,
         status: 'SENT',
-        sentByAgentId: req.agent?.sub || null,
+        sentByAgentId: req.agent?.sub ?? null,
       },
     });
 

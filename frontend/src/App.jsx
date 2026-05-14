@@ -301,8 +301,12 @@ const loadStats = async () => {
 
   useEffect(() => {
   if (!accessToken) return;
-  loadConvs(filter);
-  loadStats();
+  // Pequeno delay para garantir que o interceptor do axios registrou o token
+  const timer = setTimeout(() => {
+    loadConvs(filter);
+    loadStats();
+  }, 300);
+  return () => clearTimeout(timer);
 }, [filter, accessToken]);
 
   const handleLogout = async () => { disconnectSocket(); await logout(); };

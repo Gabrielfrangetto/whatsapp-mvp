@@ -6,10 +6,7 @@ const BACKEND_URL = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-produc
 
 const AuthContext = createContext(null);
 
-const api = axios.create({ 
-  baseURL: `${import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app'}/api`, 
-  withCredentials: true 
-});
+const api = axios.create({ baseURL: `${BACKEND_URL}/api`, withCredentials: true });
 
 export function AuthProvider({ children }) {
   const [agent, setAgent] = useState(null);

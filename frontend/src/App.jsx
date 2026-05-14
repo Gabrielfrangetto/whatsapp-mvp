@@ -250,9 +250,6 @@ function ChatPanel({ conversationId, socketControls }) {
       </div>
     );
   }
-    </div>
-  );
-}
 
 // ─── Inbox ────────────────────────────────────────────────────────────────────
 function Inbox() {

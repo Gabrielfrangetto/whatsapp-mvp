@@ -1,5 +1,6 @@
 // src/App.jsx
 import { useState, useEffect, useRef, useCallback } from 'react';
+import TemplateModal from './components/TemplateModal';
 import { AuthProvider, useAuth, api } from './context/AuthContext';
 import { useSocket, disconnectSocket } from './hooks/useSocket';
 import Login from './pages/Login';
@@ -102,6 +103,7 @@ function ChatPanel({ conversationId, socketControls }) {
   const [text, setText]                 = useState('');
   const [sending, setSending]           = useState(false);
   const [typingAgent, setTypingAgent]   = useState(null);
+  const [showTemplates, setShowTemplates] = useState(false);
   const bottomRef   = useRef(null);
   const typingTimer = useRef(null);
   const prevConvId  = useRef(null);
@@ -218,6 +220,14 @@ function ChatPanel({ conversationId, socketControls }) {
       </div>
 
       <div style={{ background:'#f0f2f5', padding:'10px 16px', display:'flex', alignItems:'flex-end', gap:10, borderTop:'1px solid #ddd' }}>
+        {/* Botão de templates */}
+      <button
+        onClick={() => setShowTemplates(true)}
+        title="Enviar template"
+        style={{ width:44, height:44, borderRadius:'50%', border:'1px solid #ddd', background:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, flexShrink:0 }}
+      >
+        📋
+      </button>
         <textarea
           value={text} onChange={handleTextChange}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
@@ -358,6 +368,13 @@ function Inbox() {
         ? <Agents />
         : <ChatPanel conversationId={selected} socketControls={socketControls} />
       }
+      {showTemplates && (
+  <TemplateModal
+    conversationId={conversationId}
+    onClose={() => setShowTemplates(false)}
+    onSent={() => { setShowTemplates(false); loadMessages(conversationId); }}
+  />
+)}
     </div>
   );
 }

@@ -292,9 +292,10 @@ function Inbox() {
   }, []);
 
   useEffect(() => {
+  if (!accessToken) return;
   loadConvs(filter);
   loadStats();
-}, [filter]);
+}, [filter, accessToken]);
 
   const handleLogout = async () => { disconnectSocket(); await logout(); };
 

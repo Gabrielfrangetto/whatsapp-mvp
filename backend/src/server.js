@@ -12,9 +12,6 @@ const webhookRoutes = require('./routes/webhook.routes');
 const conversationsRoutes = require('./routes/conversations.routes');
 const authRoutes = require('./routes/auth.routes');
 const templatesRoutes = require('./routes/templates.routes');
-// ... após as outras rotas:
-app.use('/api/templates', apiLimiter, templatesRoutes);
-app.use('/api/templates/conversations', apiLimiter, requireAuth, templatesRoutes);
 const { requireAuth } = require('./middleware/auth.middleware');
 const { initSocket }  = require('./socket/socket.server');
 
@@ -65,6 +62,9 @@ app.use('/webhook', webhookRoutes);
 
 // Auth: rotas públicas + rate limiting específico
 app.use('/api/auth', authLimiter, authRoutes);
+// ... após as outras rotas:
+app.use('/api/templates', apiLimiter, templatesRoutes);
+app.use('/api/templates/conversations', apiLimiter, requireAuth, templatesRoutes);
 
 // API: todas as rotas protegidas por JWT
 app.use('/api/conversations', apiLimiter, requireAuth, conversationsRoutes);

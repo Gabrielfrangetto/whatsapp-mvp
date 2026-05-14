@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── Agentes (atendentes) ─────────────────────────────────────────────────────
 model Agent {
   id           String    @id @default(uuid())
   name         String
@@ -33,7 +32,6 @@ model RefreshToken {
   createdAt DateTime @default(now())
 }
 
-// ─── Contatos ─────────────────────────────────────────────────────────────────
 model Contact {
   id         String   @id @default(uuid())
   phone      String   @unique
@@ -45,7 +43,6 @@ model Contact {
   conversations Conversation[]
 }
 
-// ─── Conversas ────────────────────────────────────────────────────────────────
 model Conversation {
   id            String     @id @default(uuid())
   contactId     String
@@ -62,7 +59,6 @@ model Conversation {
   messages Message[]
 }
 
-// ─── Mensagens ────────────────────────────────────────────────────────────────
 model Message {
   id             String      @id @default(uuid())
   waMessageId    String?     @unique
@@ -78,7 +74,21 @@ model Message {
   createdAt      DateTime    @default(now())
 }
 
-// ─── Enums ────────────────────────────────────────────────────────────────────
+model MessageTemplate {
+  id        String         @id @default(uuid())
+  metaId    String         @unique
+  name      String
+  status    TemplateStatus @default(PENDING)
+  category  String
+  language  String         @default("pt_BR")
+  body      String
+  header    String?
+  footer    String?
+  variables String?        // JSON array de variáveis
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
 enum AgentRole {
   ADMIN
   AGENT
@@ -109,4 +119,10 @@ enum MsgStatus {
   DELIVERED
   READ
   FAILED
+}
+
+enum TemplateStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

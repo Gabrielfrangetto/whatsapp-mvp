@@ -5,6 +5,7 @@ import { AuthProvider, useAuth, api } from './context/AuthContext';
 import { useSocket, disconnectSocket } from './hooks/useSocket';
 import Login from './pages/Login';
 import Agents from './pages/Agents';
+import MediaUpload from './components/MediaUpload';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatTime(dateStr) {
@@ -100,6 +101,7 @@ function ChatPanel({ conversationId, socketControls }) {
   const { agent } = useAuth();
   const [messages, setMessages]         = useState([]);
   const [conversation, setConversation] = useState(null);
+  const [showMedia, setShowMedia] = useState(false);
   const [text, setText]                 = useState('');
   const [sending, setSending]           = useState(false);
   const [typingAgent, setTypingAgent]   = useState(null);
@@ -235,11 +237,22 @@ function ChatPanel({ conversationId, socketControls }) {
           rows={1}
           style={{ flex:1, resize:'none', border:'none', borderRadius:24, padding:'10px 16px', fontSize:14, outline:'none', background:'#fff', maxHeight:120, overflowY:'auto', lineHeight:1.5, fontFamily:'inherit', boxShadow:'0 1px 3px rgba(0,0,0,0.1)' }}
         />
+        <button onClick={() => setShowMedia(true)} title="Enviar arquivo"
+  style={{ width:44, height:44, borderRadius:'50%', border:'1px solid #ddd', background:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, flexShrink:0 }}>
+  📎
+</button>
         <button onClick={handleSend} disabled={!text.trim() || sending}
           style={{ width:44, height:44, borderRadius:'50%', border:'none', background: text.trim() && !sending ? '#25D366' : '#ccc', cursor: text.trim() && !sending ? 'pointer' : 'default', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, color:'#fff', flexShrink:0, transition:'background 0.2s' }}>
           {sending ? '⏳' : '➤'}
         </button>
       </div>
+      {showMedia && (
+  <MediaUpload
+    conversationId={conversationId}
+    onClose={() => setShowMedia(false)}
+    onSent={() => { setShowMedia(false); loadMessages(conversationId); }}
+  />
+)}
       {showTemplates && (
           <TemplateModal
             conversationId={conversationId}

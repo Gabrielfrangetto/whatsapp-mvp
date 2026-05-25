@@ -9,6 +9,7 @@ const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 
 const webhookRoutes = require('./routes/webhook.routes');
+const mediaRoutes = require('./routes/media.routes');
 const conversationsRoutes = require('./routes/conversations.routes');
 const authRoutes = require('./routes/auth.routes');
 const templatesRoutes = require('./routes/templates.routes');
@@ -70,6 +71,7 @@ app.get('/migrate', async (req, res) => {
 // ─── Routes ───────────────────────────────────────────────────────────────────
 // Webhook: sem autenticação (Meta não envia tokens)
 app.use('/webhook', webhookRoutes);
+app.use('/api', apiLimiter, mediaRoutes);
 
 // Auth: rotas públicas + rate limiting específico
 app.use('/api/auth', authLimiter, authRoutes);

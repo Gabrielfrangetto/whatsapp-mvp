@@ -42,11 +42,25 @@ function MessageBubble({ message }) {
   const isOut = message.direction === 'OUTBOUND';
   const icon  = { SENT:'✓', DELIVERED:'✓✓', READ:'✓✓', FAILED:'✗' }[message.status] || '';
   const color = message.status === 'READ' ? '#53bdeb' : '#aaa';
+
+  const isImage = message.type === 'IMAGE' && message.mediaUrl;
+
   return (
     <div style={{ display:'flex', justifyContent: isOut ? 'flex-end' : 'flex-start', marginBottom:4 }}>
-      <div style={{ maxWidth:'65%', background: isOut ? '#dcf8c6' : '#fff', borderRadius: isOut ? '12px 0 12px 12px' : '0 12px 12px 12px', padding:'8px 12px 5px', boxShadow:'0 1px 2px rgba(0,0,0,0.1)' }}>
-        <p style={{ margin:0, fontSize:14, color:'#111', lineHeight:1.5, wordBreak:'break-word' }}>{message.content}</p>
-        <div style={{ display:'flex', justifyContent:'flex-end', alignItems:'center', gap:3, marginTop:2 }}>
+      <div style={{ maxWidth:'65%', background: isOut ? '#dcf8c6' : '#fff', borderRadius: isOut ? '12px 0 12px 12px' : '0 12px 12px 12px', padding: isImage ? '4px 4px 5px' : '8px 12px 5px', boxShadow:'0 1px 2px rgba(0,0,0,0.1)', overflow:'hidden' }}>
+        {isImage ? (
+          <img
+            src={`/api/media/${message.mediaUrl}`}
+            alt="imagem"
+            style={{ maxWidth:'100%', maxHeight:240, borderRadius:8, display:'block', cursor:'pointer' }}
+            onClick={() => window.open(`/api/media/${message.mediaUrl}`, '_blank')}
+            onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }}
+          />
+        ) : null}
+        <p style={{ margin: isImage ? '4px 8px 0' : 0, fontSize:14, color:'#111', lineHeight:1.5, wordBreak:'break-word', display: isImage && message.content === '📷 Imagem' ? 'none' : 'block' }}>
+          {message.content}
+        </p>
+        <div style={{ display:'flex', justifyContent:'flex-end', alignItems:'center', gap:3, marginTop:2, padding: isImage ? '0 8px' : 0 }}>
           <span style={{ fontSize:11, color:'#aaa' }}>{formatTime(message.timestamp)}</span>
           {isOut && <span style={{ fontSize:12, color }}>{icon}</span>}
         </div>

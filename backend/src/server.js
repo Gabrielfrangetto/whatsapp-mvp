@@ -13,11 +13,12 @@ const mediaRoutes = require('./routes/media.routes');
 const conversationsRoutes = require('./routes/conversations.routes');
 const authRoutes = require('./routes/auth.routes');
 const templatesRoutes = require('./routes/templates.routes');
+const resolutionRoutes = require('./routes/resolution.routes');
 const { requireAuth } = require('./middleware/auth.middleware');
 const { initSocket }  = require('./socket/socket.server');
 
-const resolutionRoutes = require('./routes/resolution.routes');
-app.use('/api/resolution', apiLimiter, resolutionRoutes);
+
+
 const app    = express();
 // Necessário para Railway/Render (proxy reverso)
 app.set('trust proxy', 1);
@@ -85,6 +86,7 @@ app.use('/api/templates/conversations', apiLimiter, requireAuth, templatesRoutes
 
 // API: todas as rotas protegidas por JWT
 app.use('/api/conversations', apiLimiter, requireAuth, conversationsRoutes);
+app.use('/api/resolution', apiLimiter, resolutionRoutes);
 
 // ─── Error Handler ────────────────────────────────────────────────────────────
 app.use((req, res) => {

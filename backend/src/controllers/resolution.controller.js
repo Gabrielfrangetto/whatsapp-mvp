@@ -91,9 +91,9 @@ async function resolveConversation(req, res) {
     if (!reason) return res.status(404).json({ error: 'Motivo não encontrado' });
 
     const now = new Date();
-    const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    const dateStr = now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
+    const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+    const dateStr = now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Sao_Paulo' });
+    
     const internalContent = `🔒 Conversa finalizada por ${agent.name} em ${dateStr} às ${timeStr}\nMotivo: ${reason.label}`;
 
     // Cria mensagem interna

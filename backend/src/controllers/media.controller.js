@@ -124,8 +124,9 @@ async function getMediaUrl(req, res) {
     });
 
     res.set('Content-Type', data.mime_type || 'application/octet-stream');
-    res.set('Cache-Control', 'private, max-age=3600');
-    res.send(Buffer.from(mediaRes.data));
+res.set('Cache-Control', 'private, max-age=3600');
+res.set('Cross-Origin-Resource-Policy', 'cross-origin'); // ← adicione esta linha
+res.send(Buffer.from(mediaRes.data));
   } catch (e) {
     console.error('[Media] Get error:', e.message);
     res.status(500).json({ error: 'Erro ao buscar mídia' });

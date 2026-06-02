@@ -54,7 +54,10 @@ function MessageBubble({ message }) {
             alt="imagem"
             style={{ maxWidth:'100%', maxHeight:240, borderRadius:8, display:'block', cursor:'pointer' }}
             onClick={() => window.open(`${import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app'}/api/media/${message.mediaUrl}`, '_blank')}
-            onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }}
+            onError={e => { 
+  console.error('Erro ao carregar imagem:', e.target.src);
+  e.target.style.display='none'; 
+}}
           />
         ) : null}
         <p style={{ margin: isImage ? '4px 8px 0' : 0, fontSize:14, color:'#111', lineHeight:1.5, wordBreak:'break-word', display: isImage && message.content === '📷 Imagem' ? 'none' : 'block' }}>

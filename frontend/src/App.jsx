@@ -44,7 +44,7 @@ function MessageBubble({ message }) {
   const color = message.status === 'READ' ? '#53bdeb' : '#aaa';
 
   const isImage = message.type === 'IMAGE' && message.mediaUrl;
-
+  console.log('Message:', message.type, message.mediaUrl, isImage);
   return (
     <div style={{ display:'flex', justifyContent: isOut ? 'flex-end' : 'flex-start', marginBottom:4 }}>
       <div style={{ maxWidth:'65%', background: isOut ? '#dcf8c6' : '#fff', borderRadius: isOut ? '12px 0 12px 12px' : '0 12px 12px 12px', padding: isImage ? '4px 4px 5px' : '8px 12px 5px', boxShadow:'0 1px 2px rgba(0,0,0,0.1)', overflow:'hidden' }}>
@@ -53,7 +53,7 @@ function MessageBubble({ message }) {
             src={`${import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app'}/api/media/${message.mediaUrl}`}
             alt="imagem"
             style={{ maxWidth:'100%', maxHeight:240, borderRadius:8, display:'block', cursor:'pointer' }}
-            onClick={() => window.open(`/api/media/${message.mediaUrl}`, '_blank')}
+            onClick={() => window.open(`${import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app'}/api/media/${message.mediaUrl}`, '_blank')}
             onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }}
           />
         ) : null}

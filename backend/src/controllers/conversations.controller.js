@@ -43,7 +43,21 @@ async function getMessages(req, res) {
 
     await prisma.conversation.update({ where: { id }, data: { unreadCount: 0 } });
 
-    res.json({ conversation, messages });
+        // Enriquece mensagens com nome do agente
+    const agentIds = [...new Set(messages.filter(m => m.sentByAgentId).map(m => m.sentByAgentId))];
+    const agents = agentIds.length > 0 ? await prisma.agent.findMany({
+      where: { id: { in: agentIds } },
+      select: { id: true, name: true, avatarColor: true },
+    }) : [];
+    const agentMap = Object.fromEntries(agents.map(a => [a.id, a]));
+    
+    const enriched = messages.map(m => ({
+      ...m,
+      agentName: m.sentByAgentId ? agentMap[m.sentByAgentId]?.name : null,
+      agentColor: m.sentByAgentId ? agentMap[m.sentByAgentId]?.avatarColor : null,
+    }));
+    
+    res.json({ conversation, messages: enriched });
   } catch (e) {
     res.status(500).json({ error: 'Erro ao buscar mensagens' });
   }

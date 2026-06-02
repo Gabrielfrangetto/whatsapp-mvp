@@ -16,7 +16,8 @@ const templatesRoutes = require('./routes/templates.routes');
 const { requireAuth } = require('./middleware/auth.middleware');
 const { initSocket }  = require('./socket/socket.server');
 
-
+const resolutionRoutes = require('./routes/resolution.routes');
+app.use('/api/resolution', apiLimiter, resolutionRoutes);
 const app    = express();
 // Necessário para Railway/Render (proxy reverso)
 app.set('trust proxy', 1);

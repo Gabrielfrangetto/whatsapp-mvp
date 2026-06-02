@@ -84,9 +84,18 @@ model MessageTemplate {
   body      String
   header    String?
   footer    String?
-  variables String?        // JSON array de variáveis
+  variables String?
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
+}
+
+// Motivos de finalização cadastráveis pelo admin
+model ResolutionReason {
+  id        String   @id @default(uuid())
+  label     String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum AgentRole {
@@ -103,6 +112,7 @@ enum ConvStatus {
 enum Direction {
   INBOUND
   OUTBOUND
+  INTERNAL
 }
 
 enum MessageType {
@@ -112,6 +122,7 @@ enum MessageType {
   VIDEO
   DOCUMENT
   TEMPLATE
+  INTERNAL
 }
 
 enum MsgStatus {

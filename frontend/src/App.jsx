@@ -50,7 +50,7 @@ function MessageBubble({ message }) {
       <div style={{ maxWidth:'65%', background: isOut ? '#dcf8c6' : '#fff', borderRadius: isOut ? '12px 0 12px 12px' : '0 12px 12px 12px', padding: isImage ? '4px 4px 5px' : '8px 12px 5px', boxShadow:'0 1px 2px rgba(0,0,0,0.1)', overflow:'hidden' }}>
         {isImage ? (
           <img
-            src={`/api/media/${message.mediaUrl}`}
+            src={`${import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app'}/api/media/${message.mediaUrl}`}
             alt="imagem"
             style={{ maxWidth:'100%', maxHeight:240, borderRadius:8, display:'block', cursor:'pointer' }}
             onClick={() => window.open(`/api/media/${message.mediaUrl}`, '_blank')}

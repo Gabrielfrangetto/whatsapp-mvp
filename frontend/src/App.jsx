@@ -295,6 +295,13 @@ function ChatPanel({ conversationId, socketControls }) {
             onSent={() => { setShowTemplates(false); loadMessages(conversationId); }}
           />
         )}
+      {showResolve && (
+  <ResolveModal
+    conversationId={conversationId}
+    onClose={() => setShowResolve(false)}
+    onResolved={() => { setShowResolve(false); setConversation(prev => prev ? { ...prev, status: 'RESOLVED' } : prev); loadMessages(conversationId); }}
+  />
+)}
       </div>
     );
   }
@@ -439,13 +446,6 @@ const loadStats = async () => {
         ? <Agents />
         : <ChatPanel conversationId={selected} socketControls={socketControls} />
       }
-      {showResolve && (
-  <ResolveModal
-    conversationId={conversationId}
-    onClose={() => setShowResolve(false)}
-    onResolved={() => { setShowResolve(false); handleStatus('RESOLVED'); loadMessages(conversationId); }}
-  />
-)}
     </div>
   );
 }

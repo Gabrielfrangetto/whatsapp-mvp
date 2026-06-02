@@ -31,6 +31,6 @@ const upload = multer({
 });
 
 router.post('/conversations/:id/media', requireAuth, upload.single('file'), sendMedia);
-router.get('/media/:mediaId', requireAuth, getMediaUrl);
+router.get('/media/:mediaId', getMediaUrl);
 
 module.exports = router;

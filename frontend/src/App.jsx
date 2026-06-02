@@ -44,6 +44,7 @@ function MessageBubble({ message }) {
   const icon  = { SENT:'✓', DELIVERED:'✓✓', READ:'✓✓', FAILED:'✗' }[message.status] || '';
   const color = message.status === 'READ' ? '#53bdeb' : '#aaa';
   const isImage = message.type === 'IMAGE' && message.mediaUrl;
+  const isInternal = message.direction === 'INTERNAL' || message.type === 'INTERNAL';
   console.log('Message:', message.type, message.mediaUrl, isImage);
 
   if (isInternal) {

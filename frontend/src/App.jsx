@@ -6,6 +6,7 @@ import { useSocket, disconnectSocket } from './hooks/useSocket';
 import Login from './pages/Login';
 import Agents from './pages/Agents';
 import MediaUpload from './components/MediaUpload';
+import ResolveModal from './components/ResolveModal';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatTime(dateStr) {
@@ -123,6 +124,7 @@ function ChatPanel({ conversationId, socketControls }) {
   const [sending, setSending]           = useState(false);
   const [typingAgent, setTypingAgent]   = useState(null);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showResolve, setShowResolve] = useState(false);
   const bottomRef   = useRef(null);
   const typingTimer = useRef(null);
   const prevConvId  = useRef(null);
@@ -222,7 +224,7 @@ function ChatPanel({ conversationId, socketControls }) {
         </div>
         {conversation && <StatusBadge status={conversation.status} />}
         {conversation?.status !== 'RESOLVED'
-          ? <button onClick={() => handleStatus('RESOLVED')} style={{ background:'#25D366', color:'#fff', border:'none', borderRadius:8, padding:'6px 14px', cursor:'pointer', fontSize:12, fontWeight:600 }}>✓ Resolver</button>
+          ? ? <button onClick={() => setShowResolve(true)} style={{ background:'#25D366', color:'#fff', border:'none', borderRadius:8, padding:'6px 14px', cursor:'pointer', fontSize:12, fontWeight:600 }}>✓ Resolver</button>
           : <button onClick={() => handleStatus('OPEN')} style={{ background:'#fff3', color:'#fff', border:'1px solid #fff5', borderRadius:8, padding:'6px 14px', cursor:'pointer', fontSize:12, fontWeight:600 }}>Reabrir</button>
         }
       </div>
@@ -421,6 +423,13 @@ const loadStats = async () => {
         ? <Agents />
         : <ChatPanel conversationId={selected} socketControls={socketControls} />
       }
+      {showResolve && (
+  <ResolveModal
+    conversationId={conversationId}
+    onClose={() => setShowResolve(false)}
+    onResolved={() => { setShowResolve(false); handleStatus('RESOLVED'); loadMessages(conversationId); }}
+  />
+)}
     </div>
   );
 }

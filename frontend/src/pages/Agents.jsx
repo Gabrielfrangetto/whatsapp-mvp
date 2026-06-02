@@ -1,6 +1,7 @@
 // src/pages/Agents.jsx
 import { useState, useEffect } from 'react';
 import { useAuth, api } from '../context/AuthContext';
+import ResolutionReasons from './ResolutionReasons';
 
 const COLORS = {
   green: '#25D366', dark: '#075E54', bg: '#f0f2f5',
@@ -218,6 +219,7 @@ export default function Agents() {
           <AgentForm initial={modal} onSave={() => { setModal(null); load(); }} onClose={() => setModal(null)} />
         </Modal>
       )}
+      <ResolutionReasons />
     </div>
   );
 }

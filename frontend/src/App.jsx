@@ -240,7 +240,7 @@ function ChatPanel({ conversationId, socketControls }) {
         </div>
         {conversation && <StatusBadge status={conversation.status} />}
         {conversation?.status !== 'RESOLVED'
-          ? ? <button onClick={() => setShowResolve(true)} style={{ background:'#25D366', color:'#fff', border:'none', borderRadius:8, padding:'6px 14px', cursor:'pointer', fontSize:12, fontWeight:600 }}>✓ Resolver</button>
+          ? <button onClick={() => setShowResolve(true)} style={{ background:'#25D366', color:'#fff', border:'none', borderRadius:8, padding:'6px 14px', cursor:'pointer', fontSize:12, fontWeight:600 }}>✓ Resolver</button>
           : <button onClick={() => handleStatus('OPEN')} style={{ background:'#fff3', color:'#fff', border:'1px solid #fff5', borderRadius:8, padding:'6px 14px', cursor:'pointer', fontSize:12, fontWeight:600 }}>Reabrir</button>
         }
       </div>

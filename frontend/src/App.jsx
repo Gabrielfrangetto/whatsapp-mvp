@@ -43,9 +43,25 @@ function MessageBubble({ message }) {
   const isOut = message.direction === 'OUTBOUND';
   const icon  = { SENT:'✓', DELIVERED:'✓✓', READ:'✓✓', FAILED:'✗' }[message.status] || '';
   const color = message.status === 'READ' ? '#53bdeb' : '#aaa';
-
   const isImage = message.type === 'IMAGE' && message.mediaUrl;
   console.log('Message:', message.type, message.mediaUrl, isImage);
+
+  if (isInternal) {
+    return (
+      <div style={{ display:'flex', justifyContent:'center', margin:'8px 0' }}>
+        <div style={{ background:'#fff8e1', border:'1px solid #ffe082', borderRadius:10, padding:'10px 14px', maxWidth:'80%', display:'flex', alignItems:'flex-start', gap:10 }}>
+          <div style={{ width:28, height:28, borderRadius:'50%', background:'#075E54', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:11, fontWeight:700, flexShrink:0, marginTop:1 }}>
+            {getInitials(message.agentName || 'A')}
+          </div>
+          <div>
+            <p style={{ margin:0, fontSize:12, color:'#5d4037', lineHeight:1.6, whiteSpace:'pre-line' }}>{message.content}</p>
+            <span style={{ fontSize:10, color:'#aaa', marginTop:3, display:'block' }}>{formatTime(message.timestamp)}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div style={{ display:'flex', justifyContent: isOut ? 'flex-end' : 'flex-start', marginBottom:4 }}>
       <div style={{ maxWidth:'65%', background: isOut ? '#dcf8c6' : '#fff', borderRadius: isOut ? '12px 0 12px 12px' : '0 12px 12px 12px', padding: isImage ? '4px 4px 5px' : '8px 12px 5px', boxShadow:'0 1px 2px rgba(0,0,0,0.1)', overflow:'hidden' }}>

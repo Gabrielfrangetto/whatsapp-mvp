@@ -139,6 +139,7 @@ function ChatPanel({ conversationId, socketControls }) {
   const [showMedia, setShowMedia] = useState(false);
   const [text, setText]                 = useState('');
   const [sending, setSending]           = useState(false);
+  const [pastedImage, setPastedImage] = useState(null);
   const [typingAgent, setTypingAgent]   = useState(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showResolve, setShowResolve] = useState(false);
@@ -203,7 +204,7 @@ function ChatPanel({ conversationId, socketControls }) {
     }
   };
 
-  const handlePaste = useCallback(async (e) => {
+  const handlePaste = useCallback((e) => {
   const items = e.clipboardData?.items;
   if (!items) return;
 
@@ -211,29 +212,35 @@ function ChatPanel({ conversationId, socketControls }) {
     if (item.type.startsWith('image/')) {
       e.preventDefault();
       const file = item.getAsFile();
-      if (!file || !conversationId) return;
+      if (!file) return;
 
-      // Cria um nome para a imagem colada
       const ext = item.type.split('/')[1] || 'png';
       const namedFile = new File([file], `imagem_colada_${Date.now()}.${ext}`, { type: item.type });
-
-      setSending(true);
-      try {
-        const formData = new FormData();
-        formData.append('file', namedFile);
-        await api.post(`/conversations/${conversationId}/media`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        loadMessages(conversationId);
-      } catch (err) {
-        console.error('Erro ao enviar imagem colada:', err);
-      } finally {
-        setSending(false);
-      }
+      const previewUrl = URL.createObjectURL(namedFile);
+      setPastedImage({ file: namedFile, preview: previewUrl });
       return;
     }
   }
-}, [conversationId]);
+}, []);
+
+  const sendPastedImage = useCallback(async () => {
+  if (!pastedImage || !conversationId) return;
+  setSending(true);
+  try {
+    const formData = new FormData();
+    formData.append('file', pastedImage.file);
+    await api.post(`/conversations/${conversationId}/media`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    URL.revokeObjectURL(pastedImage.preview);
+    setPastedImage(null);
+    loadMessages(conversationId);
+  } catch (err) {
+    console.error('Erro ao enviar imagem:', err);
+  } finally {
+    setSending(false);
+  }
+}, [pastedImage, conversationId]);
 
   const handleSend = async () => {
     if (!text.trim() || sending || !conversationId) return;
@@ -288,6 +295,31 @@ function ChatPanel({ conversationId, socketControls }) {
         <div style={{ width:7, height:7, borderRadius:'50%', background:'#25D366' }} />
         Respondendo como <strong style={{ color:'#555', marginLeft:3 }}>{agent?.name}</strong>
       </div>
+
+      {pastedImage && (
+  <div style={{ background:'#f0f2f5', padding:'10px 16px', borderTop:'1px solid #e0e0e0', display:'flex', alignItems:'flex-end', gap:10 }}>
+    <div style={{ position:'relative', display:'inline-block' }}>
+      <img
+        src={pastedImage.preview}
+        alt="preview"
+        style={{ maxHeight:120, maxWidth:240, borderRadius:8, display:'block', boxShadow:'0 2px 8px rgba(0,0,0,0.15)' }}
+      />
+      <button
+        onClick={() => { URL.revokeObjectURL(pastedImage.preview); setPastedImage(null); }}
+        style={{ position:'absolute', top:-8, right:-8, width:22, height:22, borderRadius:'50%', background:'#ff4444', border:'2px solid #fff', color:'#fff', cursor:'pointer', fontSize:12, display:'flex', alignItems:'center', justifyContent:'center', lineHeight:1 }}
+      >
+        ×
+      </button>
+    </div>
+    <button
+      onClick={sendPastedImage}
+      disabled={sending}
+      style={{ padding:'8px 16px', borderRadius:8, border:'none', background: sending ? '#ccc' : '#25D366', color:'#fff', cursor: sending ? 'default' : 'pointer', fontSize:13, fontWeight:600, flexShrink:0 }}
+    >
+      {sending ? 'Enviando...' : '⬆ Enviar'}
+    </button>
+  </div>
+)}
 
       <div style={{ background:'#f0f2f5', padding:'10px 16px', display:'flex', alignItems:'flex-end', gap:10, borderTop:'1px solid #ddd' }}>
         {/* Botão de templates */}

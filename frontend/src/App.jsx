@@ -244,30 +244,28 @@ function ChatPanel({ conversationId, socketControls }) {
 
   const handleSend = async () => {
   if ((!text.trim() && !pastedImage) || sending || !conversationId) return;
+  const msg = text;
+  setText('');
   setSending(true);
   socketControls.stopTyping(conversationId);
 
   try {
-    // Envia imagem colada se houver
     if (pastedImage) {
+      // Envia imagem com texto como caption (uma única mensagem)
       const formData = new FormData();
       formData.append('file', pastedImage.file);
+      if (msg.trim()) formData.append('caption', msg.trim());
       await api.post(`/conversations/${conversationId}/media`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       URL.revokeObjectURL(pastedImage.preview);
       setPastedImage(null);
+    } else {
+      await api.post(`/conversations/${conversationId}/messages`, { text: msg });
     }
-
-    // Envia texto se houver
-    if (text.trim()) {
-      await api.post(`/conversations/${conversationId}/messages`, { text });
-    }
-
-    setText('');
     loadMessages(conversationId);
-  } catch (err) {
-    console.error('Erro ao enviar:', err);
+  } catch {
+    setText(msg);
   } finally {
     setSending(false);
   }
@@ -347,7 +345,12 @@ function ChatPanel({ conversationId, socketControls }) {
       </button>
         <textarea
           value={text} onChange={handleTextChange}
-          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+          onKeyDown={e => { 
+              if (e.key === 'Enter' && !e.shiftKey) { 
+                e.preventDefault(); 
+                if (text.trim() || pastedImage) handleSend(); 
+              } 
+            }}
           onPaste={handlePaste}
           placeholder="Digite uma mensagem..."
           rows={1}
@@ -357,8 +360,8 @@ function ChatPanel({ conversationId, socketControls }) {
   style={{ width:44, height:44, borderRadius:'50%', border:'1px solid #ddd', background:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, flexShrink:0 }}>
   📎
 </button>
-        <button onClick={handleSend} disabled={!text.trim() || sending}
-          style={{ width:44, height:44, borderRadius:'50%', border:'none', background: text.trim() && !sending ? '#25D366' : '#ccc', cursor: text.trim() && !sending ? 'pointer' : 'default', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, color:'#fff', flexShrink:0, transition:'background 0.2s' }}>
+        <button onClick={handleSend} disabled={(!text.trim() && !pastedImage) || sending}
+          style={{ width:44, height:44, borderRadius:'50%', border:'none', background: (text.trim() || pastedImage) && !sending ? '#25D366' : '#ccc', cursor: (text.trim() || pastedImage) && !sending ? 'pointer' : 'default', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, color:'#fff', flexShrink:0, transition:'background 0.2s' }}>
           {sending ? '⏳' : '➤'}
         </button>
       </div>

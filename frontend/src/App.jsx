@@ -401,7 +401,7 @@ function Inbox() {
   const [filter, setFilter]               = useState('');
   const [search, setSearch]               = useState('');
   const [stats, setStats]                 = useState({ open:0, pending:0, resolved:0, totalToday:0 });
-  const { loadPreferences } = useTheme();
+  const { color, mode, loadPreferences } = useTheme();
   const [showSettings, setShowSettings] = useState(false);
   const chatHandlersRef = useRef(null);
 

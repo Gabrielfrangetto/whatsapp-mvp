@@ -69,7 +69,6 @@ async function sendMedia(req, res) {
       },
     };
 
-    const { originalname, mimetype, buffer } = req.file;
     const caption = req.body.caption || '';
     
     // ... e no payload da mensagem:

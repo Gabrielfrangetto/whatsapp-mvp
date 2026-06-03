@@ -90,6 +90,7 @@ async function processInbound(msg, contactInfo) {
         direction: 'INBOUND',
         type: mapType(msg.type),
         content,
+        mediaUrl: msg.image?.id || msg.audio?.id || msg.document?.id || msg.sticker?.id || null, // ← adicione msg.sticker?.id
         status: 'DELIVERED',
         timestamp,
       },
@@ -128,6 +129,7 @@ function extractContent(msg) {
   switch (msg.type) {
     case 'text':     return msg.text?.body || '';
     case 'image':    return '📷 Imagem';
+    case 'sticker': return '🎭 Sticker';
     case 'audio':    return '🎵 Áudio';
     case 'video':    return '🎥 Vídeo';
     case 'document': return `📄 ${msg.document?.filename || 'Documento'}`;
@@ -137,7 +139,7 @@ function extractContent(msg) {
 }
 
 function mapType(type) {
-  return { text: 'TEXT', image: 'IMAGE', audio: 'AUDIO', video: 'VIDEO', document: 'DOCUMENT' }[type] || 'TEXT';
+  return { text: 'TEXT', image: 'IMAGE', audio: 'AUDIO', video: 'VIDEO', document: 'DOCUMENT', sticker: 'IMAGE' }[type] || 'TEXT';
 }
 
 module.exports = { verifyWebhook, receiveWebhook };

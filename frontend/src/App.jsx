@@ -503,8 +503,6 @@ const loadStats = async () => {
                   {getInitials(agent?.name || '')}
                 </div>
               </div>
-              {getInitials(agent?.name || '')}
-            </div>
           </div>
         </div>
 

@@ -3,7 +3,7 @@ const express = require('express');
 const { requireAuth, requireRole } = require('../middleware/auth.middleware');
 const {
   login, refresh, logout, me,
-  listAgents, createAgent, updateAgent,
+  listAgents, createAgent, updateAgent, updatePreferences,
 } = require('../controllers/auth.controller');
 
 const router = express.Router();

@@ -106,17 +106,6 @@ async function updatePreferences(req, res) {
     res.status(500).json({ error: 'Erro ao salvar preferências' });
   }
 }
-// Adicione no module.exports:
-module.exports = { 
-  login, 
-  refresh, 
-  logout, 
-  me, 
-  listAgents, 
-  createAgent, 
-  updateAgent,
-  updatePreferences,
-};
 /**
  * POST /api/auth/refresh
  * Usa o refreshToken do cookie para emitir novo accessToken
@@ -288,4 +277,4 @@ async function updateAgent(req, res) {
   }
 }
 
-module.exports = { login, refresh, logout, me, listAgents, createAgent, updateAgent };
+module.exports = { login, refresh, logout, me, listAgents, createAgent, updateAgent, updatePreferences };

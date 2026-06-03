@@ -20,5 +20,6 @@ router.get('/me', requireAuth, me);
 router.get('/agents', requireAuth, requireRole('ADMIN'), listAgents);
 router.post('/agents', requireAuth, requireRole('ADMIN'), createAgent);
 router.patch('/agents/:id', requireAuth, updateAgent);
+router.patch('/me/preferences', requireAuth, updatePreferences);
 
 module.exports = router;

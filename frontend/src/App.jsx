@@ -411,7 +411,13 @@ function Inbox() {
         return next.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
       });
     },
-    onNewConversation: (conv) => setConversations(prev => [conv, ...prev]),
+    onNewConversation: (conv) => {
+      setConversations(prev => {
+        // Não adiciona se já existe
+        if (prev.find(c => c.id === conv.id)) return prev;
+        return [conv, ...prev];
+      });
+    },
     onMessageStatus:   (data) => chatHandlersRef.current?.handleStatus(data),
     onTyping:          (data) => chatHandlersRef.current?.handleTyping(data),
     onStoppedTyping:   (data) => chatHandlersRef.current?.handleStoppedTyping(data),

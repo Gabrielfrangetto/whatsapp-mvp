@@ -78,7 +78,7 @@ function MessageBubble({ message }) {
 }}
           />
         ) : null}
-        <p style={{ margin: isImage ? '4px 8px 0' : 0, fontSize:14, color:'#111', lineHeight:1.5, wordBreak:'break-word', display: isImage && message.content === '📷 Imagem' ? 'none' : 'block' }}>
+        <p style={{ margin: isImage ? '4px 8px 0' : 0, fontSize:14, color:'#111', lineHeight:1.5, wordBreak:'break-word', display: isImage && (message.content === '📷 Imagem' || message.content === '') ? 'none' : 'block' }}>
           {message.content}
         </p>
         <div style={{ display:'flex', justifyContent:'flex-end', alignItems:'center', gap:3, marginTop:2, padding: isImage ? '0 8px' : 0 }}>

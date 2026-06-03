@@ -69,6 +69,16 @@ async function sendMedia(req, res) {
       },
     };
 
+    const { originalname, mimetype, buffer } = req.file;
+    const caption = req.body.caption || '';
+    
+    // ... e no payload da mensagem:
+    [msgType]: {
+      id: mediaId,
+      ...(caption && { caption }),
+      ...(msgType === 'document' && { filename: originalname }),
+    },
+
     const sendRes = await axios.post(
       `${META_API}/${PHONE_NUMBER_ID}/messages`,
       payload,
@@ -84,7 +94,7 @@ async function sendMedia(req, res) {
         conversationId: id,
         direction: 'OUTBOUND',
         type: msgType.toUpperCase(),
-        content: getContentLabel(msgType, originalname),
+        content: caption || getContentLabel(msgType, originalname),
         mediaUrl: mediaId,
         status: 'SENT',
         sentByAgentId: req.agent?.sub ?? null,

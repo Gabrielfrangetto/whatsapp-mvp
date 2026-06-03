@@ -84,6 +84,30 @@ async function login(req, res) {
   }
 }
 
+async function updatePreferences(req, res) {
+  try {
+    const { themeColor, themeMode } = req.body;
+    const data = {};
+    if (themeColor) {
+      if (!/^#[0-9A-Fa-f]{6}$/.test(themeColor)) return res.status(400).json({ error: 'Cor hex inválida' });
+      data.themeColor = themeColor;
+    }
+    if (themeMode) {
+      if (!['light', 'dark'].includes(themeMode)) return res.status(400).json({ error: 'Modo inválido' });
+      data.themeMode = themeMode;
+    }
+    const agent = await prisma.agent.update({
+      where: { id: req.agent.sub },
+      data,
+      select: { id: true, name: true, email: true, role: true, avatarColor: true, themeColor: true, themeMode: true },
+    });
+    res.json(agent);
+  } catch (e) {
+    res.status(500).json({ error: 'Erro ao salvar preferências' });
+  }
+}
+// Adicione no module.exports:
+module.exports = { ..., updatePreferences };
 /**
  * POST /api/auth/refresh
  * Usa o refreshToken do cookie para emitir novo accessToken

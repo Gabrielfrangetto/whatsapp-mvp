@@ -243,13 +243,35 @@ function ChatPanel({ conversationId, socketControls }) {
 }, [pastedImage, conversationId]);
 
   const handleSend = async () => {
-    if (!text.trim() || sending || !conversationId) return;
-    const msg = text;
-    setText(''); setSending(true);
-    socketControls.stopTyping(conversationId);
-    try { await api.post(`/conversations/${conversationId}/messages`, { text: msg }); }
-    catch { setText(msg); } finally { setSending(false); }
-  };
+  if ((!text.trim() && !pastedImage) || sending || !conversationId) return;
+  setSending(true);
+  socketControls.stopTyping(conversationId);
+
+  try {
+    // Envia imagem colada se houver
+    if (pastedImage) {
+      const formData = new FormData();
+      formData.append('file', pastedImage.file);
+      await api.post(`/conversations/${conversationId}/media`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      URL.revokeObjectURL(pastedImage.preview);
+      setPastedImage(null);
+    }
+
+    // Envia texto se houver
+    if (text.trim()) {
+      await api.post(`/conversations/${conversationId}/messages`, { text });
+    }
+
+    setText('');
+    loadMessages(conversationId);
+  } catch (err) {
+    console.error('Erro ao enviar:', err);
+  } finally {
+    setSending(false);
+  }
+};
 
   const handleStatus = async (status) => {
     try {
@@ -297,27 +319,20 @@ function ChatPanel({ conversationId, socketControls }) {
       </div>
 
       {pastedImage && (
-  <div style={{ background:'#f0f2f5', padding:'10px 16px', borderTop:'1px solid #e0e0e0', display:'flex', alignItems:'flex-end', gap:10 }}>
+  <div style={{ background:'#f0f2f5', padding:'8px 16px 0', display:'flex', alignItems:'flex-start' }}>
     <div style={{ position:'relative', display:'inline-block' }}>
       <img
         src={pastedImage.preview}
         alt="preview"
-        style={{ maxHeight:120, maxWidth:240, borderRadius:8, display:'block', boxShadow:'0 2px 8px rgba(0,0,0,0.15)' }}
+        style={{ maxHeight:100, maxWidth:200, borderRadius:8, display:'block', boxShadow:'0 2px 8px rgba(0,0,0,0.15)' }}
       />
       <button
         onClick={() => { URL.revokeObjectURL(pastedImage.preview); setPastedImage(null); }}
-        style={{ position:'absolute', top:-8, right:-8, width:22, height:22, borderRadius:'50%', background:'#ff4444', border:'2px solid #fff', color:'#fff', cursor:'pointer', fontSize:12, display:'flex', alignItems:'center', justifyContent:'center', lineHeight:1 }}
+        style={{ position:'absolute', top:-8, right:-8, width:22, height:22, borderRadius:'50%', background:'#ff4444', border:'2px solid #fff', color:'#fff', cursor:'pointer', fontSize:12, display:'flex', alignItems:'center', justifyContent:'center' }}
       >
         ×
       </button>
     </div>
-    <button
-      onClick={sendPastedImage}
-      disabled={sending}
-      style={{ padding:'8px 16px', borderRadius:8, border:'none', background: sending ? '#ccc' : '#25D366', color:'#fff', cursor: sending ? 'default' : 'pointer', fontSize:13, fontWeight:600, flexShrink:0 }}
-    >
-      {sending ? 'Enviando...' : '⬆ Enviar'}
-    </button>
   </div>
 )}
 

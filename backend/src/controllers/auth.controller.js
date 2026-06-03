@@ -107,7 +107,16 @@ async function updatePreferences(req, res) {
   }
 }
 // Adicione no module.exports:
-module.exports = { ..., updatePreferences };
+module.exports = { 
+  login, 
+  refresh, 
+  logout, 
+  me, 
+  listAgents, 
+  createAgent, 
+  updateAgent,
+  updatePreferences,
+};
 /**
  * POST /api/auth/refresh
  * Usa o refreshToken do cookie para emitir novo accessToken

@@ -129,7 +129,7 @@ function extractContent(msg) {
   switch (msg.type) {
     case 'text':     return msg.text?.body || '';
     case 'image':    return '📷 Imagem';
-    case 'sticker': return '🎭 Sticker';
+    case 'sticker': return '';
     case 'audio':    return '🎵 Áudio';
     case 'video':    return '🎥 Vídeo';
     case 'document': return `📄 ${msg.document?.filename || 'Documento'}`;

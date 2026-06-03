@@ -18,6 +18,8 @@ model Agent {
   lastLoginAt  DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  themeColor String? @default("#075E54")
+  themeMode  String? @default("light")
 
   conversations Conversation[] @relation("AssignedAgent")
   refreshTokens RefreshToken[]

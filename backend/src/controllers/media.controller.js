@@ -58,6 +58,7 @@ async function sendMedia(req, res) {
     // 2. Determina o tipo de mensagem
     const msgType = getMessageType(mimetype);
 
+    const caption = req.body.caption || '';
     // 3. Envia a mensagem com mídia
     const payload = {
       messaging_product: 'whatsapp',
@@ -65,18 +66,10 @@ async function sendMedia(req, res) {
       type: msgType,
       [msgType]: {
         id: mediaId,
+        ...(caption && { caption }),
         ...(msgType === 'document' && { filename: originalname }),
       },
     };
-
-    const caption = req.body.caption || '';
-    
-    // ... e no payload da mensagem:
-    [msgType]: {
-      id: mediaId,
-      ...(caption && { caption }),
-      ...(msgType === 'document' && { filename: originalname }),
-    },
 
     const sendRes = await axios.post(
       `${META_API}/${PHONE_NUMBER_ID}/messages`,

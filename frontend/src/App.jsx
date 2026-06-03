@@ -203,6 +203,38 @@ function ChatPanel({ conversationId, socketControls }) {
     }
   };
 
+  const handlePaste = useCallback(async (e) => {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+
+  for (const item of items) {
+    if (item.type.startsWith('image/')) {
+      e.preventDefault();
+      const file = item.getAsFile();
+      if (!file || !conversationId) return;
+
+      // Cria um nome para a imagem colada
+      const ext = item.type.split('/')[1] || 'png';
+      const namedFile = new File([file], `imagem_colada_${Date.now()}.${ext}`, { type: item.type });
+
+      setSending(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', namedFile);
+        await api.post(`/conversations/${conversationId}/media`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        loadMessages(conversationId);
+      } catch (err) {
+        console.error('Erro ao enviar imagem colada:', err);
+      } finally {
+        setSending(false);
+      }
+      return;
+    }
+  }
+}, [conversationId]);
+
   const handleSend = async () => {
     if (!text.trim() || sending || !conversationId) return;
     const msg = text;
@@ -269,6 +301,7 @@ function ChatPanel({ conversationId, socketControls }) {
         <textarea
           value={text} onChange={handleTextChange}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+          onPaste={handlePaste}
           placeholder="Digite uma mensagem..."
           rows={1}
           style={{ flex:1, resize:'none', border:'none', borderRadius:24, padding:'10px 16px', fontSize:14, outline:'none', background:'#fff', maxHeight:120, overflowY:'auto', lineHeight:1.5, fontFamily:'inherit', boxShadow:'0 1px 3px rgba(0,0,0,0.1)' }}

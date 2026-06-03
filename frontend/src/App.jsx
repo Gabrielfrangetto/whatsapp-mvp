@@ -7,6 +7,8 @@ import Login from './pages/Login';
 import Agents from './pages/Agents';
 import MediaUpload from './components/MediaUpload';
 import ResolveModal from './components/ResolveModal';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
+import Settings from './pages/Settings';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatTime(dateStr) {
@@ -194,6 +196,7 @@ function ChatPanel({ conversationId, socketControls }) {
   }, [conversationId]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:'smooth' }); }, [messages, typingAgent]);
+  useEffect(() => { if (agent) loadPreferences(agent); }, [agent]);
 
   const handleTextChange = (e) => {
     setText(e.target.value);
@@ -398,6 +401,8 @@ function Inbox() {
   const [filter, setFilter]               = useState('');
   const [search, setSearch]               = useState('');
   const [stats, setStats]                 = useState({ open:0, pending:0, resolved:0, totalToday:0 });
+  const { loadPreferences } = useTheme();
+  const [showSettings, setShowSettings] = useState(false);
   const chatHandlersRef = useRef(null);
 
   const socketControls = useSocket(accessToken, {
@@ -488,7 +493,16 @@ const loadStats = async () => {
               <div style={{ fontSize:12, color:'#9de3d5', fontWeight:500 }}>{agent?.name}</div>
               <div style={{ fontSize:10, color:'#7bbfb5' }}>{agent?.role === 'ADMIN' ? 'Admin' : 'Agente'}</div>
             </div>
-            <div onClick={handleLogout} title="Sair" style={{ width:32, height:32, borderRadius:'50%', background: agent?.avatarColor || '#25D366', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontWeight:700, color:'#fff', fontSize:12 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+                <button onClick={() => setShowSettings(true)} title="Aparência"
+                  style={{ width:28, height:28, borderRadius:6, background:'rgba(255,255,255,0.15)', border:'none', cursor:'pointer', color:'#fff', fontSize:14, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                  ⚙
+                </button>
+                <div onClick={handleLogout} title="Sair"
+                  style={{ width:32, height:32, borderRadius:'50%', background: agent?.avatarColor || '#25D366', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontWeight:700, color:'#fff', fontSize:12 }}>
+                  {getInitials(agent?.name || '')}
+                </div>
+              </div>
               {getInitials(agent?.name || '')}
             </div>
           </div>
@@ -536,6 +550,7 @@ const loadStats = async () => {
         ? <Agents />
         : <ChatPanel conversationId={selected} socketControls={socketControls} />
       }
+      {showSettings && <Settings onClose={() => setShowSettings(false)} />}
     </div>
   );
 }
@@ -554,8 +569,10 @@ function AuthGuard() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AuthGuard />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AuthGuard />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

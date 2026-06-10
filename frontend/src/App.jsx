@@ -196,7 +196,6 @@ function ChatPanel({ conversationId, socketControls }) {
   }, [conversationId]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior:'smooth' }); }, [messages, typingAgent]);
-  useEffect(() => { if (agent) loadPreferences(agent); }, [agent]);
 
   const handleTextChange = (e) => {
     setText(e.target.value);
@@ -404,6 +403,11 @@ function Inbox() {
   const { color, mode, loadPreferences } = useTheme();
   const [showSettings, setShowSettings] = useState(false);
   const chatHandlersRef = useRef(null);
+
+// Carrega tema do agente ao fazer login
+useEffect(() => { 
+  if (agent) loadPreferences(agent); 
+}, [agent]);
 
   const socketControls = useSocket(accessToken, {
     onMessage:            (msg)  => chatHandlersRef.current?.handleMessage(msg),

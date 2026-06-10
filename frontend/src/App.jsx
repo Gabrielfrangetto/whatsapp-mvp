@@ -479,14 +479,14 @@ const loadStats = async () => {
   ];
 
   return (
-    <div style={{ display:'flex', height:'100vh', fontFamily:"'Segoe UI', system-ui, sans-serif", overflow:'hidden' }}>
-      <div style={{ width:340, minWidth:280, display:'flex', flexDirection:'column', background:'#fff', borderRight:'1px solid #e8e8e8' }}>
-        <div style={{ background:'#075E54', padding:'12px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+    <div style={{ display:'flex', height:'100vh', fontFamily:"'Segoe UI', system-ui, sans-serif", overflow:'hidden', background:'var(--theme-bg)' }}>
+      <div style={{ width:340, minWidth:280, display:'flex', flexDirection:'column', background:'var(--theme-bg-sidebar)', borderRight:'1px solid #e8e8e8' }}>
+        <div style={{ background:'var(--theme-primary)', padding:'12px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
             <span style={{ fontSize:20 }}>💬</span>
             <div>
-              <div style={{ color:'#fff', fontWeight:700, fontSize:15 }}>WhatsApp MVP</div>
-              <div style={{ color:'#9de3d5', fontSize:11, display:'flex', alignItems:'center', gap:4 }}>
+              <div style={{ fontWeight:700, fontSize:15, color }}>WhatsApp MVP</div>
+              <div style={{ color:'var(--theme-text-secondary)', fontSize:11, display:'flex', alignItems:'center', gap:4 }}>
                 <span style={{ width:6, height:6, borderRadius:'50%', background:'#25D366', display:'inline-block' }} />
                 Tempo real ativo
               </div>
@@ -519,14 +519,14 @@ const loadStats = async () => {
           ))}
         </div>
 
-        <div style={{ padding:'8px 12px', background:'#f6f6f6', borderBottom:'1px solid #eee' }}>
+        <div style={{ padding:'8px 12px', background:'var(--theme-bg-tertiary)', borderBottom:'1px solid var(--theme-border)' }}>
           <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="🔍  Pesquisar..."
-            style={{ width:'100%', padding:'8px 14px', borderRadius:20, border:'1px solid #ddd', outline:'none', fontSize:13, background:'#fff', boxSizing:'border-box' }} />
+            style={{ width:'100%', padding:'8px 14px', borderRadius:20, border:'1px solid var(--theme-border)', outline:'none', fontSize:13, background:'var(--theme-bg-input)', color:'var(--theme-text)', boxSizing:'border-box' }} />
         </div>
 
         <div style={{ display:'flex', borderBottom:'1px solid #eee' }}>
           {tabs.map(t => (
-            <button key={t.value} onClick={() => setFilter(t.value)} style={{ flex:1, padding:'9px 4px', border:'none', background:'none', cursor:'pointer', fontSize:12, fontWeight: filter===t.value ? 700 : 400, color: filter===t.value ? '#075E54' : '#888', borderBottom: filter===t.value ? '2px solid #075E54' : '2px solid transparent', transition:'all 0.15s' }}>
+            <button key={t.value} onClick={() => setFilter(t.value)} style={{ flex:1, padding:'9px 4px', border:'none', background:'none', cursor:'pointer', fontSize:12, fontWeight: filter===t.value ? 700 : 400, color: filter===t.value ? '#075E54' : '#888', borderBottom: filter===t.value ? `2px solid var(--theme-primary)` : '2px solid transparent', transition:'all 0.15s', color: filter===t.value ? 'var(--theme-primary)' : 'var(--theme-text-secondary)' }}>
               {t.label}
             </button>
           ))}
@@ -534,7 +534,7 @@ const loadStats = async () => {
 
         <div style={{ flex:1, overflowY:'auto' }}>
           {filtered.length === 0
-            ? <div style={{ textAlign:'center', color:'#aaa', padding:'40px 20px', fontSize:14 }}>Nenhuma conversa</div>
+            ? <div style={{ textAlign:'center', color:'var(--theme-text-secondary)', padding:'40px 20px', fontSize:14 }}>Nenhuma conversa</div>
             : filtered.map(c => <ConversationItem key={c.id} conv={c} selected={c.id === selected} onClick={() => setSelected(c.id)} />)
           }
         </div>

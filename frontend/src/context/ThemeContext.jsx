@@ -4,7 +4,6 @@ import { api } from './AuthContext';
 
 const ThemeContext = createContext(null);
 
-// Presets de combinações
 export const PRESETS = [
   { name: 'Padrão',    color: '#075E54', mode: 'light', desc: 'Verde WhatsApp clássico' },
   { name: 'Oceano',    color: '#0F4C75', mode: 'dark',  desc: 'Azul profundo escuro' },
@@ -16,29 +15,15 @@ export const PRESETS = [
   { name: 'Ardósia',   color: '#475569', mode: 'dark',  desc: 'Azul ardósia escuro' },
 ];
 
-// Gera variáveis CSS a partir da cor principal e modo
 function buildThemeVars(color, mode) {
   const isDark = mode === 'dark';
-
-  // Converte hex para RGB
   const r = parseInt(color.slice(1, 3), 16);
   const g = parseInt(color.slice(3, 5), 16);
   const b = parseInt(color.slice(5, 7), 16);
 
-  // Gera variações da cor principal
-  const lighten = (amt) => {
-    const nr = Math.min(255, r + amt);
-    const ng = Math.min(255, g + amt);
-    const nb = Math.min(255, b + amt);
-    return `rgb(${nr},${ng},${nb})`;
-  };
-  const darken = (amt) => {
-    const nr = Math.max(0, r - amt);
-    const ng = Math.max(0, g - amt);
-    const nb = Math.max(0, b - amt);
-    return `rgb(${nr},${ng},${nb})`;
-  };
-  const alpha = (a) => `rgba(${r},${g},${b},${a})`;
+  const lighten = (amt) => `rgb(${Math.min(255,r+amt)},${Math.min(255,g+amt)},${Math.min(255,b+amt)})`;
+  const darken  = (amt) => `rgb(${Math.max(0,r-amt)},${Math.max(0,g-amt)},${Math.max(0,b-amt)})`;
+  const alpha   = (a)   => `rgba(${r},${g},${b},${a})`;
 
   if (isDark) {
     return {
@@ -47,8 +32,6 @@ function buildThemeVars(color, mode) {
       '--theme-primary-dark':   darken(20),
       '--theme-primary-subtle': alpha(0.15),
       '--theme-primary-text':   '#ffffff',
-
-      // Backgrounds — cinza médio puxado para tom da cor
       '--theme-bg':             '#1e2227',
       '--theme-bg-secondary':   '#252b33',
       '--theme-bg-tertiary':    '#2d3440',
@@ -58,17 +41,11 @@ function buildThemeVars(color, mode) {
       '--theme-bg-bubble-out':  darken(20),
       '--theme-bg-bubble-in':   '#2d3440',
       '--theme-bg-hover':       'rgba(255,255,255,0.05)',
-
-      // Texto
       '--theme-text':           '#e8edf3',
       '--theme-text-secondary': '#8b95a3',
       '--theme-text-muted':     '#596474',
-
-      // Bordas
       '--theme-border':         'rgba(255,255,255,0.08)',
       '--theme-border-strong':  'rgba(255,255,255,0.15)',
-
-      // Chat
       '--theme-msg-text-out':   '#e8edf3',
       '--theme-msg-text-in':    '#e8edf3',
       '--theme-header-text':    '#ffffff',
@@ -81,7 +58,6 @@ function buildThemeVars(color, mode) {
       '--theme-primary-dark':   darken(20),
       '--theme-primary-subtle': alpha(0.1),
       '--theme-primary-text':   '#ffffff',
-
       '--theme-bg':             '#f5f6f7',
       '--theme-bg-secondary':   '#ffffff',
       '--theme-bg-tertiary':    '#eef0f2',
@@ -91,14 +67,11 @@ function buildThemeVars(color, mode) {
       '--theme-bg-bubble-out':  lighten(170),
       '--theme-bg-bubble-in':   '#ffffff',
       '--theme-bg-hover':       'rgba(0,0,0,0.04)',
-
       '--theme-text':           '#1a1d21',
       '--theme-text-secondary': '#5c6470',
       '--theme-text-muted':     '#9ca3af',
-
       '--theme-border':         'rgba(0,0,0,0.08)',
       '--theme-border-strong':  'rgba(0,0,0,0.15)',
-
       '--theme-msg-text-out':   '#1a1d21',
       '--theme-msg-text-in':    '#1a1d21',
       '--theme-header-text':    '#ffffff',
@@ -115,24 +88,36 @@ function applyTheme(color, mode) {
 }
 
 export function ThemeProvider({ children }) {
-  const [color, setColor] = useState('#075E54');
-  const [mode, setMode]   = useState('light');
+  // Carrega do localStorage imediatamente — evita flash antes da sessão restaurar
+  const [color, setColor] = useState(() => localStorage.getItem('themeColor') || '#075E54');
+  const [mode, setMode]   = useState(() => localStorage.getItem('themeMode')  || 'light');
   const [saving, setSaving] = useState(false);
 
+  // Aplica tema sempre que mudar
   useEffect(() => {
     applyTheme(color, mode);
   }, [color, mode]);
 
+  // Aplica imediatamente na montagem (evita flash)
+  useEffect(() => {
+    applyTheme(color, mode);
+  }, []);
+
   const loadPreferences = useCallback((agent) => {
     if (!agent) return;
-    const c = agent.themeColor || '#075E54';
-    const m = agent.themeMode  || 'light';
+    const c = agent.themeColor || localStorage.getItem('themeColor') || '#075E54';
+    const m = agent.themeMode  || localStorage.getItem('themeMode')  || 'light';
     setColor(c);
     setMode(m);
+    localStorage.setItem('themeColor', c);
+    localStorage.setItem('themeMode', m);
     applyTheme(c, m);
   }, []);
 
   const savePreferences = useCallback(async (newColor, newMode) => {
+    // Salva localmente de imediato
+    localStorage.setItem('themeColor', newColor);
+    localStorage.setItem('themeMode', newMode);
     setSaving(true);
     try {
       await api.patch('/auth/me/preferences', { themeColor: newColor, themeMode: newMode });

@@ -14,6 +14,7 @@ const conversationsRoutes = require('./routes/conversations.routes');
 const authRoutes = require('./routes/auth.routes');
 const templatesRoutes = require('./routes/templates.routes');
 const resolutionRoutes = require('./routes/resolution.routes');
+const stickersRoutes = require('./routes/stickers.routes');
 const { requireAuth } = require('./middleware/auth.middleware');
 const { initSocket }  = require('./socket/socket.server');
 
@@ -86,6 +87,7 @@ app.use('/api/templates/conversations', apiLimiter, requireAuth, templatesRoutes
 
 // API: todas as rotas protegidas por JWT
 app.use('/api/conversations', apiLimiter, requireAuth, conversationsRoutes);
+app.use('/api/stickers', apiLimiter, stickersRoutes);
 app.use('/api/resolution', apiLimiter, resolutionRoutes);
 
 // ─── Error Handler ────────────────────────────────────────────────────────────

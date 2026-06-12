@@ -93,6 +93,13 @@ model MessageTemplate {
   updatedAt DateTime       @updatedAt
 }
 
+model Sticker {
+  id        String   @id @default(uuid())
+  name      String
+  url       String
+  createdAt DateTime @default(now())
+}
+
 // Motivos de finalização cadastráveis pelo admin
 model ResolutionReason {
   id        String   @id @default(uuid())

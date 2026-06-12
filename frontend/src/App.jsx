@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Agents from './pages/Agents';
 import MediaUpload from './components/MediaUpload';
 import ResolveModal from './components/ResolveModal';
+import StickerPanel from './components/StickerPanel';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import Settings from './pages/Settings';
 
@@ -168,9 +169,11 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
   const [typingAgent, setTypingAgent]     = useState(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showResolve, setShowResolve]     = useState(false);
-  const bottomRef   = useRef(null);
-  const typingTimer = useRef(null);
-  const prevConvId  = useRef(null);
+  const [showStickers, setShowStickers]   = useState(false);
+  const bottomRef    = useRef(null);
+  const typingTimer  = useRef(null);
+  const prevConvId   = useRef(null);
+  const stickerBtnRef = useRef(null);
 
   const loadMessages = useCallback(async (id) => {
     if (!id) return;
@@ -350,6 +353,22 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
           style={{ width:40, height:40, borderRadius:'50%', border:'1px solid var(--theme-border)', background:'var(--theme-bg-input)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, color:'var(--theme-text-secondary)' }}>
           📎
         </button>
+        <div ref={stickerBtnRef} style={{ position:'relative', flexShrink:0 }}>
+          <button
+            onClick={() => setShowStickers(v => !v)}
+            title="Stickers"
+            style={{ width:40, height:40, borderRadius:'50%', border:`1px solid ${showStickers ? 'var(--theme-primary)' : 'var(--theme-border)'}`, background: showStickers ? 'var(--theme-primary-subtle)' : 'var(--theme-bg-input)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, color: showStickers ? 'var(--theme-primary)' : 'var(--theme-text-secondary)', transition:'background 0.15s, border-color 0.15s, color 0.15s' }}
+          >
+            <Sticker size={19} strokeWidth={1.8} />
+          </button>
+          {showStickers && (
+            <StickerPanel
+              conversationId={conversationId}
+              onClose={() => setShowStickers(false)}
+              onSent={() => { setShowStickers(false); loadMessages(conversationId); }}
+            />
+          )}
+        </div>
         <button onClick={handleSend} disabled={(!text.trim() && !pastedImage) || sending}
           style={{ width:40, height:40, borderRadius:'50%', border:'none', background: (text.trim() || pastedImage) && !sending ? 'var(--theme-primary)' : 'var(--theme-border)', cursor: (text.trim() || pastedImage) && !sending ? 'pointer' : 'default', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, color: (text.trim() || pastedImage) && !sending ? 'var(--theme-primary-text)' : 'var(--theme-text-muted)', flexShrink:0, transition:'background 0.2s' }}>
           {sending ? '⏳' : '➤'}

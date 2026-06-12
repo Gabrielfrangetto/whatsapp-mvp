@@ -4,11 +4,6 @@ import { useAuth, api } from '../context/AuthContext';
 import ResolutionReasons from './ResolutionReasons';
 import AvatarUpload from '../components/AvatarUpload';
 
-const COLORS = {
-  green: '#25D366', dark: '#075E54', bg: '#f0f2f5',
-  surface: '#fff', border: '#e8e8e8', text: '#111', muted: '#888',
-};
-
 function Avatar({ name = '', color = '#25D366', size = 36, avatarUrl }) {
   const initials = name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
   return (
@@ -46,12 +41,13 @@ function Modal({ title, onClose, children }) {
       display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
     }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{
-        background: COLORS.surface, borderRadius: 16, padding: '28px 28px 24px',
+        background: 'var(--theme-bg-secondary)', borderRadius: 16, padding: '28px 28px 24px',
         width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        border: '1px solid var(--theme-border)',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 600, color: COLORS.text }}>{title}</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: COLORS.muted }}>×</button>
+          <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--theme-text)' }}>{title}</h3>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: 'var(--theme-text-muted)' }}>×</button>
         </div>
         {children}
       </div>
@@ -64,14 +60,16 @@ function AgentForm({ initial = {}, onSave, onClose, isNew }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const fieldStyle = {
+    width: '100%', padding: '10px 12px', border: '1px solid var(--theme-border)',
+    borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box',
+    fontFamily: 'inherit', color: 'var(--theme-text)', background: 'var(--theme-bg-input)',
+  };
+
   const field = (key) => ({
     value: form[key],
     onChange: e => setForm(f => ({ ...f, [key]: e.target.value })),
-    style: {
-      width: '100%', padding: '10px 12px', border: `1px solid ${COLORS.border}`,
-      borderRadius: 8, fontSize: 13, outline: 'none', boxSizing: 'border-box',
-      fontFamily: 'inherit', color: COLORS.text, background: '#fafafa',
-    },
+    style: fieldStyle,
   });
 
   async function handleSubmit(e) {
@@ -96,35 +94,35 @@ function AgentForm({ initial = {}, onSave, onClose, isNew }) {
       {error && <div style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 12px', fontSize: 13, marginBottom: 14 }}>{error}</div>}
 
       <div style={{ marginBottom: 14 }}>
-        <label style={{ display: 'block', fontSize: 12, color: COLORS.muted, marginBottom: 6, fontWeight: 500 }}>NOME</label>
+        <label style={{ display: 'block', fontSize: 12, color: 'var(--theme-text-muted)', marginBottom: 6, fontWeight: 500 }}>NOME</label>
         <input placeholder="Nome completo" required {...field('name')} />
       </div>
 
       {isNew && (
         <div style={{ marginBottom: 14 }}>
-          <label style={{ display: 'block', fontSize: 12, color: COLORS.muted, marginBottom: 6, fontWeight: 500 }}>E-MAIL</label>
+          <label style={{ display: 'block', fontSize: 12, color: 'var(--theme-text-muted)', marginBottom: 6, fontWeight: 500 }}>E-MAIL</label>
           <input type="email" placeholder="agente@empresa.com" required {...field('email')} />
         </div>
       )}
 
       <div style={{ marginBottom: 14 }}>
-        <label style={{ display: 'block', fontSize: 12, color: COLORS.muted, marginBottom: 6, fontWeight: 500 }}>
+        <label style={{ display: 'block', fontSize: 12, color: 'var(--theme-text-muted)', marginBottom: 6, fontWeight: 500 }}>
           {isNew ? 'SENHA' : 'NOVA SENHA (deixe em branco para manter)'}
         </label>
         <input type="password" placeholder={isNew ? 'Mínimo 8 caracteres' : '••••••••'} {...field('password')} required={isNew} />
       </div>
 
       <div style={{ marginBottom: 20 }}>
-        <label style={{ display: 'block', fontSize: 12, color: COLORS.muted, marginBottom: 6, fontWeight: 500 }}>PERFIL</label>
-        <select {...field('role')} style={{ ...field('role').style }}>
+        <label style={{ display: 'block', fontSize: 12, color: 'var(--theme-text-muted)', marginBottom: 6, fontWeight: 500 }}>PERFIL</label>
+        <select {...field('role')} style={fieldStyle}>
           <option value="AGENT">Agente</option>
           <option value="ADMIN">Administrador</option>
         </select>
       </div>
 
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        <button type="button" onClick={onClose} style={{ padding: '9px 18px', borderRadius: 8, border: `1px solid ${COLORS.border}`, background: 'none', cursor: 'pointer', fontSize: 13, color: COLORS.muted }}>Cancelar</button>
-        <button type="submit" disabled={loading} style={{ padding: '9px 18px', borderRadius: 8, border: 'none', background: COLORS.dark, color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+        <button type="button" onClick={onClose} style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid var(--theme-border)', background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--theme-text-muted)' }}>Cancelar</button>
+        <button type="submit" disabled={loading} style={{ padding: '9px 18px', borderRadius: 8, border: 'none', background: 'var(--theme-primary)', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
           {loading ? 'Salvando...' : (isNew ? 'Criar agente' : 'Salvar')}
         </button>
       </div>
@@ -136,7 +134,7 @@ export default function Agents() {
   const { agent: me, setAgent } = useAuth();
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(null); // null | 'new' | agent object
+  const [modal, setModal] = useState(null);
   const [avatarAgent, setAvatarAgent] = useState(null);
 
   async function load() {
@@ -163,53 +161,53 @@ export default function Agents() {
   }
 
   return (
-    <div style={{ flex: 1, background: COLORS.bg, padding: 32, overflowY: 'auto' }}>
+    <div style={{ flex: 1, background: 'var(--theme-bg)', padding: 32, overflowY: 'auto' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div>
-          <h2 style={{ fontSize: 20, fontWeight: 700, color: COLORS.text }}>Agentes</h2>
-          <p style={{ fontSize: 13, color: COLORS.muted, marginTop: 2 }}>{agents.length} atendentes cadastrados</p>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--theme-text)' }}>Agentes</h2>
+          <p style={{ fontSize: 13, color: 'var(--theme-text-muted)', marginTop: 2 }}>{agents.length} atendentes cadastrados</p>
         </div>
         <button
           onClick={() => setModal('new')}
-          style={{ padding: '9px 18px', background: COLORS.dark, color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}
+          style={{ padding: '9px 18px', background: 'var(--theme-primary)', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}
         >
           + Novo Agente
         </button>
       </div>
 
       {/* Table */}
-      <div style={{ background: COLORS.surface, borderRadius: 14, border: `1px solid ${COLORS.border}`, overflow: 'hidden' }}>
+      <div style={{ background: 'var(--theme-bg-secondary)', borderRadius: 14, border: '1px solid var(--theme-border)', overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: COLORS.muted }}>Carregando...</div>
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--theme-text-muted)' }}>Carregando...</div>
         ) : agents.map((ag, i) => (
           <div key={ag.id} style={{
             display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px',
-            borderBottom: i < agents.length - 1 ? `1px solid ${COLORS.border}` : 'none',
+            borderBottom: i < agents.length - 1 ? '1px solid var(--theme-border)' : 'none',
             opacity: ag.isActive ? 1 : 0.5,
           }}>
             <Avatar name={ag.name} color={ag.avatarColor} avatarUrl={ag.avatarUrl} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontWeight: 600, fontSize: 14, color: COLORS.text }}>{ag.name}</span>
-                {ag.id === me?.id && <span style={{ fontSize: 11, color: COLORS.muted }}>(você)</span>}
+                <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--theme-text)' }}>{ag.name}</span>
+                {ag.id === me?.id && <span style={{ fontSize: 11, color: 'var(--theme-text-muted)' }}>(você)</span>}
               </div>
-              <div style={{ fontSize: 12, color: COLORS.muted, marginTop: 2 }}>{ag.email}</div>
+              <div style={{ fontSize: 12, color: 'var(--theme-text-muted)', marginTop: 2 }}>{ag.email}</div>
             </div>
             <RoleBadge role={ag.role} />
-            <div style={{ fontSize: 12, color: COLORS.muted, minWidth: 90, textAlign: 'right' }}>
+            <div style={{ fontSize: 12, color: 'var(--theme-text-muted)', minWidth: 90, textAlign: 'right' }}>
               {ag.lastLoginAt ? new Date(ag.lastLoginAt).toLocaleDateString('pt-BR') : 'Nunca logou'}
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               <button
                 onClick={() => setAvatarAgent(ag)}
-                style={{ padding: '5px 12px', borderRadius: 7, border: `1px solid ${COLORS.border}`, background: 'none', cursor: 'pointer', fontSize: 12, color: COLORS.text }}
+                style={{ padding: '5px 12px', borderRadius: 7, border: '1px solid var(--theme-border)', background: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--theme-text)' }}
               >
                 📷 Foto
               </button>
               <button
                 onClick={() => setModal(ag)}
-                style={{ padding: '5px 12px', borderRadius: 7, border: `1px solid ${COLORS.border}`, background: 'none', cursor: 'pointer', fontSize: 12, color: COLORS.text }}
+                style={{ padding: '5px 12px', borderRadius: 7, border: '1px solid var(--theme-border)', background: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--theme-text)' }}
               >
                 Editar
               </button>

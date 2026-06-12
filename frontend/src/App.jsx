@@ -77,6 +77,17 @@ function MessageBubble({ message }) {
             onError={e => { e.target.style.display='none'; }}
           />
         )}
+        {isImage && message.direction === 'INBOUND' && (
+          <a
+            href={`${import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app'}/api/media/${message.mediaUrl}`}
+            download
+            target="_blank"
+            rel="noreferrer"
+            style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, fontSize:11, color:'var(--theme-text-muted)', textDecoration:'none', padding:'4px 8px', marginTop:2, borderRadius:6, background:'rgba(0,0,0,0.04)', width:'fit-content', marginLeft:'auto', marginRight:4 }}
+          >
+            ⬇ Salvar
+          </a>
+        )}
         <p style={{ margin: isImage ? '4px 8px 0' : 0, fontSize:14, color: isOut ? 'var(--theme-msg-text-out)' : 'var(--theme-msg-text-in)', lineHeight:1.5, wordBreak:'break-word', display: isImage && (message.content === '📷 Imagem' || message.content === '' || message.content === 'Sticker') ? 'none' : 'block' }}>
           {message.content}
         </p>

@@ -60,29 +60,33 @@ async function processInbound(msg, contactInfo) {
     const existingConv = !!conv;
 
     if (!conv) {
-  // Verifica se existe uma conversa resolvida recente (últimas 24h)
-  const resolved = await prisma.conversation.findFirst({
-    where: {
-      contactId: contact.id,
-      status: 'RESOLVED',
-      updatedAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-    },
-    orderBy: { updatedAt: 'desc' },
-  });
+      // Verifica se existe uma conversa resolvida recente (últimas 24h)
+      const resolved = await prisma.conversation.findFirst({
+        where: {
+          contactId: contact.id,
+          status: 'RESOLVED',
+          updatedAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+        },
+        orderBy: { updatedAt: 'desc' },
+      });
 
-  if (resolved) {
-    // Reabre a conversa resolvida recente
-    conv = await prisma.conversation.update({
-      where: { id: resolved.id },
-      data: { status: 'OPEN', unreadCount: 1, lastMessage: content, lastMessageAt: timestamp },
-    });
-  } else {
-    // Cria nova conversa
-    conv = await prisma.conversation.create({
-      data: { contactId: contact.id, status: 'OPEN', lastMessage: content, lastMessageAt: timestamp, unreadCount: 1 },
-    });
-  }
-}
+      if (resolved) {
+        conv = await prisma.conversation.update({
+          where: { id: resolved.id },
+          data: { status: 'OPEN', unreadCount: 1, lastMessage: content, lastMessageAt: timestamp },
+        });
+      } else {
+        conv = await prisma.conversation.create({
+          data: { contactId: contact.id, status: 'OPEN', lastMessage: content, lastMessageAt: timestamp, unreadCount: 1 },
+        });
+      }
+    } else {
+      // Conversa existente: atualiza última mensagem e contador de não lidas
+      conv = await prisma.conversation.update({
+        where: { id: conv.id },
+        data: { lastMessage: content, lastMessageAt: timestamp, unreadCount: { increment: 1 } },
+      });
+    }
     const message = await prisma.message.create({
       data: {
         waMessageId: msg.id,

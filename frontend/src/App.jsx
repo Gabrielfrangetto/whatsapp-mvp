@@ -107,23 +107,26 @@ function TypingIndicator({ name }) {
 
 // ─── ConversationItem ─────────────────────────────────────────────────────────
 function ConversationItem({ conv, selected, onClick }) {
-  const name = conv.contact?.name || conv.contact?.phone || 'Desconhecido';
+  const name    = conv.contact?.name || conv.contact?.phone || 'Desconhecido';
+  const hasNew  = conv.unreadCount > 0;
+  const bg      = selected ? 'var(--theme-primary-subtle)' : hasNew ? 'var(--theme-primary-subtle)' : 'transparent';
+  const border  = selected || hasNew ? 'var(--theme-primary)' : 'transparent';
   return (
     <div
       onClick={onClick}
-      style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', cursor:'pointer', background: selected ? 'var(--theme-primary-subtle)' : 'transparent', borderLeft: selected ? '3px solid var(--theme-primary)' : '3px solid transparent', borderBottom:'1px solid var(--theme-border)', transition:'background 0.1s' }}
+      style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', cursor:'pointer', background: bg, borderLeft: `3px solid ${border}`, borderBottom:'1px solid var(--theme-border)', transition:'background 0.1s' }}
     >
       <div style={{ width:44, height:44, borderRadius:'50%', background:getAvatarColor(name), display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:'#fff', fontSize:15, flexShrink:0 }}>
         {getInitials(name)}
       </div>
       <div style={{ flex:1, minWidth:0 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <span style={{ fontWeight:600, fontSize:14, color:'var(--theme-text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</span>
-          <span style={{ fontSize:11, color:'var(--theme-text-muted)', flexShrink:0 }}>{formatTime(conv.lastMessageAt)}</span>
+          <span style={{ fontWeight: hasNew ? 700 : 600, fontSize:14, color: hasNew ? 'var(--theme-primary)' : 'var(--theme-text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</span>
+          <span style={{ fontSize:11, color: hasNew ? 'var(--theme-primary)' : 'var(--theme-text-muted)', fontWeight: hasNew ? 700 : 400, flexShrink:0 }}>{formatTime(conv.lastMessageAt)}</span>
         </div>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:2 }}>
-          <span style={{ fontSize:13, color:'var(--theme-text-secondary)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'80%' }}>{conv.lastMessage || '—'}</span>
-          {conv.unreadCount > 0 && (
+          <span style={{ fontSize:13, color: hasNew ? 'var(--theme-text)' : 'var(--theme-text-secondary)', fontWeight: hasNew ? 600 : 400, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'80%' }}>{conv.lastMessage || '—'}</span>
+          {hasNew && (
             <span style={{ background:'var(--theme-primary)', color:'var(--theme-primary-text)', borderRadius:20, padding:'1px 7px', fontSize:11, fontWeight:700 }}>{conv.unreadCount}</span>
           )}
         </div>

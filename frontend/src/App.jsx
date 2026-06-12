@@ -114,7 +114,7 @@ function ConversationItem({ conv, selected, onClick }) {
   return (
     <div
       onClick={onClick}
-      style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', cursor:'pointer', background: bg, borderLeft: `3px solid ${border}`, borderBottom:'1px solid var(--theme-border)', transition:'background 0.1s', boxShadow: hasNew && !selected ? 'inset 3px 0 12px -4px var(--theme-primary)' : 'none' }}
+      style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', cursor:'pointer', background: bg, borderLeft: `3px solid ${border}`, borderBottom:'1px solid var(--theme-border)', transition:'background 0.1s', boxShadow: hasNew && !selected ? 'inset 3px 0 16px -3px var(--theme-primary)' : 'none' }}
     >
       <div style={{ width:44, height:44, borderRadius:'50%', background:getAvatarColor(name), display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:'#fff', fontSize:15, flexShrink:0 }}>
         {getInitials(name)}

@@ -77,7 +77,7 @@ function MessageBubble({ message }) {
             onError={e => { e.target.style.display='none'; }}
           />
         )}
-        <p style={{ margin: isImage ? '4px 8px 0' : 0, fontSize:14, color: isOut ? 'var(--theme-msg-text-out)' : 'var(--theme-msg-text-in)', lineHeight:1.5, wordBreak:'break-word', display: isImage && (message.content === '📷 Imagem' || message.content === '') ? 'none' : 'block' }}>
+        <p style={{ margin: isImage ? '4px 8px 0' : 0, fontSize:14, color: isOut ? 'var(--theme-msg-text-out)' : 'var(--theme-msg-text-in)', lineHeight:1.5, wordBreak:'break-word', display: isImage && (message.content === '📷 Imagem' || message.content === '' || message.content === 'Sticker') ? 'none' : 'block' }}>
           {message.content}
         </p>
         <div style={{ display:'flex', justifyContent:'flex-end', alignItems:'center', gap:3, marginTop:2, padding: isImage ? '0 8px' : 0 }}>

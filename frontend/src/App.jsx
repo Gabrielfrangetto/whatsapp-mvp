@@ -114,14 +114,14 @@ function ConversationItem({ conv, selected, onClick }) {
   return (
     <div
       onClick={onClick}
-      style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', cursor:'pointer', background: bg, borderLeft: `3px solid ${border}`, borderBottom:'1px solid var(--theme-border)', transition:'background 0.1s' }}
+      style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', cursor:'pointer', background: bg, borderLeft: `3px solid ${border}`, borderBottom:'1px solid var(--theme-border)', transition:'background 0.1s', boxShadow: hasNew && !selected ? 'inset 3px 0 12px -4px var(--theme-primary)' : 'none' }}
     >
       <div style={{ width:44, height:44, borderRadius:'50%', background:getAvatarColor(name), display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:'#fff', fontSize:15, flexShrink:0 }}>
         {getInitials(name)}
       </div>
       <div style={{ flex:1, minWidth:0 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <span style={{ fontWeight: hasNew ? 700 : 600, fontSize:14, color: hasNew ? 'var(--theme-primary)' : 'var(--theme-text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</span>
+          <span style={{ fontWeight: hasNew ? 700 : 600, fontSize:14, color:'var(--theme-text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</span>
           <span style={{ fontSize:11, color: hasNew ? 'var(--theme-primary)' : 'var(--theme-text-muted)', fontWeight: hasNew ? 700 : 400, flexShrink:0 }}>{formatTime(conv.lastMessageAt)}</span>
         </div>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:2 }}>

@@ -101,8 +101,6 @@ async function updateAgentAvatar(req, res) {
     res.status(500).json({ error: 'Erro ao atualizar avatar' });
   }
 }
-// No module.exports adicione: updateAgentAvatar
-
 async function updatePreferences(req, res) {
   try {
     const { themeColor, themeMode } = req.body;
@@ -296,4 +294,4 @@ async function updateAgent(req, res) {
   }
 }
 
-module.exports = { login, refresh, logout, me, listAgents, createAgent, updateAgent, updatePreferences };
+module.exports = { login, refresh, logout, me, listAgents, createAgent, updateAgent, updatePreferences, updateAgentAvatar };

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth, api } from '../context/AuthContext';
 import ResolutionReasons from './ResolutionReasons';
+import AvatarUpload from '../components/AvatarUpload';
 
 const COLORS = {
   green: '#25D366', dark: '#075E54', bg: '#f0f2f5',
@@ -132,6 +133,7 @@ export default function Agents() {
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null); // null | 'new' | agent object
+  const [avatarAgent, setAvatarAgent] = useState(null);
 
   async function load() {
     try {
@@ -142,6 +144,11 @@ export default function Agents() {
   }
 
   useEffect(() => { load(); }, []);
+
+  async function handleSaveAvatar(agentId, avatarUrl) {
+    await api.patch(`/auth/agents/${agentId}/avatar`, { avatarUrl });
+    load();
+  }
 
   async function toggleActive(ag) {
     try {
@@ -190,6 +197,12 @@ export default function Agents() {
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               <button
+                onClick={() => setAvatarAgent(ag)}
+                style={{ padding: '5px 12px', borderRadius: 7, border: `1px solid ${COLORS.border}`, background: 'none', cursor: 'pointer', fontSize: 12, color: COLORS.text }}
+              >
+                📷 Foto
+              </button>
+              <button
                 onClick={() => setModal(ag)}
                 style={{ padding: '5px 12px', borderRadius: 7, border: `1px solid ${COLORS.border}`, background: 'none', cursor: 'pointer', fontSize: 12, color: COLORS.text }}
               >
@@ -220,6 +233,7 @@ export default function Agents() {
         </Modal>
       )}
       <ResolutionReasons />
+      {avatarAgent && <AvatarUpload agent={avatarAgent} onSaved={handleSaveAvatar} onClose={() => setAvatarAgent(null)} />}
     </div>
   );
 }

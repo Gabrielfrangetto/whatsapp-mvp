@@ -421,7 +421,12 @@ function Inbox() {
         {/* Header */}
         <div style={{ background:'var(--theme-primary)', padding:'14px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <span style={{ fontSize:18 }}>💬</span>
+            <div onClick={handleLogout} title="Sair" style={{ width:44, height:44, borderRadius:'50%', background: agent?.avatarColor || 'var(--theme-primary-light)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontWeight:700, color:'#fff', fontSize:14, flexShrink:0, border:'2px solid rgba(255,255,255,0.3)', overflow:'hidden' }}>
+              {agent?.avatarUrl
+                ? <img src={agent.avatarUrl} alt="avatar" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                : getInitials(agent?.name || '')
+              }
+            </div>
             <div>
               <div style={{ fontWeight:600, fontSize:14, color:'var(--theme-header-text)' }}>WhatsApp MVP</div>
               <div style={{ fontSize:10, color:'var(--theme-header-sub)', display:'flex', alignItems:'center', gap:4, marginTop:1 }}>
@@ -439,10 +444,6 @@ function Inbox() {
               style={{ width:28, height:28, borderRadius:6, background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.2)', cursor:'pointer', color:'var(--theme-header-text)', fontSize:13, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
               ⚙
             </button>
-            <div onClick={handleLogout} title="Sair"
-              style={{ width:30, height:30, borderRadius:'50%', background: agent?.avatarColor || 'var(--theme-primary-light)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontWeight:700, color:'#fff', fontSize:11, flexShrink:0, border:'2px solid rgba(255,255,255,0.3)' }}>
-              {getInitials(agent?.name || '')}
-            </div>
           </div>
         </div>
 

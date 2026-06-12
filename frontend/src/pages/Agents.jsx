@@ -133,7 +133,7 @@ function AgentForm({ initial = {}, onSave, onClose, isNew }) {
 }
 
 export default function Agents() {
-  const { agent: me } = useAuth();
+  const { agent: me, setAgent } = useAuth();
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null); // null | 'new' | agent object
@@ -151,6 +151,7 @@ export default function Agents() {
 
   async function handleSaveAvatar(agentId, avatarUrl) {
     await api.patch(`/auth/agents/${agentId}/avatar`, { avatarUrl });
+    if (agentId === me?.id) setAgent(prev => ({ ...prev, avatarUrl }));
     load();
   }
 

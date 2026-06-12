@@ -76,6 +76,7 @@ async function login(req, res) {
         email: agent.email,
         role: agent.role,
         avatarColor: agent.avatarColor,
+        avatarUrl: agent.avatarUrl || null,
       },
     });
   } catch (error) {
@@ -199,7 +200,7 @@ async function me(req, res) {
   try {
     const agent = await prisma.agent.findUnique({
       where: { id: req.agent.sub },
-      select: { id: true, name: true, email: true, role: true, avatarColor: true, lastLoginAt: true },
+      select: { id: true, name: true, email: true, role: true, avatarColor: true, avatarUrl: true, lastLoginAt: true },
     });
     if (!agent) return res.status(404).json({ error: 'Agente não encontrado' });
     res.json(agent);

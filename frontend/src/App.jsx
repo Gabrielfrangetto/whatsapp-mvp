@@ -421,7 +421,7 @@ function Inbox() {
         {/* Header */}
         <div style={{ background:'var(--theme-primary)', padding:'14px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <div onClick={handleLogout} title="Sair" style={{ width:44, height:44, borderRadius:'50%', background: agent?.avatarColor || 'var(--theme-primary-light)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontWeight:700, color:'#fff', fontSize:14, flexShrink:0, border:'2px solid rgba(255,255,255,0.3)', overflow:'hidden' }}>
+            <div style={{ width:44, height:44, borderRadius:'50%', background: agent?.avatarColor || 'var(--theme-primary-light)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:'#fff', fontSize:14, flexShrink:0, border:'2px solid rgba(255,255,255,0.3)', overflow:'hidden' }}>
               {agent?.avatarUrl
                 ? <img src={agent.avatarUrl} alt="avatar" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
                 : getInitials(agent?.name || '')

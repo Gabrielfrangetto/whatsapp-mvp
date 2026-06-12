@@ -20,6 +20,7 @@ model Agent {
   updatedAt    DateTime  @updatedAt
   themeColor String? @default("#075E54")
   themeMode  String? @default("light")
+  avatarUrl  String?
 
   conversations Conversation[] @relation("AssignedAgent")
   refreshTokens RefreshToken[]

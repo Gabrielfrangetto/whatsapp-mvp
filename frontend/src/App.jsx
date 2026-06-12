@@ -133,7 +133,7 @@ function ConversationItem({ conv, selected, onClick }) {
 }
 
 // ─── ChatPanel ────────────────────────────────────────────────────────────────
-function ChatPanel({ conversationId, socketControls }) {
+function ChatPanel({ conversationId, socketControls, onMessageSent }) {
   const { agent } = useAuth();
   const [messages, setMessages]           = useState([]);
   const [conversation, setConversation]   = useState(null);
@@ -234,8 +234,10 @@ function ChatPanel({ conversationId, socketControls }) {
         await api.post(`/conversations/${conversationId}/media`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
         URL.revokeObjectURL(pastedImage.preview);
         setPastedImage(null);
+        onMessageSent?.(conversationId, msg.trim() || '📎 Arquivo');
       } else {
         await api.post(`/conversations/${conversationId}/messages`, { text: msg });
+        onMessageSent?.(conversationId, msg);
       }
       loadMessages(conversationId);
     } catch { setText(msg); }
@@ -404,6 +406,16 @@ function Inbox() {
 
   const handleLogout = async () => { disconnectSocket(); await logout(); };
 
+  const handleMessageSent = (convId, content) => {
+    setConversations(prev => {
+      const idx = prev.findIndex(c => c.id === convId);
+      if (idx === -1) return prev;
+      const next = [...prev];
+      next[idx] = { ...next[idx], lastMessage: content, lastMessageAt: new Date().toISOString() };
+      return next.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
+    });
+  };
+
   const filtered = conversations.filter(c => {
     if (filter && c.status !== filter) return false;
     const name = c.contact?.name || c.contact?.phone || '';
@@ -506,7 +518,7 @@ function Inbox() {
       {/* Main panel */}
       {selected === '__agents__'
         ? <Agents />
-        : <ChatPanel conversationId={selected} socketControls={socketControls} />
+        : <ChatPanel conversationId={selected} socketControls={socketControls} onMessageSent={handleMessageSent} />
       }
       {showSettings && <Settings onClose={() => setShowSettings(false)} />}
     </div>

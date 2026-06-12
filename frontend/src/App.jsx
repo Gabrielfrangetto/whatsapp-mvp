@@ -1,6 +1,6 @@
 // src/App.jsx
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, Sticker } from 'lucide-react';
 import TemplateModal from './components/TemplateModal';
 import { AuthProvider, useAuth, api } from './context/AuthContext';
 import { useSocket, disconnectSocket } from './hooks/useSocket';
@@ -131,7 +131,10 @@ function ConversationItem({ conv, selected, onClick }) {
               ? <ArrowUp size={12} strokeWidth={2.5} style={{ flexShrink:0, color:'var(--theme-primary)' }} />
               : <ArrowDown size={12} strokeWidth={2.5} style={{ flexShrink:0, color:'#F59E0B' }} />
             }
-            {conv.lastMessage || '—'}
+            {conv.lastMessage === 'Sticker'
+              ? <span style={{ display:'flex', alignItems:'center', gap:3 }}><Sticker size={12} strokeWidth={1.8} style={{ flexShrink:0 }} />Sticker</span>
+              : (conv.lastMessage || '—')
+            }
           </span>
           {hasNew && (
             <span style={{ background:'var(--theme-primary)', color:'var(--theme-primary-text)', borderRadius:20, padding:'1px 7px', fontSize:11, fontWeight:700 }}>{conv.unreadCount}</span>

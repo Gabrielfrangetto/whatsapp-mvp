@@ -353,7 +353,16 @@ function Inbox() {
   useEffect(() => { if (agent) loadPreferences(agent); }, [agent]);
 
   const socketControls = useSocket(accessToken, {
-    onMessage:            (msg)  => chatHandlersRef.current?.handleMessage(msg),
+    onMessage: (msg) => {
+      chatHandlersRef.current?.handleMessage(msg);
+      setConversations(prev => {
+        const idx = prev.findIndex(c => c.id === msg.conversationId);
+        if (idx === -1) return prev;
+        const next = [...prev];
+        next[idx] = { ...next[idx], lastMessage: msg.content, lastMessageAt: msg.timestamp || new Date().toISOString() };
+        return next.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
+      });
+    },
     onConversationUpdate: (conv) => {
       setConversations(prev => {
         const idx = prev.findIndex(c => c.id === conv.id);

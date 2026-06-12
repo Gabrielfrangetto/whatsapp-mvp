@@ -215,7 +215,7 @@ async function me(req, res) {
 async function listAgents(req, res) {
   try {
     const agents = await prisma.agent.findMany({
-      select: { id: true, name: true, email: true, role: true, avatarColor: true, isActive: true, lastLoginAt: true, createdAt: true },
+      select: { id: true, name: true, email: true, role: true, avatarColor: true, avatarUrl: true, isActive: true, lastLoginAt: true, createdAt: true },
       orderBy: { createdAt: 'asc' },
     });
     res.json(agents);

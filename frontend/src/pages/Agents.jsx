@@ -9,15 +9,19 @@ const COLORS = {
   surface: '#fff', border: '#e8e8e8', text: '#111', muted: '#888',
 };
 
-function Avatar({ name = '', color = '#25D366', size = 36 }) {
+function Avatar({ name = '', color = '#25D366', size = 36, avatarUrl }) {
   const initials = name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%', background: color,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       color: '#fff', fontWeight: 600, fontSize: size * 0.36, flexShrink: 0,
+      overflow: 'hidden',
     }}>
-      {initials || '?'}
+      {avatarUrl
+        ? <img src={avatarUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        : (initials || '?')
+      }
     </div>
   );
 }
@@ -183,7 +187,7 @@ export default function Agents() {
             borderBottom: i < agents.length - 1 ? `1px solid ${COLORS.border}` : 'none',
             opacity: ag.isActive ? 1 : 0.5,
           }}>
-            <Avatar name={ag.name} color={ag.avatarColor} />
+            <Avatar name={ag.name} color={ag.avatarColor} avatarUrl={ag.avatarUrl} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontWeight: 600, fontSize: 14, color: COLORS.text }}>{ag.name}</span>

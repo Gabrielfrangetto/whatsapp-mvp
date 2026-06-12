@@ -95,7 +95,7 @@ async function sendMedia(req, res) {
 
     await prisma.conversation.update({
       where: { id },
-      data: { lastMessage: getContentLabel(msgType, originalname), lastMessageAt: new Date() },
+      data: { lastMessage: getContentLabel(msgType, originalname), lastMessageAt: new Date(), lastMessageDirection: 'OUTBOUND' },
     });
 
     res.json(message);

@@ -125,7 +125,13 @@ function ConversationItem({ conv, selected, onClick }) {
           <span style={{ fontSize:11, color: hasNew ? 'var(--theme-primary)' : 'var(--theme-text-muted)', fontWeight: hasNew ? 700 : 400, flexShrink:0 }}>{formatTime(conv.lastMessageAt)}</span>
         </div>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:2 }}>
-          <span style={{ fontSize:13, color: hasNew ? 'var(--theme-text)' : 'var(--theme-text-secondary)', fontWeight: hasNew ? 600 : 400, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'80%' }}>{conv.lastMessage || '—'}</span>
+          <span style={{ fontSize:13, color: hasNew ? 'var(--theme-text)' : 'var(--theme-text-secondary)', fontWeight: hasNew ? 600 : 400, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'80%', display:'flex', alignItems:'center', gap:4 }}>
+            {conv.lastMessageDirection === 'OUTBOUND'
+              ? <span title="Atendente" style={{ fontSize:11, flexShrink:0 }}>🎧</span>
+              : <span title="Cliente" style={{ fontSize:11, flexShrink:0 }}>👤</span>
+            }
+            {conv.lastMessage || '—'}
+          </span>
           {hasNew && (
             <span style={{ background:'var(--theme-primary)', color:'var(--theme-primary-text)', borderRadius:20, padding:'1px 7px', fontSize:11, fontWeight:700 }}>{conv.unreadCount}</span>
           )}
@@ -364,7 +370,7 @@ function Inbox() {
         const idx = prev.findIndex(c => c.id === msg.conversationId);
         if (idx === -1) return prev;
         const next = [...prev];
-        next[idx] = { ...next[idx], lastMessage: msg.content, lastMessageAt: msg.timestamp || new Date().toISOString() };
+        next[idx] = { ...next[idx], lastMessage: msg.content, lastMessageAt: msg.timestamp || new Date().toISOString(), lastMessageDirection: msg.direction || 'INBOUND' };
         return next.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
       });
     },
@@ -414,7 +420,7 @@ function Inbox() {
       const idx = prev.findIndex(c => c.id === convId);
       if (idx === -1) return prev;
       const next = [...prev];
-      next[idx] = { ...next[idx], lastMessage: content, lastMessageAt: new Date().toISOString() };
+      next[idx] = { ...next[idx], lastMessage: content, lastMessageAt: new Date().toISOString(), lastMessageDirection: 'OUTBOUND' };
       return next.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
     });
   };

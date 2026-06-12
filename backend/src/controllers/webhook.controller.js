@@ -73,18 +73,18 @@ async function processInbound(msg, contactInfo) {
       if (resolved) {
         conv = await prisma.conversation.update({
           where: { id: resolved.id },
-          data: { status: 'OPEN', unreadCount: 1, lastMessage: content, lastMessageAt: timestamp },
+          data: { status: 'OPEN', unreadCount: 1, lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND' },
         });
       } else {
         conv = await prisma.conversation.create({
-          data: { contactId: contact.id, status: 'OPEN', lastMessage: content, lastMessageAt: timestamp, unreadCount: 1 },
+          data: { contactId: contact.id, status: 'OPEN', lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND', unreadCount: 1 },
         });
       }
     } else {
       // Conversa existente: atualiza última mensagem e contador de não lidas
       conv = await prisma.conversation.update({
         where: { id: conv.id },
-        data: { lastMessage: content, lastMessageAt: timestamp, unreadCount: { increment: 1 } },
+        data: { lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND', unreadCount: { increment: 1 } },
       });
     }
     const message = await prisma.message.create({

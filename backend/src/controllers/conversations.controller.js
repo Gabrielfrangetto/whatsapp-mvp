@@ -95,7 +95,7 @@ try {
 
     await prisma.conversation.update({
       where: { id },
-      data: { lastMessage: text, lastMessageAt: new Date(), status: 'OPEN' },
+      data: { lastMessage: text, lastMessageAt: new Date(), lastMessageDirection: 'OUTBOUND', status: 'OPEN' },
     });
 
     // Emite em tempo real para outros agentes na mesma conversa

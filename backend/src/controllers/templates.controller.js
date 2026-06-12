@@ -154,7 +154,7 @@ async function sendTemplate(req, res) {
 
     await prisma.conversation.update({
       where: { id },
-      data: { lastMessage: renderedBody, lastMessageAt: new Date(), status: 'OPEN' },
+      data: { lastMessage: renderedBody, lastMessageAt: new Date(), lastMessageDirection: 'OUTBOUND', status: 'OPEN' },
     });
 
     res.json(message);

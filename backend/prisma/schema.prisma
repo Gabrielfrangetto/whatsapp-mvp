@@ -53,8 +53,9 @@ model Conversation {
   status        ConvStatus @default(OPEN)
   assignedToId  String?
   assignedAgent Agent?     @relation("AssignedAgent", fields: [assignedToId], references: [id])
-  lastMessage   String?
-  lastMessageAt DateTime?
+  lastMessage          String?
+  lastMessageAt        DateTime?
+  lastMessageDirection String?
   unreadCount   Int        @default(0)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt

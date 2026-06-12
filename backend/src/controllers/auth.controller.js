@@ -83,6 +83,25 @@ async function login(req, res) {
     res.status(500).json({ error: 'Erro interno' });
   }
 }
+async function updateAgentAvatar(req, res) {
+  try {
+    const { id } = req.params;
+    const { avatarUrl } = req.body;
+    if (req.agent.role !== 'ADMIN' && req.agent.sub !== id)
+      return res.status(403).json({ error: 'Sem permissão' });
+    if (!avatarUrl || !avatarUrl.startsWith('https://res.cloudinary.com/'))
+      return res.status(400).json({ error: 'URL inválida' });
+    const agent = await prisma.agent.update({
+      where: { id },
+      data: { avatarUrl },
+      select: { id: true, name: true, email: true, role: true, avatarColor: true, avatarUrl: true },
+    });
+    res.json(agent);
+  } catch (e) {
+    res.status(500).json({ error: 'Erro ao atualizar avatar' });
+  }
+}
+// No module.exports adicione: updateAgentAvatar
 
 async function updatePreferences(req, res) {
   try {

@@ -97,7 +97,7 @@ export default function StickerPanel({ conversationId, onClose, onSent }) {
     <div style={{
       position: 'absolute',
       bottom: 'calc(100% + 8px)',
-      left: 0,
+      right: 0,
       width: 300,
       background: 'var(--theme-bg-secondary)',
       border: '1px solid var(--theme-border)',

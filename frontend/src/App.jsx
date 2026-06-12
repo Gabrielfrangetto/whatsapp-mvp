@@ -1,5 +1,6 @@
 // src/App.jsx
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { Headphones, User } from 'lucide-react';
 import TemplateModal from './components/TemplateModal';
 import { AuthProvider, useAuth, api } from './context/AuthContext';
 import { useSocket, disconnectSocket } from './hooks/useSocket';
@@ -127,8 +128,8 @@ function ConversationItem({ conv, selected, onClick }) {
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:2 }}>
           <span style={{ fontSize:13, color: hasNew ? 'var(--theme-text)' : 'var(--theme-text-secondary)', fontWeight: hasNew ? 600 : 400, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'80%', display:'flex', alignItems:'center', gap:4 }}>
             {conv.lastMessageDirection === 'OUTBOUND'
-              ? <span title="Atendente" style={{ fontSize:11, flexShrink:0 }}>🎧</span>
-              : <span title="Cliente" style={{ fontSize:11, flexShrink:0 }}>👤</span>
+              ? <Headphones size={12} strokeWidth={2} style={{ flexShrink:0, color:'var(--theme-primary)', opacity:0.8 }} />
+              : <User size={12} strokeWidth={2} style={{ flexShrink:0, color:'var(--theme-text-muted)', opacity:0.8 }} />
             }
             {conv.lastMessage || '—'}
           </span>

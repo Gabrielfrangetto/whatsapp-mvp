@@ -500,7 +500,10 @@ function Inbox() {
         <div style={{ flex:1, overflowY:'auto' }}>
           {filtered.length === 0
             ? <div style={{ textAlign:'center', color:'var(--theme-text-muted)', padding:'40px 20px', fontSize:13 }}>Nenhuma conversa</div>
-            : filtered.map(c => <ConversationItem key={c.id} conv={c} selected={c.id === selected} onClick={() => setSelected(c.id)} />)
+            : filtered.map(c => <ConversationItem key={c.id} conv={c} selected={c.id === selected} onClick={() => {
+                setSelected(c.id);
+                if (c.unreadCount > 0) setConversations(prev => prev.map(x => x.id === c.id ? { ...x, unreadCount: 0 } : x));
+              }} />)
           }
         </div>
 

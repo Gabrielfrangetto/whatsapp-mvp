@@ -1,10 +1,17 @@
 // src/socket/socket.server.js
 const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
+const { PrismaClient } = require('@prisma/client');
+const { redistributeConversations } = require('../services/assignment.service');
+
+const prisma = new PrismaClient();
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'access_secret_change_me';
 
 let io;
+
+// Contador de conexões por agente (suporta múltiplas abas/dispositivos)
+const agentConnections = new Map(); // agentId -> Set<socketId>
 
 /**
  * Inicializa o servidor Socket.io atrelado ao HTTP server do Express
@@ -38,13 +45,22 @@ function initSocket(httpServer) {
   });
 
   // ─── Conexão ─────────────────────────────────────────────────────────────────
-  io.on('connection', (socket) => {
+  io.on('connection', async (socket) => {
     const { sub: agentId, name } = socket.agent;
     console.log(`[Socket] 🟢 Agente conectado: ${name} (${socket.id})`);
 
-    // Cada agente entra automaticamente numa sala com seu próprio ID
-    // (útil para notificações individuais no futuro)
     socket.join(`agent:${agentId}`);
+
+    // Registra conexão e marca agente como ONLINE na primeira aba
+    if (!agentConnections.has(agentId)) agentConnections.set(agentId, new Set());
+    const wasOffline = agentConnections.get(agentId).size === 0;
+    agentConnections.get(agentId).add(socket.id);
+
+    if (wasOffline) {
+      await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: 'ONLINE' } });
+      io.emit('agent:status', { agentId, onlineStatus: 'ONLINE' });
+      console.log(`[Assignment] ✅ ${name} ficou ONLINE`);
+    }
 
     // ─── Entrar na sala de uma conversa ────────────────────────────────────────
     socket.on('join:conversation', (conversationId) => {
@@ -74,8 +90,26 @@ function initSocket(httpServer) {
     });
 
     // ─── Desconexão ────────────────────────────────────────────────────────────
-    socket.on('disconnect', (reason) => {
+    socket.on('disconnect', async (reason) => {
       console.log(`[Socket] 🔴 Agente desconectado: ${name} — ${reason}`);
+
+      const sockets = agentConnections.get(agentId);
+      if (sockets) {
+        sockets.delete(socket.id);
+        // Só marca OFFLINE quando não há mais nenhuma aba/conexão ativa
+        if (sockets.size === 0) {
+          agentConnections.delete(agentId);
+          await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: 'OFFLINE' } });
+          io.emit('agent:status', { agentId, onlineStatus: 'OFFLINE' });
+          console.log(`[Assignment] ⚪ ${name} ficou OFFLINE — redistribuindo conversas...`);
+
+          const redistributed = await redistributeConversations(agentId);
+          for (const { conv } of redistributed) {
+            io.emit('conversation:update', conv);
+          }
+          console.log(`[Assignment] 🔄 ${redistributed.length} conversa(s) redistribuída(s)`);
+        }
+      }
     });
   });
 

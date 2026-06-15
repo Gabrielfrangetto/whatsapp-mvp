@@ -2,6 +2,7 @@
 const { PrismaClient } = require('@prisma/client');
 const whatsappService = require('../services/whatsapp.service');
 const { emitNewMessage, emitMessageStatus, emitConversationUpdate, emitNewConversation } = require('../socket/socket.server');
+const { assignConversation } = require('../services/assignment.service');
 
 const prisma = new PrismaClient();
 
@@ -73,12 +74,19 @@ async function processInbound(msg, contactInfo) {
       if (resolved) {
         conv = await prisma.conversation.update({
           where: { id: resolved.id },
-          data: { status: 'OPEN', unreadCount: 1, lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND' },
+          data: { status: 'OPEN', assignedToId: null, unreadCount: 1, lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND' },
         });
       } else {
         conv = await prisma.conversation.create({
           data: { contactId: contact.id, status: 'OPEN', lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND', unreadCount: 1 },
         });
+      }
+
+      // Auto-assign para o agente online com menor carga
+      const assigned = await assignConversation(conv.id);
+      if (assigned) {
+        conv = assigned.conv;
+        console.log(`[Assignment] 📋 Conversa ${conv.id} → ${assigned.agent.name}`);
       }
     } else {
       // Conversa existente: atualiza última mensagem e contador de não lidas

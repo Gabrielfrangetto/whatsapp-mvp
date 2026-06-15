@@ -18,9 +18,10 @@ model Agent {
   lastLoginAt  DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
-  themeColor String? @default("#075E54")
-  themeMode  String? @default("light")
-  avatarUrl  String?
+  themeColor   String?           @default("#075E54")
+  themeMode    String?           @default("light")
+  avatarUrl    String?
+  onlineStatus AgentOnlineStatus @default(OFFLINE)
 
   conversations Conversation[] @relation("AssignedAgent")
   refreshTokens RefreshToken[]
@@ -112,6 +113,11 @@ model ResolutionReason {
 enum AgentRole {
   ADMIN
   AGENT
+}
+
+enum AgentOnlineStatus {
+  ONLINE
+  OFFLINE
 }
 
 enum ConvStatus {

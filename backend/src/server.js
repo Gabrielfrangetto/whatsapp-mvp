@@ -38,6 +38,8 @@ const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
   .map(o => o.trim())
   .filter(Boolean);
 
+console.log('[CORS] Origens permitidas:', allowedOrigins);
+
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);

@@ -119,39 +119,66 @@ function TypingIndicator({ name }) {
 
 // ─── ConversationItem ─────────────────────────────────────────────────────────
 function ConversationItem({ conv, selected, onClick, onPin }) {
-  const name   = conv.contact?.name || conv.contact?.phone || 'Desconhecido';
-  const hasNew = conv.unreadCount > 0;
-  const [hovered, setHovered] = useState(false);
+  const name     = conv.contact?.name || conv.contact?.phone || 'Desconhecido';
+  const hasNew   = conv.unreadCount > 0;
+  const [hovered, setHovered]   = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [pinAnim, setPinAnim]   = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e) => { if (!menuRef.current?.contains(e.target)) setMenuOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [menuOpen]);
+
+  const handlePin = (e) => {
+    e.stopPropagation();
+    setMenuOpen(false);
+    setPinAnim(true);
+    setTimeout(() => setPinAnim(false), 700);
+    onPin(conv.id);
+  };
+
   const bg     = selected ? 'var(--theme-primary-subtle)' : hasNew ? 'var(--theme-primary-subtle)' : 'transparent';
   const border = selected || hasNew ? 'var(--theme-primary)' : conv.pinned ? 'var(--theme-primary)' : 'transparent';
+
   return (
     <div
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', cursor:'pointer', background:bg, borderLeft:`3px solid ${border}`, borderBottom:'1px solid var(--theme-border)', transition:'background 0.1s', boxShadow: hasNew && !selected ? 'inset 3px 0 20px -2px var(--theme-primary)' : 'none' }}
+      onMouseLeave={() => { setHovered(false); setMenuOpen(false); }}
+      style={{ position:'relative', display:'flex', alignItems:'center', gap:12, padding:'12px 16px', cursor:'pointer', background:bg, borderLeft:`3px solid ${border}`, borderBottom:'1px solid var(--theme-border)', transition:'background 0.1s', boxShadow: hasNew && !selected ? 'inset 3px 0 20px -2px var(--theme-primary)' : 'none' }}
     >
+      <style>{`
+        @keyframes pinPop {
+          0%   { transform: scale(0.3) rotate(-15deg); opacity: 0; }
+          45%  { transform: scale(1.4) rotate(8deg);  opacity: 1; }
+          100% { transform: scale(1)   rotate(0deg);  opacity: 0; }
+        }
+      `}</style>
+
+      {/* Animação de pin */}
+      {pinAnim && (
+        <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', pointerEvents:'none', zIndex:20 }}>
+          <Pin size={30} style={{ color:'var(--theme-primary)', animation:'pinPop 0.65s ease-out forwards', filter:'drop-shadow(0 2px 6px rgba(0,0,0,0.2))' }} />
+        </div>
+      )}
+
+      {/* Avatar */}
       <div style={{ width:44, height:44, borderRadius:'50%', background:getAvatarColor(name), display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:'#fff', fontSize:15, flexShrink:0 }}>
         {getInitials(name)}
       </div>
+
+      {/* Conteúdo */}
       <div style={{ flex:1, minWidth:0 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <span style={{ fontWeight: hasNew ? 700 : 600, fontSize:14, color:'var(--theme-text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:4, minWidth:0 }}>
+          <span style={{ fontWeight: hasNew ? 700 : 600, fontSize:14, color:'var(--theme-text)', display:'flex', alignItems:'center', gap:4, minWidth:0, overflow:'hidden' }}>
             {conv.pinned && <Pin size={11} style={{ color:'var(--theme-primary)', flexShrink:0 }} />}
             <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</span>
           </span>
-          <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0, marginLeft:4 }}>
-            {(hovered || conv.pinned) && onPin && (
-              <button
-                onClick={e => { e.stopPropagation(); onPin(conv.id); }}
-                title={conv.pinned ? 'Remover fixação' : 'Fixar conversa'}
-                style={{ width:18, height:18, borderRadius:3, border:'none', background:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color: conv.pinned ? 'var(--theme-primary)' : 'var(--theme-text-muted)', padding:0, opacity: hovered || conv.pinned ? 1 : 0, transition:'opacity 0.15s' }}
-              >
-                <Pin size={12} />
-              </button>
-            )}
-            <span style={{ fontSize:11, color: hasNew ? 'var(--theme-primary)' : 'var(--theme-text-muted)', fontWeight: hasNew ? 700 : 400 }}>{formatTime(conv.lastMessageAt)}</span>
-          </div>
+          <span style={{ fontSize:11, color: hasNew ? 'var(--theme-primary)' : 'var(--theme-text-muted)', fontWeight: hasNew ? 700 : 400, flexShrink:0, marginLeft:4 }}>{formatTime(conv.lastMessageAt)}</span>
         </div>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:2 }}>
           <span style={{ fontSize:13, color: hasNew ? 'var(--theme-text)' : 'var(--theme-text-secondary)', fontWeight: hasNew ? 600 : 400, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'80%', display:'flex', alignItems:'center', gap:4 }}>
@@ -169,6 +196,33 @@ function ConversationItem({ conv, selected, onClick, onPin }) {
           )}
         </div>
       </div>
+
+      {/* Dropdown trigger (aparece no hover) */}
+      {hovered && onPin && (
+        <div ref={menuRef} style={{ position:'absolute', top:6, right:8, zIndex:10 }}>
+          <button
+            onClick={e => { e.stopPropagation(); setMenuOpen(v => !v); }}
+            style={{ width:22, height:22, borderRadius:5, border:'none', background:'var(--theme-bg-secondary)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--theme-text-muted)', boxShadow:'0 1px 4px rgba(0,0,0,0.14)', transition:'background 0.12s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--theme-bg-hover)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--theme-bg-secondary)'; }}
+          >
+            <ChevronDown size={13} strokeWidth={2.5} style={{ transition:'transform 0.15s', transform: menuOpen ? 'rotate(180deg)' : 'none' }} />
+          </button>
+          {menuOpen && (
+            <div style={{ position:'absolute', top:26, right:0, background:'var(--theme-bg-secondary)', border:'1px solid var(--theme-border-strong)', borderRadius:8, boxShadow:'0 4px 16px rgba(0,0,0,0.18)', zIndex:100, minWidth:160, overflow:'hidden' }}>
+              <button
+                onClick={handlePin}
+                style={{ width:'100%', display:'flex', alignItems:'center', gap:9, padding:'9px 14px', border:'none', background:'none', cursor:'pointer', color: conv.pinned ? 'var(--theme-primary)' : 'var(--theme-text)', fontSize:13, fontFamily:'inherit', textAlign:'left', fontWeight: conv.pinned ? 600 : 400 }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--theme-bg-hover)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+              >
+                <Pin size={13} style={{ color: conv.pinned ? 'var(--theme-primary)' : 'var(--theme-text-muted)', flexShrink:0 }} />
+                {conv.pinned ? 'Remover fixação' : 'Fixar conversa'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

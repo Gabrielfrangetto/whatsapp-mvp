@@ -123,6 +123,10 @@ app.use((err, req, res, next) => {
 // ─── Socket.io ────────────────────────────────────────────────────────────────
 initSocket(server);
 
+// ─── Auto-close por inatividade de 24h ───────────────────────────────────────
+const { runAutoClose } = require('./services/autoclose.service');
+setInterval(runAutoClose, 30 * 60 * 1000); // a cada 30 minutos
+
 // ─── Start ────────────────────────────────────────────────────────────────────
 server.listen(PORT, () => {
   console.log(`

@@ -2,7 +2,6 @@
 const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
-const { redistributeConversations } = require('../services/assignment.service');
 
 const prisma = new PrismaClient();
 
@@ -88,11 +87,7 @@ function initSocket(httpServer) {
 
       await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: 'OFFLINE' } });
       io.emit('agent:status', { agentId, onlineStatus: 'OFFLINE' });
-      console.log(`[Inatividade] ⚪ ${name} → OFFLINE por inatividade — redistribuindo...`);
-
-      const redistributed = await redistributeConversations(agentId);
-      for (const { conv } of redistributed) io.emit('conversation:update', conv);
-      console.log(`[Assignment] 🔄 ${redistributed.length} conversa(s) redistribuída(s)`);
+      console.log(`[Inatividade] ⚪ ${name} → OFFLINE por inatividade`);
     });
 
     socket.on('agent:back', async () => {
@@ -131,13 +126,7 @@ function initSocket(httpServer) {
           agentConnections.delete(agentId);
           await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: 'OFFLINE' } });
           io.emit('agent:status', { agentId, onlineStatus: 'OFFLINE' });
-          console.log(`[Assignment] ⚪ ${name} ficou OFFLINE — redistribuindo conversas...`);
-
-          const redistributed = await redistributeConversations(agentId);
-          for (const { conv } of redistributed) {
-            io.emit('conversation:update', conv);
-          }
-          console.log(`[Assignment] 🔄 ${redistributed.length} conversa(s) redistribuída(s)`);
+          console.log(`[Assignment] ⚪ ${name} ficou OFFLINE`);
         }
       }
     });

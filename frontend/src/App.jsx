@@ -1,6 +1,6 @@
 // src/App.jsx
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowUp, ArrowDown, Sticker, MessageSquare, Users, Settings as SettingsIcon, LogOut, Phone, Calendar, Lock, ChevronDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, Sticker, MessageSquare, Users, Settings as SettingsIcon, LogOut, Phone, Calendar, Lock, ChevronDown, Pin } from 'lucide-react';
 import TemplateModal from './components/TemplateModal';
 import { AuthProvider, useAuth, api } from './context/AuthContext';
 import { useSocket, disconnectSocket } from './hooks/useSocket';
@@ -118,14 +118,17 @@ function TypingIndicator({ name }) {
 }
 
 // ─── ConversationItem ─────────────────────────────────────────────────────────
-function ConversationItem({ conv, selected, onClick }) {
+function ConversationItem({ conv, selected, onClick, onPin }) {
   const name   = conv.contact?.name || conv.contact?.phone || 'Desconhecido';
   const hasNew = conv.unreadCount > 0;
+  const [hovered, setHovered] = useState(false);
   const bg     = selected ? 'var(--theme-primary-subtle)' : hasNew ? 'var(--theme-primary-subtle)' : 'transparent';
-  const border = selected || hasNew ? 'var(--theme-primary)' : 'transparent';
+  const border = selected || hasNew ? 'var(--theme-primary)' : conv.pinned ? 'var(--theme-primary)' : 'transparent';
   return (
     <div
       onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', cursor:'pointer', background:bg, borderLeft:`3px solid ${border}`, borderBottom:'1px solid var(--theme-border)', transition:'background 0.1s', boxShadow: hasNew && !selected ? 'inset 3px 0 20px -2px var(--theme-primary)' : 'none' }}
     >
       <div style={{ width:44, height:44, borderRadius:'50%', background:getAvatarColor(name), display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:'#fff', fontSize:15, flexShrink:0 }}>
@@ -133,8 +136,22 @@ function ConversationItem({ conv, selected, onClick }) {
       </div>
       <div style={{ flex:1, minWidth:0 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <span style={{ fontWeight: hasNew ? 700 : 600, fontSize:14, color:'var(--theme-text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</span>
-          <span style={{ fontSize:11, color: hasNew ? 'var(--theme-primary)' : 'var(--theme-text-muted)', fontWeight: hasNew ? 700 : 400, flexShrink:0 }}>{formatTime(conv.lastMessageAt)}</span>
+          <span style={{ fontWeight: hasNew ? 700 : 600, fontSize:14, color:'var(--theme-text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:4, minWidth:0 }}>
+            {conv.pinned && <Pin size={11} style={{ color:'var(--theme-primary)', flexShrink:0 }} />}
+            <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</span>
+          </span>
+          <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0, marginLeft:4 }}>
+            {(hovered || conv.pinned) && onPin && (
+              <button
+                onClick={e => { e.stopPropagation(); onPin(conv.id); }}
+                title={conv.pinned ? 'Remover fixação' : 'Fixar conversa'}
+                style={{ width:18, height:18, borderRadius:3, border:'none', background:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color: conv.pinned ? 'var(--theme-primary)' : 'var(--theme-text-muted)', padding:0, opacity: hovered || conv.pinned ? 1 : 0, transition:'opacity 0.15s' }}
+              >
+                <Pin size={12} />
+              </button>
+            )}
+            <span style={{ fontSize:11, color: hasNew ? 'var(--theme-primary)' : 'var(--theme-text-muted)', fontWeight: hasNew ? 700 : 400 }}>{formatTime(conv.lastMessageAt)}</span>
+          </div>
         </div>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:2 }}>
           <span style={{ fontSize:13, color: hasNew ? 'var(--theme-text)' : 'var(--theme-text-secondary)', fontWeight: hasNew ? 600 : 400, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'80%', display:'flex', alignItems:'center', gap:4 }}>
@@ -700,6 +717,13 @@ function Inbox() {
 
   const handleLogout = async () => { disconnectSocket(); await logout(); };
 
+  const handleTogglePin = async (convId) => {
+    try {
+      const { data } = await api.patch(`/conversations/${convId}/pin`);
+      setConversations(prev => prev.map(c => c.id === convId ? { ...c, pinned: data.pinned } : c));
+    } catch {}
+  };
+
   const handleMessageSent = (convId, content) => {
     setConversations(prev => {
       const idx = prev.findIndex(c => c.id === convId);
@@ -808,7 +832,7 @@ function Inbox() {
                     <ConversationItem key={c.id} conv={c} selected={c.id === selected} onClick={() => {
                       setSelected(c.id);
                       if (c.unreadCount > 0) setConversations(prev => prev.map(x => x.id === c.id ? { ...x, unreadCount: 0 } : x));
-                    }} />
+                    }} onPin={handleTogglePin} />
                   ))
               }
             </div>

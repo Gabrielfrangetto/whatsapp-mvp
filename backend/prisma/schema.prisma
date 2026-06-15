@@ -58,6 +58,7 @@ model Conversation {
   lastMessageAt        DateTime?
   lastMessageDirection String?
   unreadCount   Int        @default(0)
+  pinned        Boolean    @default(false)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 

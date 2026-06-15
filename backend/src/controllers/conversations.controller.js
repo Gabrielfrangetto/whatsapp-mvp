@@ -152,4 +152,23 @@ async function getStats(req, res) {
   }
 }
 
-module.exports = { listConversations, getMessages, sendMessage, updateConversationStatus, getStats };
+async function togglePin(req, res) {
+  try {
+    const { id } = req.params;
+    const conv = await prisma.conversation.findUnique({ where: { id }, select: { pinned: true } });
+    if (!conv) return res.status(404).json({ error: 'Conversa não encontrada' });
+
+    const updated = await prisma.conversation.update({
+      where: { id },
+      data: { pinned: !conv.pinned },
+      include: { contact: true, assignedAgent: { select: { id: true, name: true, avatarColor: true } } },
+    });
+
+    emitConversationUpdate(updated);
+    res.json(updated);
+  } catch (e) {
+    res.status(500).json({ error: 'Erro ao fixar conversa' });
+  }
+}
+
+module.exports = { listConversations, getMessages, sendMessage, updateConversationStatus, getStats, togglePin };

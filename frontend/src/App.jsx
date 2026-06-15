@@ -570,7 +570,7 @@ function Inbox() {
   const { agent, accessToken, logout } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [selected, setSelected]           = useState(null);
-  const [filter, setFilter]               = useState('');
+  const [filter, setFilter]               = useState(() => localStorage.getItem('conversationFilter') || '');
   const [search, setSearch]               = useState('');
   const [stats, setStats]                 = useState({ open:0, pending:0, resolved:0, totalToday:0 });
   const [section, setSection]             = useState('inbox');
@@ -670,12 +670,17 @@ function Inbox() {
 
   const selectedConv = conversations.find(c => c.id === selected) || null;
 
-  const tabs = [
-    { label:'Todas',    value:'' },
-    { label:'Abertas',  value:'OPEN' },
-    { label:'Pendentes',value:'PENDING' },
+  const filterOptions = [
+    { label:'Todas',     value:'' },
+    { label:'Abertas',   value:'OPEN' },
+    { label:'Pendentes', value:'PENDING' },
     { label:'Resolvidas',value:'RESOLVED' },
   ];
+
+  const handleFilterChange = (value) => {
+    setFilter(value);
+    localStorage.setItem('conversationFilter', value);
+  };
 
   return (
     <div style={{ display:'flex', height:'100vh', fontFamily:"'Inter', 'Segoe UI', system-ui, sans-serif", overflow:'hidden', background:'var(--theme-bg)' }}>
@@ -717,14 +722,17 @@ function Inbox() {
               />
             </div>
 
-            {/* Filter tabs */}
-            <div style={{ display:'flex', borderBottom:'1px solid var(--theme-border)' }}>
-              {tabs.map(t => (
-                <button key={t.value} onClick={() => setFilter(t.value)}
-                  style={{ flex:1, padding:'9px 4px', border:'none', background:'none', cursor:'pointer', fontSize:12, fontWeight: filter===t.value ? 600 : 400, color: filter===t.value ? 'var(--theme-primary)' : 'var(--theme-text-secondary)', borderBottom: filter===t.value ? '2px solid var(--theme-primary)' : '2px solid transparent', transition:'all 0.15s' }}>
-                  {t.label}
-                </button>
-              ))}
+            {/* Filter dropdown */}
+            <div style={{ padding:'8px 12px', borderBottom:'1px solid var(--theme-border)' }}>
+              <select
+                value={filter}
+                onChange={e => handleFilterChange(e.target.value)}
+                style={{ width:'100%', padding:'7px 12px', borderRadius:8, border:'1px solid var(--theme-border-strong)', background:'var(--theme-bg-input)', color:'var(--theme-text)', fontSize:13, outline:'none', cursor:'pointer', fontFamily:'inherit' }}
+              >
+                {filterOptions.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
             </div>
 
             {/* Conversation list */}

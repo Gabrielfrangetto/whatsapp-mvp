@@ -735,9 +735,9 @@ function Inbox() {
             <div ref={filterDropdownRef} style={{ position:'relative', padding:'6px 12px', borderBottom:'1px solid var(--theme-border)' }}>
               <button
                 onClick={() => setFilterOpen(v => !v)}
-                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px', borderRadius:8, border:'none', background:'none', color: filter ? 'var(--theme-primary)' : 'var(--theme-text-secondary)', fontSize:13, fontWeight: filter ? 600 : 400, cursor:'pointer', fontFamily:'inherit', transition:'background 0.15s, color 0.15s' }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'var(--theme-primary-subtle)'; e.currentTarget.style.color = 'var(--theme-primary)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = filter ? 'var(--theme-primary)' : 'var(--theme-text-secondary)'; }}
+                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px', borderRadius:8, border:'none', background:'none', color: filter ? 'var(--theme-primary)' : 'var(--theme-text-secondary)', fontSize:13, fontWeight: filter ? 600 : 400, cursor:'pointer', fontFamily:'inherit', transition:'background 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--theme-bg-hover)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
               >
                 <span>{filterOptions.find(o => o.value === filter)?.label}</span>
                 <ChevronDown size={14} strokeWidth={2} style={{ transition:'transform 0.15s', transform: filterOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
@@ -748,9 +748,9 @@ function Inbox() {
                     <button
                       key={o.value}
                       onClick={() => { handleFilterChange(o.value); setFilterOpen(false); }}
-                      style={{ width:'100%', display:'block', padding:'9px 14px', border:'none', background: o.value === filter ? 'var(--theme-primary-subtle)' : 'none', color: o.value === filter ? 'var(--theme-primary)' : 'var(--theme-text)', fontSize:13, fontWeight: o.value === filter ? 600 : 400, cursor:'pointer', textAlign:'left', fontFamily:'inherit', transition:'background 0.12s, color 0.12s' }}
-                      onMouseEnter={e => { if (o.value !== filter) { e.currentTarget.style.background = 'var(--theme-primary-subtle)'; e.currentTarget.style.color = 'var(--theme-primary)'; } }}
-                      onMouseLeave={e => { if (o.value !== filter) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--theme-text)'; } }}
+                      style={{ width:'100%', display:'block', padding:'9px 14px', border:'none', background: o.value === filter ? 'var(--theme-primary-subtle)' : 'none', color: o.value === filter ? 'var(--theme-primary)' : 'var(--theme-text)', fontSize:13, fontWeight: o.value === filter ? 600 : 400, cursor:'pointer', textAlign:'left', fontFamily:'inherit', transition:'background 0.12s' }}
+                      onMouseEnter={e => { if (o.value !== filter) e.currentTarget.style.background = 'var(--theme-bg-hover)'; }}
+                      onMouseLeave={e => { if (o.value !== filter) e.currentTarget.style.background = 'none'; }}
                     >
                       {o.label}
                     </button>

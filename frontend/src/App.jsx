@@ -522,7 +522,7 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
         ) : (
           <div style={{ flex:1, border:'1px solid var(--theme-primary-subtle)', borderRadius:20, padding:'10px 16px', background:'var(--theme-primary-subtle)', display:'flex', alignItems:'center', gap:8, minHeight:42 }}>
             <Lock size={14} strokeWidth={2} style={{ color:'var(--theme-primary)', flexShrink:0 }} />
-            <span style={{ fontSize:13, color:'var(--theme-primary)', fontWeight:500 }}>Janela de 24h encerrada. Envie um template para retomar o contato.</span>
+            <span style={{ fontSize:13, color:'var(--theme-text)', fontWeight:500 }}>Janela de 24h encerrada. Envie um template para retomar o contato.</span>
           </div>
         )}
         <button onClick={() => setShowMedia(true)} disabled={!windowOpen} title="Enviar arquivo"

@@ -11,6 +11,7 @@ import ResolveModal from './components/ResolveModal';
 import StickerPanel from './components/StickerPanel';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import Settings from './pages/Settings';
+import metaLogo from './assets/images/meta_logo.svg';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatTime(dateStr) {
@@ -522,16 +523,7 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
         ) : (
           <div style={{ flex:1, border:'1px solid var(--theme-primary)', borderRadius:16, padding:'10px 18px', background:'var(--theme-primary-subtle)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:4, boxShadow:'0 0 0 1px var(--theme-primary)' }}>
             <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-              <svg width="38" height="15" viewBox="0 0 38 15" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Meta">
-                <path d="M1.5 7.5C1.5 4.7 3.3 2.5 5.5 2.5C7.2 2.5 8.4 3.6 9.8 5.8L11.4 8.4C12.7 10.5 14 12 16 12C18.2 12 20 9.8 20 7C20 4.2 18.2 2 16 2L16 4.5C17 4.5 18 5.6 18 7C18 8.4 17 9.5 16 9.5C14.7 9.5 13.6 8.3 12.4 6.3L10.8 3.7C9.3 1.4 7.7 0 5.5 0C2.2 0 0 3.3 0 7.5C0 11.7 2.2 15 5.5 15L5.5 12.5C3.3 12.5 1.5 10.3 1.5 7.5Z" fill="#0081FB"/>
-                <path d="M20.5 7.5C20.5 4.7 22.3 2.5 24.5 2.5C26.2 2.5 27.4 3.6 28.8 5.8L30.4 8.4C31.7 10.5 33 12 35 12C37.2 12 39 9.8 39 7C39 4.2 37.2 2 35 2L35 4.5C36 4.5 37 5.6 37 7C37 8.4 36 9.5 35 9.5C33.7 9.5 32.6 8.3 31.4 6.3L29.8 3.7C28.3 1.4 26.7 0 24.5 0C21.2 0 19 3.3 19 7.5C19 11.7 21.2 15 24.5 15L24.5 12.5C22.3 12.5 20.5 10.3 20.5 7.5Z" fill="url(#meta-g)"/>
-                <defs>
-                  <linearGradient id="meta-g" x1="19" y1="7.5" x2="39" y2="7.5" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#0081FB"/>
-                    <stop offset="1" stopColor="#0064E0"/>
-                  </linearGradient>
-                </defs>
-              </svg>
+              <img src={metaLogo} alt="Meta" style={{ width:22, height:22, borderRadius:'50%', objectFit:'cover', flexShrink:0 }} />
               <span style={{ fontSize:13, fontWeight:700, color:'var(--theme-text)' }}>Janela de 24h encerrada</span>
             </div>
             <span style={{ fontSize:12, color:'var(--theme-text-secondary)', textAlign:'center', lineHeight:1.5 }}>

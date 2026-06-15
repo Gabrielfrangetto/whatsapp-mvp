@@ -154,15 +154,26 @@ function ConversationItem({ conv, selected, onClick, onPin }) {
       <style>{`
         @keyframes pinOverlay {
           0%   { opacity: 0; }
-          20%  { opacity: 0.28; }
-          70%  { opacity: 0.28; }
+          20%  { opacity: 0.32; }
+          70%  { opacity: 0.32; }
           100% { opacity: 0; }
+        }
+        @keyframes pinIconAnim {
+          0%   { opacity: 0; transform: scale(0.3) rotate(-20deg); }
+          28%  { opacity: 1; transform: scale(1.15) rotate(6deg); }
+          65%  { opacity: 1; transform: scale(1) rotate(0deg); }
+          100% { opacity: 0; transform: scale(0.85); }
         }
       `}</style>
 
-      {/* Overlay fade ao fixar */}
+      {/* Overlay + ícone pin ao fixar — dois elementos irmãos para opacidade independente */}
       {pinAnim && (
-        <div style={{ position:'absolute', inset:0, background:'var(--theme-primary)', pointerEvents:'none', zIndex:20, animation:'pinOverlay 0.75s ease-in-out forwards' }} />
+        <div style={{ position:'absolute', inset:0, pointerEvents:'none', zIndex:20 }}>
+          <div style={{ position:'absolute', inset:0, background:'var(--theme-primary)', animation:'pinOverlay 0.8s ease-in-out forwards' }} />
+          <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', animation:'pinIconAnim 0.8s ease-in-out forwards' }}>
+            <Pin size={28} style={{ color:'#fff', filter:'drop-shadow(0 2px 6px rgba(0,0,0,0.25))' }} />
+          </div>
+        </div>
       )}
 
       {/* Indicador de fixado — canto superior esquerdo, absoluto */}

@@ -8,6 +8,8 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 
+const path = require('path');
+
 const webhookRoutes = require('./routes/webhook.routes');
 const mediaRoutes = require('./routes/media.routes');
 const conversationsRoutes = require('./routes/conversations.routes');
@@ -74,6 +76,10 @@ app.get('/migrate', async (req, res) => {
   }
 });
 
+// ─── Frontend estático ────────────────────────────────────────────────────────
+const frontendDist = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendDist));
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 // Webhook: sem autenticação (Meta não envia tokens)
 app.use('/webhook', webhookRoutes);
@@ -90,11 +96,12 @@ app.use('/api/conversations', apiLimiter, requireAuth, conversationsRoutes);
 app.use('/api/stickers', apiLimiter, stickersRoutes);
 app.use('/api/resolution', apiLimiter, resolutionRoutes);
 
-// ─── Error Handler ────────────────────────────────────────────────────────────
-app.use((req, res) => {
-  res.status(404).json({ error: `Rota não encontrada: ${req.method} ${req.path}` });
+// ─── SPA fallback ────────────────────────────────────────────────────────────
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendDist, 'index.html'));
 });
 
+// ─── Error Handler ────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('[Error]', err.stack);
   res.status(500).json({

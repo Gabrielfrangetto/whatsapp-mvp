@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/server.js",
   "scripts": {
-    "start": "prisma generate && prisma db push && node src/server.js",
+    "start": "cd ../frontend && npm install && npm run build && cd ../backend && prisma generate && prisma db push && node src/server.js",
     "dev": "nodemon src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",

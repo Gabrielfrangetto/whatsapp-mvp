@@ -1,6 +1,6 @@
 // src/App.jsx
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowUp, ArrowDown, Sticker, MessageSquare, Users, Settings as SettingsIcon, LogOut, Phone, Calendar } from 'lucide-react';
+import { ArrowUp, ArrowDown, Sticker, MessageSquare, Users, Settings as SettingsIcon, LogOut, Phone, Calendar, Lock } from 'lucide-react';
 import TemplateModal from './components/TemplateModal';
 import { AuthProvider, useAuth, api } from './context/AuthContext';
 import { useSocket, disconnectSocket } from './hooks/useSocket';
@@ -520,9 +520,9 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
             style={{ flex:1, resize:'none', border:'1px solid var(--theme-border)', borderRadius:20, padding:'10px 16px', fontSize:14, outline:'none', background:'var(--theme-bg-input)', color:'var(--theme-text)', maxHeight:120, overflowY:'auto', lineHeight:1.5, fontFamily:'inherit' }}
           />
         ) : (
-          <div style={{ flex:1, border:'1px solid rgba(245,158,11,0.35)', borderRadius:20, padding:'10px 16px', background:'rgba(245,158,11,0.06)', display:'flex', alignItems:'center', gap:8, minHeight:42 }}>
-            <span style={{ fontSize:15 }}>🔒</span>
-            <span style={{ fontSize:13, color:'#D97706', fontWeight:500 }}>Janela de 24h encerrada — apenas templates podem ser enviados</span>
+          <div style={{ flex:1, border:'1px solid var(--theme-primary-subtle)', borderRadius:20, padding:'10px 16px', background:'var(--theme-primary-subtle)', display:'flex', alignItems:'center', gap:8, minHeight:42 }}>
+            <Lock size={14} strokeWidth={2} style={{ color:'var(--theme-primary)', flexShrink:0 }} />
+            <span style={{ fontSize:13, color:'var(--theme-primary)', fontWeight:500 }}>Janela de 24h encerrada. Envie um template para retomar o contato.</span>
           </div>
         )}
         <button onClick={() => setShowMedia(true)} disabled={!windowOpen} title="Enviar arquivo"

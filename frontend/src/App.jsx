@@ -1,6 +1,6 @@
 // src/App.jsx
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowUp, ArrowDown, Sticker } from 'lucide-react';
+import { ArrowUp, ArrowDown, Sticker, MessageSquare, Users, Settings as SettingsIcon, LogOut, Phone, Calendar } from 'lucide-react';
 import TemplateModal from './components/TemplateModal';
 import { AuthProvider, useAuth, api } from './context/AuthContext';
 import { useSocket, disconnectSocket } from './hooks/useSocket';
@@ -81,9 +81,7 @@ function MessageBubble({ message }) {
         {isImage && message.direction === 'INBOUND' && (
           <a
             href={`${import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app'}/api/media/${message.mediaUrl}`}
-            download
-            target="_blank"
-            rel="noreferrer"
+            download target="_blank" rel="noreferrer"
             style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:4, fontSize:11, color:'var(--theme-text-muted)', textDecoration:'none', padding:'4px 8px', marginTop:2, borderRadius:6, background:'rgba(0,0,0,0.04)', width:'fit-content', marginLeft:'auto', marginRight:4 }}
           >
             ⬇ Salvar
@@ -120,14 +118,14 @@ function TypingIndicator({ name }) {
 
 // ─── ConversationItem ─────────────────────────────────────────────────────────
 function ConversationItem({ conv, selected, onClick }) {
-  const name    = conv.contact?.name || conv.contact?.phone || 'Desconhecido';
-  const hasNew  = conv.unreadCount > 0;
-  const bg      = selected ? 'var(--theme-primary-subtle)' : hasNew ? 'var(--theme-primary-subtle)' : 'transparent';
-  const border  = selected || hasNew ? 'var(--theme-primary)' : 'transparent';
+  const name   = conv.contact?.name || conv.contact?.phone || 'Desconhecido';
+  const hasNew = conv.unreadCount > 0;
+  const bg     = selected ? 'var(--theme-primary-subtle)' : hasNew ? 'var(--theme-primary-subtle)' : 'transparent';
+  const border = selected || hasNew ? 'var(--theme-primary)' : 'transparent';
   return (
     <div
       onClick={onClick}
-      style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', cursor:'pointer', background: bg, borderLeft: `3px solid ${border}`, borderBottom:'1px solid var(--theme-border)', transition:'background 0.1s', boxShadow: hasNew && !selected ? 'inset 3px 0 20px -2px var(--theme-primary)' : 'none' }}
+      style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 16px', cursor:'pointer', background:bg, borderLeft:`3px solid ${border}`, borderBottom:'1px solid var(--theme-border)', transition:'background 0.1s', boxShadow: hasNew && !selected ? 'inset 3px 0 20px -2px var(--theme-primary)' : 'none' }}
     >
       <div style={{ width:44, height:44, borderRadius:'50%', background:getAvatarColor(name), display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:'#fff', fontSize:15, flexShrink:0 }}>
         {getInitials(name)}
@@ -152,6 +150,167 @@ function ConversationItem({ conv, selected, onClick }) {
             <span style={{ background:'var(--theme-primary)', color:'var(--theme-primary-text)', borderRadius:20, padding:'1px 7px', fontSize:11, fontWeight:700 }}>{conv.unreadCount}</span>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── NavRailButton ────────────────────────────────────────────────────────────
+function NavRailButton({ icon, label, onClick, active }) {
+  return (
+    <button
+      onClick={onClick}
+      title={label}
+      style={{
+        width:44, height:44, borderRadius:10,
+        background: active ? 'rgba(255,255,255,0.18)' : 'transparent',
+        border:'none', cursor:'pointer',
+        display:'flex', alignItems:'center', justifyContent:'center',
+        color: active ? '#fff' : 'rgba(255,255,255,0.5)',
+        transition:'background 0.15s, color 0.15s',
+      }}
+    >
+      {icon}
+    </button>
+  );
+}
+
+// ─── NavRail ──────────────────────────────────────────────────────────────────
+function NavRail({ section, onSection, agent, onSettings, onLogout }) {
+  const { color, mode } = useTheme();
+
+  const navBg = (() => {
+    if (mode === 'dark') return '#0d1117';
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return `rgb(${Math.max(0,r-55)},${Math.max(0,g-55)},${Math.max(0,b-55)})`;
+  })();
+
+  return (
+    <div style={{ width:64, background:navBg, display:'flex', flexDirection:'column', alignItems:'center', paddingTop:12, paddingBottom:12, gap:2, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.3)', zIndex:10 }}>
+
+      {/* App logo */}
+      <div style={{ width:40, height:40, borderRadius:12, background:'var(--theme-primary)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:20, marginBottom:12, flexShrink:0 }}>
+        💬
+      </div>
+
+      {/* Navigation */}
+      <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }}>
+        <NavRailButton
+          icon={<MessageSquare size={20} />}
+          label="Inbox"
+          active={section === 'inbox'}
+          onClick={() => onSection('inbox')}
+        />
+        {agent?.role === 'ADMIN' && (
+          <NavRailButton
+            icon={<Users size={20} />}
+            label="Agentes"
+            active={section === 'agents'}
+            onClick={() => onSection('agents')}
+          />
+        )}
+      </div>
+
+      {/* Bottom: settings, logout, avatar */}
+      <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
+        <NavRailButton icon={<SettingsIcon size={20} />} label="Configurações" onClick={onSettings} />
+        <NavRailButton icon={<LogOut size={18} />} label="Sair" onClick={onLogout} />
+        <div style={{ width:1, height:8, background:'rgba(255,255,255,0.12)', borderRadius:1, margin:'2px 0' }} />
+        <div
+          style={{ width:40, height:40, borderRadius:'50%', background:agent?.avatarColor || 'var(--theme-primary)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:13, overflow:'hidden', position:'relative', border:`2px solid rgba(255,255,255,0.2)`, flexShrink:0 }}
+          title={`${agent?.name} • ${agent?.role === 'ADMIN' ? 'Admin' : 'Agente'}`}
+        >
+          {agent?.avatarUrl
+            ? <img src={agent.avatarUrl} alt="avatar" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+            : getInitials(agent?.name || '')
+          }
+          <div style={{ position:'absolute', bottom:1, right:1, width:10, height:10, borderRadius:'50%', background:'#4ade80', border:`2px solid ${navBg}` }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── ContactDetailsPanel ──────────────────────────────────────────────────────
+function ContactDetailsPanel({ conv }) {
+  if (!conv) {
+    return (
+      <div style={{ width:260, background:'var(--theme-bg-sidebar)', borderLeft:'1px solid var(--theme-border)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14, padding:'0 24px', flexShrink:0 }}>
+        <div style={{ fontSize:44, opacity:.18 }}>👤</div>
+        <p style={{ color:'var(--theme-text-muted)', fontSize:13, textAlign:'center', margin:0, lineHeight:1.7 }}>
+          Selecione uma conversa para ver os detalhes do contato
+        </p>
+      </div>
+    );
+  }
+
+  const name  = conv.contact?.name || conv.contact?.phone || 'Desconhecido';
+  const phone = conv.contact?.phone;
+
+  return (
+    <div style={{ width:260, background:'var(--theme-bg-sidebar)', borderLeft:'1px solid var(--theme-border)', display:'flex', flexDirection:'column', overflowY:'auto', flexShrink:0 }}>
+
+      {/* Contact header */}
+      <div style={{ padding:'28px 16px 20px', display:'flex', flexDirection:'column', alignItems:'center', gap:10, borderBottom:'1px solid var(--theme-border)' }}>
+        <div style={{ width:68, height:68, borderRadius:'50%', background:getAvatarColor(name), display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:'#fff', fontSize:24 }}>
+          {getInitials(name)}
+        </div>
+        <div style={{ textAlign:'center' }}>
+          <div style={{ fontWeight:700, fontSize:15, color:'var(--theme-text)' }}>{name}</div>
+          {phone && (
+            <div style={{ fontSize:12, color:'var(--theme-text-muted)', marginTop:5, display:'flex', alignItems:'center', justifyContent:'center', gap:4 }}>
+              <Phone size={11} />
+              {phone}
+            </div>
+          )}
+        </div>
+        <StatusBadge status={conv.status} />
+      </div>
+
+      {/* Conversation details */}
+      <div style={{ padding:'18px 16px', display:'flex', flexDirection:'column', gap:16 }}>
+        <div style={{ fontSize:11, fontWeight:600, color:'var(--theme-text-muted)', textTransform:'uppercase', letterSpacing:'0.06em' }}>Conversa</div>
+
+        {conv.createdAt && (
+          <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
+            <Calendar size={15} style={{ color:'var(--theme-text-muted)', flexShrink:0, marginTop:2 }} />
+            <div>
+              <div style={{ fontSize:11, color:'var(--theme-text-muted)' }}>Iniciada em</div>
+              <div style={{ fontSize:13, color:'var(--theme-text-secondary)', marginTop:2 }}>
+                {new Date(conv.createdAt).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {conv.lastMessageAt && (
+          <div style={{ display:'flex', alignItems:'flex-start', gap:10 }}>
+            <MessageSquare size={15} style={{ color:'var(--theme-text-muted)', flexShrink:0, marginTop:2 }} />
+            <div>
+              <div style={{ fontSize:11, color:'var(--theme-text-muted)' }}>Última atividade</div>
+              <div style={{ fontSize:13, color:'var(--theme-text-secondary)', marginTop:2 }}>
+                {formatTime(conv.lastMessageAt)}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {conv.assignedAgent && (
+          <>
+            <div style={{ fontSize:11, fontWeight:600, color:'var(--theme-text-muted)', textTransform:'uppercase', letterSpacing:'0.06em', marginTop:4 }}>Atendente</div>
+            <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+              <div style={{ width:32, height:32, borderRadius:'50%', background:conv.assignedAgent.avatarColor || 'var(--theme-primary)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:11, flexShrink:0 }}>
+                {getInitials(conv.assignedAgent.name)}
+              </div>
+              <div>
+                <div style={{ fontSize:13, color:'var(--theme-text)', fontWeight:600 }}>{conv.assignedAgent.name}</div>
+                <div style={{ fontSize:11, color:'var(--theme-text-muted)' }}>Responsável</div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -280,7 +439,7 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
 
   if (!conversationId) return (
     <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'var(--theme-bg-chat)', gap:16 }}>
-      <div style={{ fontSize:64, opacity:.4 }}>💬</div>
+      <div style={{ fontSize:64, opacity:.3 }}>💬</div>
       <p style={{ color:'var(--theme-text)', fontSize:16, fontWeight:500, margin:0 }}>Selecione uma conversa</p>
       <p style={{ color:'var(--theme-text-secondary)', fontSize:14, margin:0 }}>Escolha uma conversa na lista ao lado</p>
     </div>
@@ -313,12 +472,6 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
         {messages.map(m => <MessageBubble key={m.id} message={m} />)}
         {typingAgent && <TypingIndicator name={typingAgent} />}
         <div ref={bottomRef} />
-      </div>
-
-      {/* Agent strip */}
-      <div style={{ padding:'5px 20px', background:'var(--theme-bg-tertiary)', borderTop:'1px solid var(--theme-border)', fontSize:12, color:'var(--theme-text-secondary)', display:'flex', alignItems:'center', gap:6 }}>
-        <div style={{ width:7, height:7, borderRadius:'50%', background:'var(--theme-primary)' }} />
-        Respondendo como <strong style={{ color:'var(--theme-text)', marginLeft:3 }}>{agent?.name}</strong>
       </div>
 
       {/* Pasted image preview */}
@@ -391,8 +544,9 @@ function Inbox() {
   const [filter, setFilter]               = useState('');
   const [search, setSearch]               = useState('');
   const [stats, setStats]                 = useState({ open:0, pending:0, resolved:0, totalToday:0 });
-  const { loadPreferences }               = useTheme();
+  const [section, setSection]             = useState('inbox');
   const [showSettings, setShowSettings]   = useState(false);
+  const { loadPreferences }               = useTheme();
   const chatHandlersRef = useRef(null);
 
   useEffect(() => { if (agent) loadPreferences(agent); }, [agent]);
@@ -412,13 +566,33 @@ function Inbox() {
       setConversations(prev => {
         const idx = prev.findIndex(c => c.id === conv.id);
         if (idx === -1) return prev;
+        const oldStatus = prev[idx].status;
+        if (oldStatus !== conv.status) {
+          const key = { OPEN: 'open', PENDING: 'pending', RESOLVED: 'resolved' };
+          setStats(s => {
+            const next = { ...s };
+            if (key[oldStatus] !== undefined) next[key[oldStatus]] = Math.max(0, next[key[oldStatus]] - 1);
+            if (key[conv.status] !== undefined) next[key[conv.status]] = next[key[conv.status]] + 1;
+            return next;
+          });
+        }
         const next = [...prev];
         next[idx] = { ...next[idx], ...conv };
         return next.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
       });
     },
     onNewConversation: (conv) => {
-      setConversations(prev => prev.find(c => c.id === conv.id) ? prev : [conv, ...prev]);
+      setConversations(prev => {
+        if (prev.find(c => c.id === conv.id)) return prev;
+        const isToday = new Date(conv.createdAt).toDateString() === new Date().toDateString();
+        const key = { OPEN: 'open', PENDING: 'pending', RESOLVED: 'resolved' };
+        setStats(s => ({
+          ...s,
+          totalToday: isToday ? s.totalToday + 1 : s.totalToday,
+          ...(key[conv.status] !== undefined ? { [key[conv.status]]: s[key[conv.status]] + 1 } : {}),
+        }));
+        return [conv, ...prev];
+      });
     },
     onMessageStatus:   (data) => chatHandlersRef.current?.handleStatus(data),
     onTyping:          (data) => chatHandlersRef.current?.handleTyping(data),
@@ -465,107 +639,93 @@ function Inbox() {
     return name.toLowerCase().includes(search.toLowerCase());
   });
 
-  const statItems = [
-    ['Abertas', stats.open, '#25D366'],
-    ['Pendentes', stats.pending, '#F59E0B'],
-    ['Hoje', stats.totalToday, 'var(--theme-primary)'],
-  ];
+  const selectedConv = conversations.find(c => c.id === selected) || null;
 
   const tabs = [
-    { label:'Todas', value:'' },
-    { label:'Abertas', value:'OPEN' },
-    { label:'Pendentes', value:'PENDING' },
-    { label:'Resolvidas', value:'RESOLVED' },
+    { label:'Todas',    value:'' },
+    { label:'Abertas',  value:'OPEN' },
+    { label:'Pendentes',value:'PENDING' },
+    { label:'Resolvidas',value:'RESOLVED' },
   ];
 
   return (
     <div style={{ display:'flex', height:'100vh', fontFamily:"'Inter', 'Segoe UI', system-ui, sans-serif", overflow:'hidden', background:'var(--theme-bg)' }}>
-      {/* Sidebar */}
-      <div style={{ width:320, minWidth:260, display:'flex', flexDirection:'column', background:'var(--theme-bg-sidebar)', borderRight:'1px solid var(--theme-border)' }}>
-        {/* Header */}
-        <div style={{ background:'var(--theme-primary)', padding:'14px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <div style={{ width:44, height:44, borderRadius:'50%', background: agent?.avatarColor || 'var(--theme-primary-light)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:'#fff', fontSize:14, flexShrink:0, border:'2px solid rgba(255,255,255,0.3)', overflow:'hidden' }}>
-              {agent?.avatarUrl
-                ? <img src={agent.avatarUrl} alt="avatar" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-                : getInitials(agent?.name || '')
+
+      {/* Pane 1 — Nav Rail */}
+      <NavRail
+        section={section}
+        onSection={setSection}
+        agent={agent}
+        onSettings={() => setShowSettings(true)}
+        onLogout={handleLogout}
+      />
+
+      {section === 'inbox' && (
+        <>
+          {/* Pane 2 — Conversation List */}
+          <div style={{ width:300, minWidth:240, display:'flex', flexDirection:'column', background:'var(--theme-bg-sidebar)', borderRight:'1px solid var(--theme-border)', flexShrink:0 }}>
+
+            {/* Header */}
+            <div style={{ padding:'14px 20px 12px', borderBottom:'1px solid var(--theme-border)' }}>
+              <div style={{ fontWeight:700, fontSize:16, color:'var(--theme-text)' }}>Inbox</div>
+            </div>
+
+            {/* Stats */}
+            <div style={{ display:'flex', borderBottom:'1px solid var(--theme-border)' }}>
+              {[['Abertas', stats.open, '#25D366'], ['Pendentes', stats.pending, '#F59E0B'], ['Hoje', stats.totalToday, 'var(--theme-primary)']].map(([label, val, color]) => (
+                <div key={label} style={{ flex:1, padding:'10px 0', textAlign:'center', borderRight:'1px solid var(--theme-border)' }}>
+                  <div style={{ fontWeight:700, fontSize:16, color }}>{val}</div>
+                  <div style={{ fontSize:10, color:'var(--theme-text-muted)', marginTop:1 }}>{label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Search */}
+            <div style={{ padding:'10px 12px', borderBottom:'1px solid var(--theme-border)' }}>
+              <input
+                type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Pesquisar..."
+                style={{ width:'100%', padding:'8px 14px', borderRadius:20, border:'1px solid var(--theme-border)', outline:'none', fontSize:13, background:'var(--theme-bg-input)', color:'var(--theme-text)', boxSizing:'border-box' }}
+              />
+            </div>
+
+            {/* Filter tabs */}
+            <div style={{ display:'flex', borderBottom:'1px solid var(--theme-border)' }}>
+              {tabs.map(t => (
+                <button key={t.value} onClick={() => setFilter(t.value)}
+                  style={{ flex:1, padding:'9px 4px', border:'none', background:'none', cursor:'pointer', fontSize:12, fontWeight: filter===t.value ? 600 : 400, color: filter===t.value ? 'var(--theme-primary)' : 'var(--theme-text-secondary)', borderBottom: filter===t.value ? '2px solid var(--theme-primary)' : '2px solid transparent', transition:'all 0.15s' }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Conversation list */}
+            <div style={{ flex:1, overflowY:'auto' }}>
+              {filtered.length === 0
+                ? <div style={{ textAlign:'center', color:'var(--theme-text-muted)', padding:'40px 20px', fontSize:13 }}>Nenhuma conversa</div>
+                : filtered.map(c => (
+                    <ConversationItem key={c.id} conv={c} selected={c.id === selected} onClick={() => {
+                      setSelected(c.id);
+                      if (c.unreadCount > 0) setConversations(prev => prev.map(x => x.id === c.id ? { ...x, unreadCount: 0 } : x));
+                    }} />
+                  ))
               }
             </div>
-            <div>
-              <div style={{ fontWeight:600, fontSize:14, color:'var(--theme-header-text)' }}>WhatsApp MVP</div>
-              <div style={{ fontSize:10, color:'var(--theme-header-sub)', display:'flex', alignItems:'center', gap:4, marginTop:1 }}>
-                <span style={{ width:5, height:5, borderRadius:'50%', background:'#4ade80', display:'inline-block' }} />
-                Tempo real ativo
-              </div>
-            </div>
           </div>
-          <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-            <div style={{ textAlign:'right', marginRight:4 }}>
-              <div style={{ fontSize:12, color:'var(--theme-header-text)', fontWeight:500, opacity:.9 }}>{agent?.name}</div>
-              <div style={{ fontSize:10, color:'var(--theme-header-sub)' }}>{agent?.role === 'ADMIN' ? 'Admin' : 'Agente'}</div>
-            </div>
-            <button onClick={() => setShowSettings(true)} title="Aparência"
-              style={{ width:28, height:28, borderRadius:6, background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.2)', cursor:'pointer', color:'var(--theme-header-text)', fontSize:13, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-              ⚙
-            </button>
-          </div>
+
+          {/* Pane 3 — Chat */}
+          <ChatPanel conversationId={selected} socketControls={socketControls} onMessageSent={handleMessageSent} />
+
+          {/* Pane 4 — Contact Details */}
+          <ContactDetailsPanel conv={selectedConv} />
+        </>
+      )}
+
+      {section === 'agents' && (
+        <div style={{ flex:1, overflow:'hidden' }}>
+          <Agents />
         </div>
+      )}
 
-        {/* Stats */}
-        <div style={{ display:'flex', borderBottom:'1px solid var(--theme-border)', background:'var(--theme-bg-sidebar)' }}>
-          {statItems.map(([label, val, color]) => (
-            <div key={label} style={{ flex:1, padding:'10px 0', textAlign:'center', borderRight:'1px solid var(--theme-border)' }}>
-              <div style={{ fontWeight:600, fontSize:16, color }}>{val}</div>
-              <div style={{ fontSize:10, color:'var(--theme-text-muted)', marginTop:1 }}>{label}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Search */}
-        <div style={{ padding:'10px 12px', background:'var(--theme-bg-tertiary)', borderBottom:'1px solid var(--theme-border)' }}>
-          <input
-            type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Pesquisar..."
-            style={{ width:'100%', padding:'8px 14px', borderRadius:20, border:'1px solid var(--theme-border)', outline:'none', fontSize:13, background:'var(--theme-bg-input)', color:'var(--theme-text)', boxSizing:'border-box' }}
-          />
-        </div>
-
-        {/* Tabs */}
-        <div style={{ display:'flex', borderBottom:'1px solid var(--theme-border)', background:'var(--theme-bg-sidebar)' }}>
-          {tabs.map(t => (
-            <button key={t.value} onClick={() => setFilter(t.value)}
-              style={{ flex:1, padding:'9px 4px', border:'none', background:'none', cursor:'pointer', fontSize:12, fontWeight: filter===t.value ? 600 : 400, color: filter===t.value ? 'var(--theme-primary)' : 'var(--theme-text-secondary)', borderBottom: filter===t.value ? '2px solid var(--theme-primary)' : '2px solid transparent', transition:'all 0.15s' }}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Conversation list */}
-        <div style={{ flex:1, overflowY:'auto' }}>
-          {filtered.length === 0
-            ? <div style={{ textAlign:'center', color:'var(--theme-text-muted)', padding:'40px 20px', fontSize:13 }}>Nenhuma conversa</div>
-            : filtered.map(c => <ConversationItem key={c.id} conv={c} selected={c.id === selected} onClick={() => {
-                setSelected(c.id);
-                if (c.unreadCount > 0) setConversations(prev => prev.map(x => x.id === c.id ? { ...x, unreadCount: 0 } : x));
-              }} />)
-          }
-        </div>
-
-        {/* Admin nav */}
-        {agent?.role === 'ADMIN' && (
-          <div style={{ borderTop:'1px solid var(--theme-border)', padding:'10px 12px', background:'var(--theme-bg-sidebar)' }}>
-            <button onClick={() => setSelected('__agents__')}
-              style={{ width:'100%', padding:'8px 14px', borderRadius:8, border:'1px solid var(--theme-border)', background: selected==='__agents__' ? 'var(--theme-primary-subtle)' : 'transparent', cursor:'pointer', fontSize:13, color: selected==='__agents__' ? 'var(--theme-primary)' : 'var(--theme-text-secondary)', fontWeight: selected==='__agents__' ? 600 : 400, display:'flex', alignItems:'center', gap:8, transition:'all 0.15s' }}>
-              👥 Gerenciar Agentes
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Main panel */}
-      {selected === '__agents__'
-        ? <Agents />
-        : <ChatPanel conversationId={selected} socketControls={socketControls} onMessageSent={handleMessageSent} />
-      }
       {showSettings && <Settings onClose={() => setShowSettings(false)} />}
     </div>
   );

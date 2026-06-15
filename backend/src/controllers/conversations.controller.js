@@ -127,6 +127,7 @@ async function updateConversationStatus(req, res) {
       include: { contact: true, assignedAgent: { select: { id: true, name: true } } },
     });
 
+    emitConversationUpdate(conversation);
     res.json(conversation);
   } catch (e) {
     res.status(500).json({ error: 'Erro ao atualizar conversa' });
@@ -135,13 +136,15 @@ async function updateConversationStatus(req, res) {
 
 async function getStats(req, res) {
   try {
+    const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
+
     const [open, pending, resolved, totalToday] = await Promise.all([
       prisma.conversation.count({ where: { status: 'OPEN' } }),
       prisma.conversation.count({ where: { status: 'PENDING' } }),
       prisma.conversation.count({ where: { status: 'RESOLVED' } }),
-      prisma.message.count({
-        where: { createdAt: { gte: new Date(new Date().setHours(0,0,0,0)) }, direction: 'INBOUND' },
-      }),
+      prisma.conversation.count({ where: { createdAt: { gte: startOfDay } } }),
+      // futuro — estatísticas avançadas:
+      // prisma.message.count({ where: { createdAt: { gte: startOfDay }, direction: 'INBOUND' } }),
     ]);
     res.json({ open, pending, resolved, totalToday });
   } catch (e) {

@@ -137,7 +137,7 @@ function ConversationItem({ conv, selected, onClick, onPin }) {
     e.stopPropagation();
     setMenuOpen(false);
     setPinAnim(true);
-    setTimeout(() => setPinAnim(false), 700);
+    setTimeout(() => setPinAnim(false), 800);
     onPin(conv.id);
   };
 
@@ -152,18 +152,22 @@ function ConversationItem({ conv, selected, onClick, onPin }) {
       style={{ position:'relative', display:'flex', alignItems:'center', gap:12, padding:'12px 16px', cursor:'pointer', background:bg, borderLeft:`3px solid ${border}`, borderBottom:'1px solid var(--theme-border)', transition:'background 0.1s', boxShadow: hasNew && !selected ? 'inset 3px 0 20px -2px var(--theme-primary)' : 'none' }}
     >
       <style>{`
-        @keyframes pinPop {
-          0%   { transform: scale(0.3) rotate(-15deg); opacity: 0; }
-          45%  { transform: scale(1.4) rotate(8deg);  opacity: 1; }
-          100% { transform: scale(1)   rotate(0deg);  opacity: 0; }
+        @keyframes pinOverlay {
+          0%   { opacity: 0; }
+          20%  { opacity: 0.28; }
+          70%  { opacity: 0.28; }
+          100% { opacity: 0; }
         }
       `}</style>
 
-      {/* Animação de pin */}
+      {/* Overlay fade ao fixar */}
       {pinAnim && (
-        <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', pointerEvents:'none', zIndex:20 }}>
-          <Pin size={30} style={{ color:'var(--theme-primary)', animation:'pinPop 0.65s ease-out forwards', filter:'drop-shadow(0 2px 6px rgba(0,0,0,0.2))' }} />
-        </div>
+        <div style={{ position:'absolute', inset:0, background:'var(--theme-primary)', pointerEvents:'none', zIndex:20, animation:'pinOverlay 0.75s ease-in-out forwards' }} />
+      )}
+
+      {/* Indicador de fixado — canto superior esquerdo, absoluto */}
+      {conv.pinned && (
+        <Pin size={10} style={{ position:'absolute', top:5, left:8, color:'var(--theme-primary)', display:'block', zIndex:5 }} />
       )}
 
       {/* Avatar */}
@@ -174,11 +178,10 @@ function ConversationItem({ conv, selected, onClick, onPin }) {
       {/* Conteúdo */}
       <div style={{ flex:1, minWidth:0 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <span style={{ fontWeight: hasNew ? 700 : 600, fontSize:14, color:'var(--theme-text)', display:'flex', alignItems:'center', gap:4, minWidth:0, overflow:'hidden' }}>
-            {conv.pinned && <Pin size={11} style={{ color:'var(--theme-primary)', flexShrink:0 }} />}
-            <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</span>
+          <span style={{ fontWeight: hasNew ? 700 : 600, fontSize:14, color:'var(--theme-text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</span>
+          <span style={{ fontSize:11, color: hasNew ? 'var(--theme-primary)' : 'var(--theme-text-muted)', fontWeight: hasNew ? 700 : 400, flexShrink:0, marginLeft:4, opacity: hovered ? 0 : 1, transition:'opacity 0.15s' }}>
+            {formatTime(conv.lastMessageAt)}
           </span>
-          <span style={{ fontSize:11, color: hasNew ? 'var(--theme-primary)' : 'var(--theme-text-muted)', fontWeight: hasNew ? 700 : 400, flexShrink:0, marginLeft:4 }}>{formatTime(conv.lastMessageAt)}</span>
         </div>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:2 }}>
           <span style={{ fontSize:13, color: hasNew ? 'var(--theme-text)' : 'var(--theme-text-secondary)', fontWeight: hasNew ? 600 : 400, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', maxWidth:'80%', display:'flex', alignItems:'center', gap:4 }}>
@@ -197,7 +200,7 @@ function ConversationItem({ conv, selected, onClick, onPin }) {
         </div>
       </div>
 
-      {/* Dropdown trigger (aparece no hover) */}
+      {/* Dropdown trigger */}
       {hovered && onPin && (
         <div ref={menuRef} style={{ position:'absolute', top:6, right:8, zIndex:10 }}>
           <button

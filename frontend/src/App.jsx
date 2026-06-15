@@ -503,50 +503,38 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
         </div>
       )}
 
-      {/* Janela encerrada */}
-      {!windowOpen && (
-        <div style={{ background:'rgba(245,158,11,0.08)', borderTop:'2px solid rgba(245,158,11,0.25)', padding:'14px 20px', display:'flex', alignItems:'center', gap:14 }}>
-          <div style={{ fontSize:22, flexShrink:0 }}>🔒</div>
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{ fontSize:13, fontWeight:600, color:'#D97706' }}>Janela de 24h encerrada</div>
-            <div style={{ fontSize:12, color:'var(--theme-text-muted)', marginTop:2, lineHeight:1.5 }}>
-              O cliente não respondeu nas últimas 24h. Apenas templates oficiais podem ser enviados.
-            </div>
-          </div>
-          <button
-            onClick={() => setShowTemplates(true)}
-            style={{ background:'var(--theme-primary)', color:'var(--theme-primary-text)', border:'none', borderRadius:8, padding:'8px 16px', cursor:'pointer', fontSize:13, fontWeight:600, flexShrink:0, whiteSpace:'nowrap' }}
-          >
-            📋 Enviar Template
-          </button>
-        </div>
-      )}
-
-      {/* Input — só exibido quando a janela está aberta */}
-      {windowOpen && (
+      {/* Input */}
       <div style={{ background:'var(--theme-bg-tertiary)', padding:'10px 16px', display:'flex', alignItems:'flex-end', gap:8, borderTop:'1px solid var(--theme-border)' }}>
         <button onClick={() => setShowTemplates(true)} title="Enviar template"
           style={{ width:40, height:40, borderRadius:'50%', border:'1px solid var(--theme-border)', background:'var(--theme-bg-input)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, color:'var(--theme-text-secondary)' }}>
           📋
         </button>
-        <textarea
-          value={text}
-          onChange={handleTextChange}
-          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (text.trim() || pastedImage) handleSend(); } }}
-          onPaste={handlePaste}
-          placeholder="Digite uma mensagem..."
-          rows={1}
-          style={{ flex:1, resize:'none', border:'1px solid var(--theme-border)', borderRadius:20, padding:'10px 16px', fontSize:14, outline:'none', background:'var(--theme-bg-input)', color:'var(--theme-text)', maxHeight:120, overflowY:'auto', lineHeight:1.5, fontFamily:'inherit' }}
-        />
-        <button onClick={() => setShowMedia(true)} title="Enviar arquivo"
-          style={{ width:40, height:40, borderRadius:'50%', border:'1px solid var(--theme-border)', background:'var(--theme-bg-input)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, color:'var(--theme-text-secondary)' }}>
+        {windowOpen ? (
+          <textarea
+            value={text}
+            onChange={handleTextChange}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (text.trim() || pastedImage) handleSend(); } }}
+            onPaste={handlePaste}
+            placeholder="Digite uma mensagem..."
+            rows={1}
+            style={{ flex:1, resize:'none', border:'1px solid var(--theme-border)', borderRadius:20, padding:'10px 16px', fontSize:14, outline:'none', background:'var(--theme-bg-input)', color:'var(--theme-text)', maxHeight:120, overflowY:'auto', lineHeight:1.5, fontFamily:'inherit' }}
+          />
+        ) : (
+          <div style={{ flex:1, border:'1px solid rgba(245,158,11,0.35)', borderRadius:20, padding:'10px 16px', background:'rgba(245,158,11,0.06)', display:'flex', alignItems:'center', gap:8, minHeight:42 }}>
+            <span style={{ fontSize:15 }}>🔒</span>
+            <span style={{ fontSize:13, color:'#D97706', fontWeight:500 }}>Janela de 24h encerrada — apenas templates podem ser enviados</span>
+          </div>
+        )}
+        <button onClick={() => setShowMedia(true)} disabled={!windowOpen} title="Enviar arquivo"
+          style={{ width:40, height:40, borderRadius:'50%', border:'1px solid var(--theme-border)', background:'var(--theme-bg-input)', cursor: windowOpen ? 'pointer' : 'not-allowed', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, color: windowOpen ? 'var(--theme-text-secondary)' : 'var(--theme-text-muted)', opacity: windowOpen ? 1 : 0.4 }}>
           📎
         </button>
         <div ref={stickerBtnRef} style={{ position:'relative', flexShrink:0 }}>
           <button
-            onClick={() => setShowStickers(v => !v)}
+            onClick={() => windowOpen && setShowStickers(v => !v)}
+            disabled={!windowOpen}
             title="Stickers"
-            style={{ width:40, height:40, borderRadius:'50%', border:`1px solid ${showStickers ? 'var(--theme-primary)' : 'var(--theme-border)'}`, background: showStickers ? 'var(--theme-primary-subtle)' : 'var(--theme-bg-input)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, color: showStickers ? 'var(--theme-primary)' : 'var(--theme-text-secondary)', transition:'background 0.15s, border-color 0.15s, color 0.15s' }}
+            style={{ width:40, height:40, borderRadius:'50%', border:`1px solid ${showStickers ? 'var(--theme-primary)' : 'var(--theme-border)'}`, background: showStickers ? 'var(--theme-primary-subtle)' : 'var(--theme-bg-input)', cursor: windowOpen ? 'pointer' : 'not-allowed', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, color: windowOpen ? (showStickers ? 'var(--theme-primary)' : 'var(--theme-text-secondary)') : 'var(--theme-text-muted)', opacity: windowOpen ? 1 : 0.4, transition:'background 0.15s, border-color 0.15s, color 0.15s' }}
           >
             <Sticker size={19} strokeWidth={1.8} />
           </button>
@@ -558,12 +546,11 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
             />
           )}
         </div>
-        <button onClick={handleSend} disabled={(!text.trim() && !pastedImage) || sending}
-          style={{ width:40, height:40, borderRadius:'50%', border:'none', background: (text.trim() || pastedImage) && !sending ? 'var(--theme-primary)' : 'var(--theme-border)', cursor: (text.trim() || pastedImage) && !sending ? 'pointer' : 'default', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, color: (text.trim() || pastedImage) && !sending ? 'var(--theme-primary-text)' : 'var(--theme-text-muted)', flexShrink:0, transition:'background 0.2s' }}>
+        <button onClick={handleSend} disabled={(!text.trim() && !pastedImage) || sending || !windowOpen}
+          style={{ width:40, height:40, borderRadius:'50%', border:'none', background: (text.trim() || pastedImage) && !sending && windowOpen ? 'var(--theme-primary)' : 'var(--theme-border)', cursor: (text.trim() || pastedImage) && !sending && windowOpen ? 'pointer' : 'default', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, color: (text.trim() || pastedImage) && !sending && windowOpen ? 'var(--theme-primary-text)' : 'var(--theme-text-muted)', flexShrink:0, opacity: windowOpen ? 1 : 0.4, transition:'background 0.2s' }}>
           {sending ? '⏳' : '➤'}
         </button>
       </div>
-      )}
 
       {/* Modals */}
       {showMedia && <MediaUpload conversationId={conversationId} onClose={() => setShowMedia(false)} onSent={() => { setShowMedia(false); loadMessages(conversationId); }} />}

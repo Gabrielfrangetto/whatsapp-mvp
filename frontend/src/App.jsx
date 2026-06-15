@@ -523,10 +523,10 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
               <span style={{ fontSize:13, fontWeight:700, color:'var(--theme-text)' }}>Janela de 24h encerrada</span>
             </div>
             <span style={{ fontSize:12, color:'var(--theme-text-secondary)', textAlign:'center', lineHeight:1.5 }}>
-              O WhatsApp permite mensagens livres somente até 24h após a última mensagem do cliente. Use um template aprovado para retomar o contato.
+              A Meta permite mensagens livres somente até 24h após a última mensagem do cliente. Use um modelo de mensagem aprovado para retomar o contato.
             </span>
             <button onClick={() => setShowTemplates(true)} style={{ marginTop:4, padding:'6px 20px', borderRadius:20, border:'1px solid var(--theme-primary)', background:'var(--theme-primary)', color:'var(--theme-primary-text)', fontSize:15, fontWeight:600, cursor:'pointer' }}>
-              Enviar template
+              Enviar modelo de mensagem
             </button>
           </div>
         )}

@@ -317,6 +317,14 @@ function ContactDetailsPanel({ conv }) {
 }
 
 // ─── ChatPanel ────────────────────────────────────────────────────────────────
+const WINDOW_MS = 24 * 60 * 60 * 1000;
+
+function computeWindowOpen(msgs) {
+  const lastInbound = [...msgs].reverse().find(m => m.direction === 'INBOUND');
+  if (!lastInbound) return false;
+  return Date.now() - new Date(lastInbound.timestamp).getTime() < WINDOW_MS;
+}
+
 function ChatPanel({ conversationId, socketControls, onMessageSent }) {
   const { agent } = useAuth();
   const [messages, setMessages]           = useState([]);
@@ -329,6 +337,7 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
   const [showTemplates, setShowTemplates] = useState(false);
   const [showResolve, setShowResolve]     = useState(false);
   const [showStickers, setShowStickers]   = useState(false);
+  const [windowOpen, setWindowOpen]       = useState(true);
   const bottomRef    = useRef(null);
   const typingTimer  = useRef(null);
   const prevConvId   = useRef(null);
@@ -338,13 +347,15 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
     if (!id) return;
     try {
       const { data } = await api.get(`/conversations/${id}/messages`);
-      setMessages(data.messages || []);
+      const msgs = data.messages || [];
+      setMessages(msgs);
       setConversation(data.conversation || null);
+      setWindowOpen(computeWindowOpen(msgs));
     } catch {}
   }, []);
 
   useEffect(() => {
-    if (!conversationId) { setMessages([]); setConversation(null); return; }
+    if (!conversationId) { setMessages([]); setConversation(null); setWindowOpen(true); return; }
     if (prevConvId.current && prevConvId.current !== conversationId) {
       socketControls.leaveConversation(prevConvId.current);
     }
@@ -359,7 +370,12 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
     const handlers = {
       handleMessage: (msg) => {
         if (msg.conversationId !== conversationId) return;
-        setMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg]);
+        setMessages(prev => {
+          if (prev.find(m => m.id === msg.id)) return prev;
+          const next = [...prev, msg];
+          if (msg.direction === 'INBOUND') setWindowOpen(true);
+          return next;
+        });
         setTypingAgent(null);
       },
       handleStatus: ({ waMessageId, status }) => {
@@ -475,7 +491,7 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
       </div>
 
       {/* Pasted image preview */}
-      {pastedImage && (
+      {pastedImage && windowOpen && (
         <div style={{ background:'var(--theme-bg-tertiary)', padding:'8px 16px 0', display:'flex', alignItems:'flex-start', borderTop:'1px solid var(--theme-border)' }}>
           <div style={{ position:'relative', display:'inline-block' }}>
             <img src={pastedImage.preview} alt="preview" style={{ maxHeight:100, maxWidth:200, borderRadius:8, display:'block', boxShadow:'0 2px 8px rgba(0,0,0,0.15)' }} />
@@ -487,7 +503,27 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
         </div>
       )}
 
-      {/* Input */}
+      {/* Janela encerrada */}
+      {!windowOpen && (
+        <div style={{ background:'rgba(245,158,11,0.08)', borderTop:'2px solid rgba(245,158,11,0.25)', padding:'14px 20px', display:'flex', alignItems:'center', gap:14 }}>
+          <div style={{ fontSize:22, flexShrink:0 }}>🔒</div>
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontSize:13, fontWeight:600, color:'#D97706' }}>Janela de 24h encerrada</div>
+            <div style={{ fontSize:12, color:'var(--theme-text-muted)', marginTop:2, lineHeight:1.5 }}>
+              O cliente não respondeu nas últimas 24h. Apenas templates oficiais podem ser enviados.
+            </div>
+          </div>
+          <button
+            onClick={() => setShowTemplates(true)}
+            style={{ background:'var(--theme-primary)', color:'var(--theme-primary-text)', border:'none', borderRadius:8, padding:'8px 16px', cursor:'pointer', fontSize:13, fontWeight:600, flexShrink:0, whiteSpace:'nowrap' }}
+          >
+            📋 Enviar Template
+          </button>
+        </div>
+      )}
+
+      {/* Input — só exibido quando a janela está aberta */}
+      {windowOpen && (
       <div style={{ background:'var(--theme-bg-tertiary)', padding:'10px 16px', display:'flex', alignItems:'flex-end', gap:8, borderTop:'1px solid var(--theme-border)' }}>
         <button onClick={() => setShowTemplates(true)} title="Enviar template"
           style={{ width:40, height:40, borderRadius:'50%', border:'1px solid var(--theme-border)', background:'var(--theme-bg-input)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, color:'var(--theme-text-secondary)' }}>
@@ -527,6 +563,7 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
           {sending ? '⏳' : '➤'}
         </button>
       </div>
+      )}
 
       {/* Modals */}
       {showMedia && <MediaUpload conversationId={conversationId} onClose={() => setShowMedia(false)} onSent={() => { setShowMedia(false); loadMessages(conversationId); }} />}

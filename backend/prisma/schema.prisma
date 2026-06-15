@@ -117,6 +117,7 @@ enum AgentRole {
 
 enum AgentOnlineStatus {
   ONLINE
+  BUSY
   OFFLINE
 }
 

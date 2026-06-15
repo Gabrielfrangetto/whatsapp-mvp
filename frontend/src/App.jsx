@@ -176,9 +176,24 @@ function NavRailButton({ icon, label, onClick, active }) {
   );
 }
 
+const STATUS_META = {
+  ONLINE:  { color: '#4ade80', label: 'Online' },
+  BUSY:    { color: '#fbbf24', label: 'Ocupado' },
+  OFFLINE: { color: '#6b7280', label: 'Offline' },
+};
+
 // ─── NavRail ──────────────────────────────────────────────────────────────────
-function NavRail({ section, onSection, agent, onSettings, onLogout }) {
+function NavRail({ section, onSection, agent, agentStatus = 'ONLINE', onStatusChange, onSettings, onLogout }) {
   const { color, mode } = useTheme();
+  const [statusOpen, setStatusOpen] = useState(false);
+  const statusRef = useRef(null);
+
+  useEffect(() => {
+    if (!statusOpen) return;
+    const handler = (e) => { if (!statusRef.current?.contains(e.target)) setStatusOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [statusOpen]);
 
   const navBg = (() => {
     if (mode === 'dark') return '#0d1117';
@@ -219,15 +234,35 @@ function NavRail({ section, onSection, agent, onSettings, onLogout }) {
         <NavRailButton icon={<SettingsIcon size={20} />} label="Configurações" onClick={onSettings} />
         <NavRailButton icon={<LogOut size={18} />} label="Sair" onClick={onLogout} />
         <div style={{ width:1, height:8, background:'rgba(255,255,255,0.12)', borderRadius:1, margin:'2px 0' }} />
-        <div
-          style={{ width:40, height:40, borderRadius:'50%', background:agent?.avatarColor || 'var(--theme-primary)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:13, overflow:'hidden', position:'relative', border:`2px solid rgba(255,255,255,0.2)`, flexShrink:0 }}
-          title={`${agent?.name} • ${agent?.role === 'ADMIN' ? 'Admin' : 'Agente'}`}
-        >
-          {agent?.avatarUrl
-            ? <img src={agent.avatarUrl} alt="avatar" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-            : getInitials(agent?.name || '')
-          }
-          <div style={{ position:'absolute', bottom:1, right:1, width:10, height:10, borderRadius:'50%', background:'#4ade80', border:`2px solid ${navBg}` }} />
+        <div ref={statusRef} style={{ position:'relative' }}>
+          <div
+            onClick={() => setStatusOpen(v => !v)}
+            style={{ width:40, height:40, borderRadius:'50%', background:agent?.avatarColor || 'var(--theme-primary)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:13, overflow:'hidden', position:'relative', border:`2px solid rgba(255,255,255,0.2)`, flexShrink:0, cursor:'pointer' }}
+            title={`${agent?.name} • ${STATUS_META[agentStatus]?.label}`}
+          >
+            {agent?.avatarUrl
+              ? <img src={agent.avatarUrl} alt="avatar" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+              : getInitials(agent?.name || '')
+            }
+            <div style={{ position:'absolute', bottom:1, right:1, width:10, height:10, borderRadius:'50%', background: STATUS_META[agentStatus]?.color, border:`2px solid ${navBg}` }} />
+          </div>
+
+          {statusOpen && (
+            <div style={{ position:'absolute', bottom:0, left:48, background:'var(--theme-bg-secondary)', border:'1px solid var(--theme-border-strong)', borderRadius:10, boxShadow:'0 4px 16px rgba(0,0,0,0.2)', zIndex:100, minWidth:140, overflow:'hidden' }}>
+              {Object.entries(STATUS_META).map(([key, { color: dotColor, label }]) => (
+                <button
+                  key={key}
+                  onClick={() => { onStatusChange(key); setStatusOpen(false); }}
+                  style={{ width:'100%', display:'flex', alignItems:'center', gap:10, padding:'9px 14px', border:'none', background: key === agentStatus ? 'var(--theme-bg-hover)' : 'none', cursor:'pointer', fontFamily:'inherit', fontSize:13, color:'var(--theme-text)', fontWeight: key === agentStatus ? 600 : 400 }}
+                  onMouseEnter={e => { if (key !== agentStatus) e.currentTarget.style.background = 'var(--theme-bg-hover)'; }}
+                  onMouseLeave={e => { if (key !== agentStatus) e.currentTarget.style.background = 'none'; }}
+                >
+                  <span style={{ width:10, height:10, borderRadius:'50%', background: dotColor, flexShrink:0, display:'inline-block' }} />
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -575,6 +610,7 @@ function Inbox() {
   const [stats, setStats]                 = useState({ open:0, pending:0, resolved:0, totalToday:0 });
   const [section, setSection]             = useState('inbox');
   const [showSettings, setShowSettings]   = useState(false);
+  const [agentStatus, setAgentStatusState] = useState('ONLINE');
   const { loadPreferences }               = useTheme();
   const chatHandlersRef    = useRef(null);
   const filterDropdownRef  = useRef(null);
@@ -635,6 +671,9 @@ function Inbox() {
     onMessageStatus:   (data) => chatHandlersRef.current?.handleStatus(data),
     onTyping:          (data) => chatHandlersRef.current?.handleTyping(data),
     onStoppedTyping:   (data) => chatHandlersRef.current?.handleStoppedTyping(data),
+    onAgentStatus:     ({ agentId: id, onlineStatus }) => {
+      if (id === agent?.id) setAgentStatusState(onlineStatus);
+    },
   });
 
   socketControls._registerChatHandlers = (handlers) => { chatHandlersRef.current = handlers; };
@@ -699,6 +738,8 @@ function Inbox() {
         section={section}
         onSection={setSection}
         agent={agent}
+        agentStatus={agentStatus}
+        onStatusChange={(s) => { setAgentStatusState(s); socketControls.setAgentStatus(s); }}
         onSettings={() => setShowSettings(true)}
         onLogout={handleLogout}
       />

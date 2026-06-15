@@ -7,9 +7,6 @@ const ACTIVITY_EVENTS = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'
 
 let socketInstance = null;
 
-/**
- * Singleton: garante apenas uma conexão Socket.io por sessão
- */
 function getSocket(accessToken) {
   if (socketInstance?.connected) return socketInstance;
 
@@ -31,25 +28,36 @@ export function disconnectSocket() {
   }
 }
 
-/**
- * Hook principal de WebSocket
- *
- * @param {string} accessToken - JWT do agente autenticado
- * @param {object} handlers - callbacks para eventos:
- *   onMessage(message)          - nova mensagem numa conversa
- *   onConversationUpdate(conv)  - conversa atualizada (lastMessage, status, unread)
- *   onNewConversation(conv)     - nova conversa criada por inbound
- *   onMessageStatus(data)       - atualização de status (DELIVERED, READ...)
- *   onTyping(data)              - agente digitando
- *   onStoppedTyping(data)       - agente parou de digitar
- */
 export function useSocket(accessToken, handlers = {}) {
-  const socketRef  = useRef(null);
-  const handlersRef = useRef(handlers);
-  const isAwayRef  = useRef(false);
-  const timerRef   = useRef(null);
+  const socketRef       = useRef(null);
+  const handlersRef     = useRef(handlers);
+  const timerRef        = useRef(null);
+  const isAutoAwayRef   = useRef(false);
+  // null = auto-ONLINE, 'BUSY' | 'OFFLINE' = override manual ativo
+  const manualOverrideRef = useRef(null);
 
   useEffect(() => { handlersRef.current = handlers; }, [handlers]);
+
+  // Agenda o timer de inatividade — só roda se não houver override manual
+  const scheduleAutoAway = useCallback(() => {
+    clearTimeout(timerRef.current);
+    if (manualOverrideRef.current !== null) return;
+    timerRef.current = setTimeout(() => {
+      isAutoAwayRef.current = true;
+      socketRef.current?.emit('agent:away');
+      console.log('[Inatividade] ⚪ 2h sem atividade — marcando offline');
+    }, INACTIVITY_MS);
+  }, []);
+
+  // Chamado em qualquer evento de atividade do usuário
+  const handleActivity = useCallback(() => {
+    if (isAutoAwayRef.current) {
+      isAutoAwayRef.current = false;
+      socketRef.current?.emit('agent:back');
+      console.log('[Inatividade] 🟢 Agente voltou');
+    }
+    scheduleAutoAway();
+  }, [scheduleAutoAway]);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -59,7 +67,7 @@ export function useSocket(accessToken, handlers = {}) {
 
     const on = (event, cb) => socket.on(event, (...args) => cb(...args));
 
-    on('connect',       () => console.log('[Socket] 🟢 Conectado:', socket.id));
+    on('connect',       () => { console.log('[Socket] 🟢 Conectado:', socket.id); scheduleAutoAway(); });
     on('disconnect',    (reason) => console.log('[Socket] 🔴 Desconectado:', reason));
     on('connect_error', (err) => console.warn('[Socket] ⚠️ Erro:', err.message));
 
@@ -69,53 +77,34 @@ export function useSocket(accessToken, handlers = {}) {
     on('message:status',       (data) => handlersRef.current.onMessageStatus?.(data));
     on('agent:typing',         (data) => handlersRef.current.onTyping?.(data));
     on('agent:stopped_typing', (data) => handlersRef.current.onStoppedTyping?.(data));
+    on('agent:status',         (data) => handlersRef.current.onAgentStatus?.(data));
 
-    // ─── Inatividade: 2h sem atividade → offline ─────────────────────────────
-    const resetTimer = () => {
-      clearTimeout(timerRef.current);
-
-      // Se voltou de ausência, notifica o servidor
-      if (isAwayRef.current) {
-        isAwayRef.current = false;
-        socket.emit('agent:back');
-        console.log('[Inatividade] 🟢 Agente voltou');
-      }
-
-      timerRef.current = setTimeout(() => {
-        isAwayRef.current = true;
-        socket.emit('agent:away');
-        console.log('[Inatividade] ⚪ Agente ausente por 2h — marcando offline');
-      }, INACTIVITY_MS);
-    };
-
-    ACTIVITY_EVENTS.forEach(e => document.addEventListener(e, resetTimer, { passive: true }));
-    resetTimer(); // inicia o timer ao conectar
+    ACTIVITY_EVENTS.forEach(e => document.addEventListener(e, handleActivity, { passive: true }));
+    scheduleAutoAway();
 
     return () => {
-      ACTIVITY_EVENTS.forEach(e => document.removeEventListener(e, resetTimer));
+      ACTIVITY_EVENTS.forEach(e => document.removeEventListener(e, handleActivity));
       clearTimeout(timerRef.current);
     };
-  }, [accessToken]);
+  }, [accessToken, handleActivity, scheduleAutoAway]);
 
-  /** Entra na sala de uma conversa para receber suas mensagens */
-  const joinConversation = useCallback((conversationId) => {
-    socketRef.current?.emit('join:conversation', conversationId);
-  }, []);
+  // Permite ao agente setar status manualmente
+  const setAgentStatus = useCallback((status) => {
+    if (status === 'ONLINE') {
+      manualOverrideRef.current = null;
+      isAutoAwayRef.current = false;
+      scheduleAutoAway(); // reinicia o timer de inatividade
+    } else {
+      manualOverrideRef.current = status;
+      clearTimeout(timerRef.current); // pausa o timer enquanto manual ativo
+    }
+    socketRef.current?.emit('agent:set_status', { status });
+  }, [scheduleAutoAway]);
 
-  /** Sai da sala de uma conversa */
-  const leaveConversation = useCallback((conversationId) => {
-    socketRef.current?.emit('leave:conversation', conversationId);
-  }, []);
+  const joinConversation  = useCallback((id) => socketRef.current?.emit('join:conversation', id), []);
+  const leaveConversation = useCallback((id) => socketRef.current?.emit('leave:conversation', id), []);
+  const startTyping       = useCallback((id) => socketRef.current?.emit('typing:start', { conversationId: id }), []);
+  const stopTyping        = useCallback((id) => socketRef.current?.emit('typing:stop', { conversationId: id }), []);
 
-  /** Emite "está digitando" */
-  const startTyping = useCallback((conversationId) => {
-    socketRef.current?.emit('typing:start', { conversationId });
-  }, []);
-
-  /** Emite "parou de digitar" */
-  const stopTyping = useCallback((conversationId) => {
-    socketRef.current?.emit('typing:stop', { conversationId });
-  }, []);
-
-  return { joinConversation, leaveConversation, startTyping, stopTyping };
+  return { joinConversation, leaveConversation, startTyping, stopTyping, setAgentStatus };
 }

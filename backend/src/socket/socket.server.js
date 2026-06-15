@@ -73,11 +73,22 @@ function initSocket(httpServer) {
       socket.leave(`conv:${conversationId}`);
     });
 
-    // ─── Inatividade ──────────────────────────────────────────────────────────
+    // ─── Status manual ─────────────────────────────────────────────────────────
+    socket.on('agent:set_status', async ({ status }) => {
+      if (!['ONLINE', 'BUSY', 'OFFLINE'].includes(status)) return;
+      await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: status } });
+      io.emit('agent:status', { agentId, onlineStatus: status });
+      console.log(`[Status] ${name} → ${status} (manual)`);
+    });
+
+    // ─── Inatividade (2h) — só age se o agente estiver ONLINE ─────────────────
     socket.on('agent:away', async () => {
+      const current = await prisma.agent.findUnique({ where: { id: agentId }, select: { onlineStatus: true } });
+      if (current?.onlineStatus !== 'ONLINE') return; // respeita status manual
+
       await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: 'OFFLINE' } });
       io.emit('agent:status', { agentId, onlineStatus: 'OFFLINE' });
-      console.log(`[Inatividade] ⚪ ${name} marcado OFFLINE por inatividade — redistribuindo...`);
+      console.log(`[Inatividade] ⚪ ${name} → OFFLINE por inatividade — redistribuindo...`);
 
       const redistributed = await redistributeConversations(agentId);
       for (const { conv } of redistributed) io.emit('conversation:update', conv);
@@ -85,6 +96,8 @@ function initSocket(httpServer) {
     });
 
     socket.on('agent:back', async () => {
+      // Só volta para ONLINE se estava OFFLINE por inatividade (não por escolha manual)
+      // O frontend garante isso — só emite agent:back se foi auto-offlinado
       await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: 'ONLINE' } });
       io.emit('agent:status', { agentId, onlineStatus: 'ONLINE' });
       console.log(`[Inatividade] 🟢 ${name} voltou — marcado ONLINE`);

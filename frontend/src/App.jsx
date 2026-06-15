@@ -1,6 +1,6 @@
 // src/App.jsx
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowUp, ArrowDown, Sticker, MessageSquare, Users, Settings as SettingsIcon, LogOut, Phone, Calendar, Lock } from 'lucide-react';
+import { ArrowUp, ArrowDown, Sticker, MessageSquare, Users, Settings as SettingsIcon, LogOut, Phone, Calendar, Lock, ChevronDown } from 'lucide-react';
 import TemplateModal from './components/TemplateModal';
 import { AuthProvider, useAuth, api } from './context/AuthContext';
 import { useSocket, disconnectSocket } from './hooks/useSocket';
@@ -576,7 +576,16 @@ function Inbox() {
   const [section, setSection]             = useState('inbox');
   const [showSettings, setShowSettings]   = useState(false);
   const { loadPreferences }               = useTheme();
-  const chatHandlersRef = useRef(null);
+  const chatHandlersRef    = useRef(null);
+  const filterDropdownRef  = useRef(null);
+  const [filterOpen, setFilterOpen] = useState(false);
+
+  useEffect(() => {
+    if (!filterOpen) return;
+    const handler = (e) => { if (!filterDropdownRef.current?.contains(e.target)) setFilterOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [filterOpen]);
 
   useEffect(() => { if (agent) loadPreferences(agent); }, [agent]);
 
@@ -723,16 +732,31 @@ function Inbox() {
             </div>
 
             {/* Filter dropdown */}
-            <div style={{ padding:'8px 12px', borderBottom:'1px solid var(--theme-border)' }}>
-              <select
-                value={filter}
-                onChange={e => handleFilterChange(e.target.value)}
-                style={{ width:'100%', padding:'7px 12px', borderRadius:8, border:'1px solid var(--theme-border-strong)', background:'var(--theme-bg-input)', color:'var(--theme-text)', fontSize:13, outline:'none', cursor:'pointer', fontFamily:'inherit' }}
+            <div ref={filterDropdownRef} style={{ position:'relative', padding:'6px 12px', borderBottom:'1px solid var(--theme-border)' }}>
+              <button
+                onClick={() => setFilterOpen(v => !v)}
+                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px', borderRadius:8, border:'none', background:'none', color: filter ? 'var(--theme-primary)' : 'var(--theme-text-secondary)', fontSize:13, fontWeight: filter ? 600 : 400, cursor:'pointer', fontFamily:'inherit', transition:'background 0.15s, color 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--theme-primary-subtle)'; e.currentTarget.style.color = 'var(--theme-primary)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = filter ? 'var(--theme-primary)' : 'var(--theme-text-secondary)'; }}
               >
-                {filterOptions.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
+                <span>{filterOptions.find(o => o.value === filter)?.label}</span>
+                <ChevronDown size={14} strokeWidth={2} style={{ transition:'transform 0.15s', transform: filterOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+              </button>
+              {filterOpen && (
+                <div style={{ position:'absolute', top:'100%', left:12, right:12, background:'var(--theme-bg-secondary)', border:'1px solid var(--theme-border-strong)', borderRadius:8, boxShadow:'0 4px 16px rgba(0,0,0,0.15)', zIndex:50, overflow:'hidden' }}>
+                  {filterOptions.map(o => (
+                    <button
+                      key={o.value}
+                      onClick={() => { handleFilterChange(o.value); setFilterOpen(false); }}
+                      style={{ width:'100%', display:'block', padding:'9px 14px', border:'none', background: o.value === filter ? 'var(--theme-primary-subtle)' : 'none', color: o.value === filter ? 'var(--theme-primary)' : 'var(--theme-text)', fontSize:13, fontWeight: o.value === filter ? 600 : 400, cursor:'pointer', textAlign:'left', fontFamily:'inherit', transition:'background 0.12s, color 0.12s' }}
+                      onMouseEnter={e => { if (o.value !== filter) { e.currentTarget.style.background = 'var(--theme-primary-subtle)'; e.currentTarget.style.color = 'var(--theme-primary)'; } }}
+                      onMouseLeave={e => { if (o.value !== filter) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--theme-text)'; } }}
+                    >
+                      {o.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Conversation list */}

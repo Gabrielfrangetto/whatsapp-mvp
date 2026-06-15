@@ -506,10 +506,6 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
 
       {/* Input */}
       <div style={{ background:'var(--theme-bg-tertiary)', padding:'10px 16px', display:'flex', alignItems:'flex-end', gap:8, borderTop:'1px solid var(--theme-border)' }}>
-        <button onClick={() => setShowTemplates(true)} title="Enviar template"
-          style={{ width:40, height:40, borderRadius:'50%', border:'1px solid var(--theme-border)', background:'var(--theme-bg-input)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, color:'var(--theme-text-secondary)' }}>
-          📋
-        </button>
         {windowOpen ? (
           <textarea
             value={text}
@@ -529,6 +525,9 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
             <span style={{ fontSize:12, color:'var(--theme-text-secondary)', textAlign:'center', lineHeight:1.5 }}>
               O WhatsApp permite mensagens livres somente até 24h após a última mensagem do cliente. Use um template aprovado para retomar o contato.
             </span>
+            <button onClick={() => setShowTemplates(true)} style={{ marginTop:4, padding:'5px 16px', borderRadius:20, border:'1px solid var(--theme-primary)', background:'var(--theme-primary)', color:'var(--theme-primary-text)', fontSize:12, fontWeight:600, cursor:'pointer' }}>
+              Ver templates disponíveis
+            </button>
           </div>
         )}
         <button onClick={() => setShowMedia(true)} disabled={!windowOpen} title="Enviar arquivo"

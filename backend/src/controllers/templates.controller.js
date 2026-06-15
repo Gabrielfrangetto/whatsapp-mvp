@@ -1,6 +1,7 @@
 // src/controllers/templates.controller.js
 const { PrismaClient } = require('@prisma/client');
 const axios = require('axios');
+const { emitNewMessage, emitConversationUpdate } = require('../socket/socket.server');
 
 const prisma = new PrismaClient();
 
@@ -152,10 +153,14 @@ async function sendTemplate(req, res) {
       },
     });
 
-    await prisma.conversation.update({
+    const updatedConv = await prisma.conversation.update({
       where: { id },
       data: { lastMessage: renderedBody, lastMessageAt: new Date(), lastMessageDirection: 'OUTBOUND', status: 'OPEN' },
+      include: { contact: true },
     });
+
+    emitNewMessage(id, message);
+    emitConversationUpdate(updatedConv);
 
     res.json(message);
   } catch (e) {

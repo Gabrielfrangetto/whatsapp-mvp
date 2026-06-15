@@ -2,6 +2,9 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 
+const INACTIVITY_MS = 2 * 60 * 60 * 1000; // 2 horas
+const ACTIVITY_EVENTS = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+
 let socketInstance = null;
 
 /**
@@ -41,10 +44,11 @@ export function disconnectSocket() {
  *   onStoppedTyping(data)       - agente parou de digitar
  */
 export function useSocket(accessToken, handlers = {}) {
-  const socketRef = useRef(null);
+  const socketRef  = useRef(null);
   const handlersRef = useRef(handlers);
+  const isAwayRef  = useRef(false);
+  const timerRef   = useRef(null);
 
-  // Mantém handlers sempre atualizados sem precisar reconectar
   useEffect(() => { handlersRef.current = handlers; }, [handlers]);
 
   useEffect(() => {
@@ -55,8 +59,8 @@ export function useSocket(accessToken, handlers = {}) {
 
     const on = (event, cb) => socket.on(event, (...args) => cb(...args));
 
-    on('connect',    () => console.log('[Socket] 🟢 Conectado:', socket.id));
-    on('disconnect', (reason) => console.log('[Socket] 🔴 Desconectado:', reason));
+    on('connect',       () => console.log('[Socket] 🟢 Conectado:', socket.id));
+    on('disconnect',    (reason) => console.log('[Socket] 🔴 Desconectado:', reason));
     on('connect_error', (err) => console.warn('[Socket] ⚠️ Erro:', err.message));
 
     on('message:new',          (msg)  => handlersRef.current.onMessage?.(msg));
@@ -66,9 +70,30 @@ export function useSocket(accessToken, handlers = {}) {
     on('agent:typing',         (data) => handlersRef.current.onTyping?.(data));
     on('agent:stopped_typing', (data) => handlersRef.current.onStoppedTyping?.(data));
 
+    // ─── Inatividade: 2h sem atividade → offline ─────────────────────────────
+    const resetTimer = () => {
+      clearTimeout(timerRef.current);
+
+      // Se voltou de ausência, notifica o servidor
+      if (isAwayRef.current) {
+        isAwayRef.current = false;
+        socket.emit('agent:back');
+        console.log('[Inatividade] 🟢 Agente voltou');
+      }
+
+      timerRef.current = setTimeout(() => {
+        isAwayRef.current = true;
+        socket.emit('agent:away');
+        console.log('[Inatividade] ⚪ Agente ausente por 2h — marcando offline');
+      }, INACTIVITY_MS);
+    };
+
+    ACTIVITY_EVENTS.forEach(e => document.addEventListener(e, resetTimer, { passive: true }));
+    resetTimer(); // inicia o timer ao conectar
+
     return () => {
-      // Não desconecta ao desmontar — mantém conexão viva entre navegações
-      // O socket só é desconectado no logout (disconnectSocket())
+      ACTIVITY_EVENTS.forEach(e => document.removeEventListener(e, resetTimer));
+      clearTimeout(timerRef.current);
     };
   }, [accessToken]);
 

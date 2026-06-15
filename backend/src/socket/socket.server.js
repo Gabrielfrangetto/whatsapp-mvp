@@ -73,6 +73,23 @@ function initSocket(httpServer) {
       socket.leave(`conv:${conversationId}`);
     });
 
+    // ─── Inatividade ──────────────────────────────────────────────────────────
+    socket.on('agent:away', async () => {
+      await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: 'OFFLINE' } });
+      io.emit('agent:status', { agentId, onlineStatus: 'OFFLINE' });
+      console.log(`[Inatividade] ⚪ ${name} marcado OFFLINE por inatividade — redistribuindo...`);
+
+      const redistributed = await redistributeConversations(agentId);
+      for (const { conv } of redistributed) io.emit('conversation:update', conv);
+      console.log(`[Assignment] 🔄 ${redistributed.length} conversa(s) redistribuída(s)`);
+    });
+
+    socket.on('agent:back', async () => {
+      await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: 'ONLINE' } });
+      io.emit('agent:status', { agentId, onlineStatus: 'ONLINE' });
+      console.log(`[Inatividade] 🟢 ${name} voltou — marcado ONLINE`);
+    });
+
     // ─── Indicador de digitação ────────────────────────────────────────────────
     socket.on('typing:start', ({ conversationId }) => {
       socket.to(`conv:${conversationId}`).emit('agent:typing', {

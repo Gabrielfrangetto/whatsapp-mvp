@@ -182,12 +182,12 @@ function ConversationItem({ conv, selected, onClick, onPin }) {
       )}
 
       {/* Avatar */}
-      <div style={{ width:44, height:44, borderRadius:'50%', background:getAvatarColor(name), display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:'#fff', fontSize:15, flexShrink:0 }}>
+      <div style={{ width:44, height:44, borderRadius:'50%', background:getAvatarColor(name), display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:'#fff', fontSize:15, flexShrink:0, opacity: pinAnim ? 0 : 1, transition:'opacity 0.15s' }}>
         {getInitials(name)}
       </div>
 
       {/* Conteúdo */}
-      <div style={{ flex:1, minWidth:0 }}>
+      <div style={{ flex:1, minWidth:0, opacity: pinAnim ? 0 : 1, transition:'opacity 0.15s' }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           <span style={{ fontWeight: hasNew ? 700 : 600, fontSize:14, color:'var(--theme-text)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</span>
           <span style={{ fontSize:11, color: hasNew ? 'var(--theme-primary)' : 'var(--theme-text-muted)', fontWeight: hasNew ? 700 : 400, flexShrink:0, marginLeft:4, opacity: hovered ? 0 : 1, transition:'opacity 0.15s' }}>

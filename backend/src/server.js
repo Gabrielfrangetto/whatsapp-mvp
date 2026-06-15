@@ -35,7 +35,7 @@ app.use(helmet({
 }));
 const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
   .split(',')
-  .map(o => o.trim())
+  .map(o => o.trim().replace(/\/$/, ''))
   .filter(Boolean);
 
 console.log('[CORS] Origens permitidas:', allowedOrigins);
@@ -43,6 +43,7 @@ console.log('[CORS] Origens permitidas:', allowedOrigins);
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    console.log(`[CORS] Rejeitado: "${origin}" | Permitidos: ${JSON.stringify(allowedOrigins)}`);
     cb(new Error(`CORS: origem não permitida — ${origin}`));
   },
   credentials: true,

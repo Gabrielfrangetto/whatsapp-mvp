@@ -18,9 +18,14 @@ function formatTime(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   const now = new Date();
-  if (d.toDateString() === now.toDateString())
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const msgDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  if (msgDay.getTime() === today.getTime())
     return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  if (msgDay.getTime() === yesterday.getTime()) return 'Ontem';
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
 }
 function formatMsgTime(dateStr) {
   if (!dateStr) return '';

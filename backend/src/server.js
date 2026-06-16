@@ -125,8 +125,18 @@ initSocket(server);
 
 // ─── Auto-close por inatividade de 24h ───────────────────────────────────────
 const { runAutoClose } = require('./services/autoclose.service');
-runAutoClose(); // roda na inicialização
-setInterval(runAutoClose, 30 * 60 * 1000); // a cada 30 minutos
+runAutoClose();
+setInterval(runAutoClose, 30 * 60 * 1000);
+
+app.post('/api/admin/autoclose', async (req, res) => {
+  if (req.query.secret !== process.env.SETUP_SECRET) return res.status(403).json({ error: 'Proibido' });
+  try {
+    await runAutoClose();
+    res.json({ ok: true, ran: new Date().toISOString() });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 server.listen(PORT, () => {

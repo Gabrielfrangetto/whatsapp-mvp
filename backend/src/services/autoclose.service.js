@@ -75,8 +75,12 @@ async function runAutoClose() {
 
         let reasonLabel = 'Inatividade de 24h';
         if (reasons.length > 0) {
-          const chosen = await pickReason(reasons, messages);
-          reasonLabel = chosen.label;
+          try {
+            const chosen = await pickReason(reasons, messages);
+            reasonLabel = chosen.label;
+          } catch (aiErr) {
+            console.warn('[AutoClose] IA falhou, usando motivo padrão:', aiErr.message);
+          }
         }
 
         const internalContent = `🔒 Conversa encerrada automaticamente por inatividade de 24h\nData: ${dateStr} às ${timeStr}\nMotivo: ${reasonLabel}`;

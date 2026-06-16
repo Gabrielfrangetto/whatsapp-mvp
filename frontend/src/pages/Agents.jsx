@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth, api } from '../context/AuthContext';
 import ResolutionReasons from './ResolutionReasons';
 import AvatarUpload from '../components/AvatarUpload';
+import { Shield, Headphones, Camera, Clock } from 'lucide-react';
 
 function Avatar({ name = '', color = '#25D366', size = 36, avatarUrl }) {
   const initials = name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
@@ -25,11 +26,12 @@ function RoleBadge({ role }) {
   return (
     <span style={{
       padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+      display: 'inline-flex', alignItems: 'center', gap: 4,
       background: role === 'ADMIN' ? '#eff6ff' : '#f0fdf4',
       color: role === 'ADMIN' ? '#1d4ed8' : '#15803d',
       border: `1px solid ${role === 'ADMIN' ? '#bfdbfe' : '#bbf7d0'}`,
     }}>
-      {role === 'ADMIN' ? '👑 Admin' : '🎧 Agente'}
+      {role === 'ADMIN' ? <><Shield size={11} style={{ flexShrink:0 }} /> Admin</> : <><Headphones size={11} style={{ flexShrink:0 }} /> Agente</>}
     </span>
   );
 }
@@ -303,15 +305,15 @@ export default function Agents() {
             <div style={{ display: 'flex', gap: 6 }}>
               <button
                 onClick={() => setAvatarAgent(ag)}
-                style={{ padding: '5px 12px', borderRadius: 7, border: '1px solid var(--theme-border)', background: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--theme-text)' }}
+                style={{ padding: '5px 12px', borderRadius: 7, border: '1px solid var(--theme-border)', background: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--theme-text)', display:'flex', alignItems:'center', gap:5 }}
               >
-                📷 Foto
+                <Camera size={12} /> Foto
               </button>
               <button
                 onClick={() => setScheduleAgent(ag)}
-                style={{ padding: '5px 12px', borderRadius: 7, border: '1px solid var(--theme-border)', background: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--theme-text)' }}
+                style={{ padding: '5px 12px', borderRadius: 7, border: '1px solid var(--theme-border)', background: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--theme-text)', display:'flex', alignItems:'center', gap:5 }}
               >
-                🕐 Horário
+                <Clock size={12} /> Horário
               </button>
               <button
                 onClick={() => setModal(ag)}

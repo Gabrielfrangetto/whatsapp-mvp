@@ -1,6 +1,7 @@
 // src/components/ResolveModal.jsx
 import { useState, useEffect } from 'react';
 import { api } from '../context/AuthContext';
+import { Check, AlertTriangle } from 'lucide-react';
 
 export default function ResolveModal({ conversationId, onClose, onResolved }) {
   const [reasons, setReasons]     = useState([]);
@@ -41,30 +42,30 @@ export default function ResolveModal({ conversationId, onClose, onResolved }) {
       style={{ position:'fixed', inset:0, background:'#00000060', display:'flex', alignItems:'center', justifyContent:'center', zIndex:200 }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div style={{ background:'#fff', borderRadius:16, width:'100%', maxWidth:420, boxShadow:'0 20px 60px rgba(0,0,0,0.3)', fontFamily:"'Segoe UI', sans-serif" }}>
+      <div style={{ background:'var(--theme-bg-secondary)', borderRadius:16, width:'100%', maxWidth:420, boxShadow:'0 20px 60px rgba(0,0,0,0.3)', fontFamily:"'Segoe UI', sans-serif", border:'1px solid var(--theme-border)' }}>
         {/* Header */}
-        <div style={{ padding:'18px 20px 14px', borderBottom:'1px solid #eee', display:'flex', alignItems:'center', gap:12 }}>
-          <div style={{ width:36, height:36, borderRadius:'50%', background:'#f0fdf4', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>✓</div>
+        <div style={{ padding:'18px 20px 14px', borderBottom:'1px solid var(--theme-border)', display:'flex', alignItems:'center', gap:12 }}>
+          <div style={{ width:36, height:36, borderRadius:'50%', background:'var(--theme-primary-subtle)', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--theme-primary)', flexShrink:0 }}><Check size={18} strokeWidth={2.5} /></div>
           <div>
-            <h3 style={{ fontSize:15, fontWeight:600, color:'#111', margin:0 }}>Finalizar conversa</h3>
-            <p style={{ fontSize:12, color:'#888', margin:'2px 0 0' }}>Selecione o motivo de encerramento</p>
+            <h3 style={{ fontSize:15, fontWeight:600, color:'var(--theme-text)', margin:0 }}>Finalizar conversa</h3>
+            <p style={{ fontSize:12, color:'var(--theme-text-muted)', margin:'2px 0 0' }}>Selecione o motivo de encerramento</p>
           </div>
-          <button onClick={onClose} style={{ marginLeft:'auto', background:'none', border:'none', cursor:'pointer', fontSize:20, color:'#aaa' }}>×</button>
+          <button onClick={onClose} style={{ marginLeft:'auto', background:'none', border:'none', cursor:'pointer', fontSize:20, color:'var(--theme-text-muted)' }}>×</button>
         </div>
 
         <div style={{ padding:'20px' }}>
           {error && (
-            <div style={{ background:'#fef2f2', border:'1px solid #fecaca', borderRadius:8, padding:'10px 12px', fontSize:13, color:'#dc2626', marginBottom:14 }}>
-              ⚠️ {error}
+            <div style={{ background:'#fef2f2', border:'1px solid #fecaca', borderRadius:8, padding:'10px 12px', fontSize:13, color:'#dc2626', marginBottom:14, display:'flex', alignItems:'center', gap:7 }}>
+              <AlertTriangle size={14} style={{ flexShrink:0 }} /> {error}
             </div>
           )}
 
           {loading ? (
-            <div style={{ textAlign:'center', color:'#aaa', padding:'20px 0', fontSize:13 }}>Carregando motivos...</div>
+            <div style={{ textAlign:'center', color:'var(--theme-text-muted)', padding:'20px 0', fontSize:13 }}>Carregando motivos...</div>
           ) : reasons.length === 0 ? (
             <div style={{ textAlign:'center', padding:'20px 0' }}>
-              <p style={{ fontSize:14, color:'#555', margin:'0 0 8px' }}>Nenhum motivo cadastrado.</p>
-              <p style={{ fontSize:13, color:'#aaa', margin:0 }}>Peça ao administrador para cadastrar motivos em <strong>Gerenciar Agentes</strong>.</p>
+              <p style={{ fontSize:14, color:'var(--theme-text-secondary)', margin:'0 0 8px' }}>Nenhum motivo cadastrado.</p>
+              <p style={{ fontSize:13, color:'var(--theme-text-muted)', margin:0 }}>Peça ao administrador para cadastrar motivos em <strong>Gerenciar Agentes</strong>.</p>
             </div>
           ) : (
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
@@ -74,19 +75,19 @@ export default function ResolveModal({ conversationId, onClose, onResolved }) {
                   onClick={() => setSelected(r.id)}
                   style={{
                     padding:'12px 14px', borderRadius:10, cursor:'pointer', transition:'all 0.15s',
-                    border: `2px solid ${selected === r.id ? '#25D366' : '#e8e8e8'}`,
-                    background: selected === r.id ? '#f0fdf4' : '#fff',
+                    border: `2px solid ${selected === r.id ? 'var(--theme-primary)' : 'var(--theme-border)'}`,
+                    background: selected === r.id ? 'var(--theme-primary-subtle)' : 'var(--theme-bg)',
                     display:'flex', alignItems:'center', gap:10,
                   }}
                 >
                   <div style={{
-                    width:20, height:20, borderRadius:'50%', border:`2px solid ${selected === r.id ? '#25D366' : '#ddd'}`,
-                    background: selected === r.id ? '#25D366' : '#fff',
+                    width:20, height:20, borderRadius:'50%', border:`2px solid ${selected === r.id ? 'var(--theme-primary)' : 'var(--theme-border)'}`,
+                    background: selected === r.id ? 'var(--theme-primary)' : 'transparent',
                     display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
                   }}>
-                    {selected === r.id && <span style={{ color:'#fff', fontSize:12 }}>✓</span>}
+                    {selected === r.id && <Check size={11} strokeWidth={3} color="#fff" />}
                   </div>
-                  <span style={{ fontSize:14, color: selected === r.id ? '#15803d' : '#333', fontWeight: selected === r.id ? 500 : 400 }}>
+                  <span style={{ fontSize:14, color:'var(--theme-text)', fontWeight: selected === r.id ? 500 : 400 }}>
                     {r.label}
                   </span>
                 </div>
@@ -95,16 +96,16 @@ export default function ResolveModal({ conversationId, onClose, onResolved }) {
           )}
         </div>
 
-        <div style={{ padding:'14px 20px', borderTop:'1px solid #eee', display:'flex', justifyContent:'flex-end', gap:8 }}>
-          <button onClick={onClose} style={{ padding:'9px 18px', borderRadius:8, border:'1px solid #e0e0e0', background:'none', cursor:'pointer', fontSize:13, color:'#555' }}>
+        <div style={{ padding:'14px 20px', borderTop:'1px solid var(--theme-border)', display:'flex', justifyContent:'flex-end', gap:8 }}>
+          <button onClick={onClose} style={{ padding:'9px 18px', borderRadius:8, border:'1px solid var(--theme-border)', background:'none', cursor:'pointer', fontSize:13, color:'var(--theme-text-secondary)' }}>
             Cancelar
           </button>
           <button
             onClick={handleResolve}
             disabled={!selected || resolving || reasons.length === 0}
-            style={{ padding:'9px 18px', borderRadius:8, border:'none', background: selected && !resolving ? '#25D366' : '#ccc', color:'#fff', cursor: selected && !resolving ? 'pointer' : 'default', fontSize:13, fontWeight:600 }}
+            style={{ padding:'9px 18px', borderRadius:8, border:'none', background: selected && !resolving ? 'var(--theme-primary)' : 'var(--theme-border)', color: selected && !resolving ? 'var(--theme-primary-text)' : 'var(--theme-text-muted)', cursor: selected && !resolving ? 'pointer' : 'default', fontSize:13, fontWeight:600, display:'flex', alignItems:'center', gap:6 }}
           >
-            {resolving ? 'Finalizando...' : '✓ Finalizar'}
+            {resolving ? 'Finalizando...' : <><Check size={13} /> Finalizar</>}
           </button>
         </div>
       </div>

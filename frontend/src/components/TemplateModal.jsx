@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../context/AuthContext';
+import { Loader2, RefreshCw } from 'lucide-react';
 
 const STATUS_COLOR = {
   APPROVED: { bg: '#f0fdf4', color: '#15803d', label: 'Aprovado' },
@@ -77,6 +78,7 @@ export default function TemplateModal({ conversationId, onClose, onSent }) {
       style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:200 }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       <div style={{ background:'var(--theme-bg-secondary)', borderRadius:16, width:'100%', maxWidth:560, maxHeight:'85vh', display:'flex', flexDirection:'column', boxShadow:'0 20px 60px rgba(0,0,0,0.35)', fontFamily:"'Segoe UI', sans-serif" }}>
 
         {/* Header */}
@@ -87,7 +89,7 @@ export default function TemplateModal({ conversationId, onClose, onSent }) {
           </div>
           <div style={{ display:'flex', gap:8 }}>
             <button onClick={handleSync} disabled={syncing} style={{ padding:'6px 12px', borderRadius:8, border:'1px solid var(--theme-border-strong)', background:'none', cursor:'pointer', fontSize:12, color:'var(--theme-text-secondary)', display:'flex', alignItems:'center', gap:5 }}>
-              {syncing ? '⏳' : '🔄'} {syncing ? 'Sincronizando...' : 'Sincronizar'}
+              {syncing ? <Loader2 size={13} style={{ animation:'spin 0.8s linear infinite' }} /> : <RefreshCw size={13} />} {syncing ? 'Sincronizando...' : 'Sincronizar'}
             </button>
             <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, color:'var(--theme-text-muted)' }}>×</button>
           </div>

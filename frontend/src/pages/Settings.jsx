@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useTheme, PRESETS } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { Sun, Moon, Check } from 'lucide-react';
 
 function isValidHex(hex) {
   return /^#[0-9A-Fa-f]{6}$/.test(hex);
@@ -80,8 +81,8 @@ export default function Settings({ onClose }) {
             <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--theme-text)', margin: '0 0 12px' }}>Modo</p>
             <div style={{ display: 'flex', gap: 10 }}>
               {[
-                { value: 'light', label: '☀️ Claro', desc: 'Fundo branco' },
-                { value: 'dark',  label: '🌙 Escuro', desc: 'Cinza suave' },
+                { value: 'light', label: 'Claro', icon: <Sun size={14} />, desc: 'Fundo branco' },
+                { value: 'dark',  label: 'Escuro', icon: <Moon size={14} />, desc: 'Cinza suave' },
               ].map(m => (
                 <div
                   key={m.value}
@@ -93,7 +94,7 @@ export default function Settings({ onClose }) {
                     transition: 'all 0.15s',
                   }}
                 >
-                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--theme-text)' }}>{m.label}</div>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--theme-text)', display:'flex', alignItems:'center', gap:6 }}>{m.icon}{m.label}</div>
                   <div style={{ fontSize: 12, color: 'var(--theme-text-secondary)', marginTop: 3 }}>{m.desc}</div>
                 </div>
               ))}
@@ -145,11 +146,11 @@ export default function Settings({ onClose }) {
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--theme-text)', display: 'flex', alignItems: 'center', gap: 6 }}>
                         {preset.name}
-                        <span style={{ fontSize: 10, opacity: .6 }}>{preset.mode === 'dark' ? '🌙' : '☀️'}</span>
+                        {preset.mode === 'dark' ? <Moon size={10} style={{ opacity:.6 }} /> : <Sun size={10} style={{ opacity:.6 }} />}
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--theme-text-secondary)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{preset.desc}</div>
                     </div>
-                    {active && <div style={{ marginLeft: 'auto', width: 18, height: 18, borderRadius: '50%', background: preset.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#fff', flexShrink: 0 }}>✓</div>}
+                    {active && <div style={{ marginLeft: 'auto', width: 18, height: 18, borderRadius: '50%', background: preset.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0 }}><Check size={11} strokeWidth={3} /></div>}
                   </div>
                 );
               })}

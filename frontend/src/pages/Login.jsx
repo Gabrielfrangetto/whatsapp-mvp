@@ -1,6 +1,7 @@
 // src/pages/Login.jsx
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Eye, EyeOff, MessageSquare, AlertTriangle } from 'lucide-react';
 
 const COLORS = {
   green: '#25D366',
@@ -192,7 +193,7 @@ function InputField({ label, type = 'text', value, onChange, placeholder, autoFo
               color: COLORS.muted, fontSize: '16px', padding: '4px',
             }}
           >
-            {showPwd ? '🙈' : '👁'}
+            {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         )}
       </div>
@@ -240,7 +241,7 @@ export default function Login() {
       }}>
         {/* Logo */}
         <div style={styles.logoWrap}>
-          <div style={styles.logoIcon}>💬</div>
+          <div style={styles.logoIcon}><MessageSquare size={22} color="#fff" /></div>
           <div>
             <div style={styles.logoText}>WhatsApp MVP</div>
             <div style={styles.logoSub}>Central de Atendimento</div>
@@ -252,7 +253,7 @@ export default function Login() {
 
         {error && (
           <div style={styles.errorBox}>
-            <span>⚠️</span> {error}
+            <AlertTriangle size={15} style={{ flexShrink:0 }} /> {error}
           </div>
         )}
 

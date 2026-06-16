@@ -1,6 +1,6 @@
 // src/App.jsx
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowUp, ArrowDown, Sticker, MessageSquare, Users, Settings as SettingsIcon, LogOut, Phone, Calendar, Lock, ChevronDown, Pin } from 'lucide-react';
+import { ArrowUp, ArrowDown, Sticker, MessageSquare, Users, Settings as SettingsIcon, LogOut, Phone, Calendar, Lock, ChevronDown, Pin, User, Paperclip, Send, Loader2, Check } from 'lucide-react';
 import TemplateModal from './components/TemplateModal';
 import { AuthProvider, useAuth, api } from './context/AuthContext';
 import { useSocket, disconnectSocket } from './hooks/useSocket';
@@ -138,7 +138,7 @@ function TypingIndicator({ name }) {
           ))}
         </span>
       </div>
-      <style>{`@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}`}</style>
+      <style>{`@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }
@@ -329,8 +329,8 @@ function NavRail({ section, onSection, agent, agentStatus = 'ONLINE', onStatusCh
     <div style={{ width:64, background:navBg, display:'flex', flexDirection:'column', alignItems:'center', paddingTop:12, paddingBottom:12, gap:2, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.3)', zIndex:10 }}>
 
       {/* App logo */}
-      <div style={{ width:40, height:40, borderRadius:12, background:'var(--theme-primary)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:20, marginBottom:12, flexShrink:0 }}>
-        💬
+      <div style={{ width:40, height:40, borderRadius:12, background:'var(--theme-primary)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', marginBottom:12, flexShrink:0 }}>
+        <MessageSquare size={20} />
       </div>
 
       {/* Navigation */}
@@ -396,7 +396,7 @@ function ContactDetailsPanel({ conv }) {
   if (!conv) {
     return (
       <div style={{ width:260, background:'var(--theme-bg-sidebar)', borderLeft:'1px solid var(--theme-border)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:14, padding:'0 24px', flexShrink:0 }}>
-        <div style={{ fontSize:44, opacity:.18 }}>👤</div>
+        <User size={44} style={{ opacity:.18, color:'var(--theme-text)' }} />
         <p style={{ color:'var(--theme-text-muted)', fontSize:13, textAlign:'center', margin:0, lineHeight:1.7 }}>
           Selecione uma conversa para ver os detalhes do contato
         </p>
@@ -613,7 +613,7 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
 
   if (!conversationId) return (
     <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'var(--theme-bg-chat)', gap:16 }}>
-      <div style={{ fontSize:64, opacity:.3 }}>💬</div>
+      <MessageSquare size={64} style={{ opacity:.3, color:'var(--theme-text)' }} />
       <p style={{ color:'var(--theme-text)', fontSize:16, fontWeight:500, margin:0 }}>Selecione uma conversa</p>
       <p style={{ color:'var(--theme-text-secondary)', fontSize:14, margin:0 }}>Escolha uma conversa na lista ao lado</p>
     </div>
@@ -636,7 +636,7 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
         </div>
         {conversation && <StatusBadge status={conversation.status} />}
         {conversation?.status !== 'RESOLVED'
-          ? <button onClick={() => setShowResolve(true)} style={{ background:'rgba(255,255,255,0.2)', color:'#fff', border:'1px solid rgba(255,255,255,0.3)', borderRadius:8, padding:'6px 14px', cursor:'pointer', fontSize:12, fontWeight:600 }}>✓ Resolver</button>
+          ? <button onClick={() => setShowResolve(true)} style={{ background:'rgba(255,255,255,0.2)', color:'#fff', border:'1px solid rgba(255,255,255,0.3)', borderRadius:8, padding:'6px 14px', cursor:'pointer', fontSize:12, fontWeight:600, display:'flex', alignItems:'center', gap:5 }}><Check size={13} /> Resolver</button>
           : <button onClick={() => handleStatus('OPEN')} style={{ background:'rgba(255,255,255,0.1)', color:'#fff', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, padding:'6px 14px', cursor:'pointer', fontSize:12, fontWeight:600 }}>Reabrir</button>
         }
       </div>
@@ -696,8 +696,8 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
           </div>
         )}
         <button onClick={() => setShowMedia(true)} disabled={!windowOpen} title="Enviar arquivo"
-          style={{ width:40, height:40, borderRadius:'50%', border:'1px solid var(--theme-border)', background:'var(--theme-bg-input)', cursor: windowOpen ? 'pointer' : 'not-allowed', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0, color: windowOpen ? 'var(--theme-text-secondary)' : 'var(--theme-text-muted)', opacity: windowOpen ? 1 : 0.4 }}>
-          📎
+          style={{ width:40, height:40, borderRadius:'50%', border:'1px solid var(--theme-border)', background:'var(--theme-bg-input)', cursor: windowOpen ? 'pointer' : 'not-allowed', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, color: windowOpen ? 'var(--theme-text-secondary)' : 'var(--theme-text-muted)', opacity: windowOpen ? 1 : 0.4 }}>
+          <Paperclip size={18} />
         </button>
         <div ref={stickerBtnRef} style={{ position:'relative', flexShrink:0 }}>
           <button
@@ -718,7 +718,7 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
         </div>
         <button onClick={handleSend} disabled={(!text.trim() && !pastedImage) || sending || !windowOpen}
           style={{ width:40, height:40, borderRadius:'50%', border:'none', background: (text.trim() || pastedImage) && !sending && windowOpen ? 'var(--theme-primary)' : 'var(--theme-border)', cursor: (text.trim() || pastedImage) && !sending && windowOpen ? 'pointer' : 'default', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, color: (text.trim() || pastedImage) && !sending && windowOpen ? 'var(--theme-primary-text)' : 'var(--theme-text-muted)', flexShrink:0, opacity: windowOpen ? 1 : 0.4, transition:'background 0.2s' }}>
-          {sending ? '⏳' : '➤'}
+          {sending ? <Loader2 size={16} style={{ animation:'spin 0.8s linear infinite' }} /> : <Send size={16} />}
         </button>
       </div>
 
@@ -975,7 +975,7 @@ function AuthGuard() {
   const { agent, loading } = useAuth();
   if (loading) return (
     <div style={{ height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--theme-bg, #0a0f0d)', flexDirection:'column', gap:16 }}>
-      <div style={{ fontSize:40 }}>💬</div>
+      <MessageSquare size={40} style={{ color:'var(--theme-primary)' }} />
       <div style={{ color:'var(--theme-primary, #25D366)', fontSize:14, fontWeight:500 }}>Carregando...</div>
     </div>
   );

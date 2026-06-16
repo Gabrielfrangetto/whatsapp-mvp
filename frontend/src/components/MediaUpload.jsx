@@ -1,23 +1,16 @@
 // src/components/MediaUpload.jsx
 import { useState, useRef } from 'react';
 import { api } from '../context/AuthContext';
+import { Paperclip, Image, Music, Video, FileText } from 'lucide-react';
 
 const ACCEPT = 'image/jpeg,image/png,image/webp,image/gif,audio/mpeg,audio/ogg,video/mp4,application/pdf,.doc,.docx,.xls,.xlsx,.txt';
 
-const FILE_ICONS = {
-  image: '🖼️',
-  audio: '🎵',
-  video: '🎥',
-  pdf: '📄',
-  document: '📎',
-};
-
 function getFileIcon(mimetype) {
-  if (mimetype.startsWith('image/')) return FILE_ICONS.image;
-  if (mimetype.startsWith('audio/')) return FILE_ICONS.audio;
-  if (mimetype.startsWith('video/')) return FILE_ICONS.video;
-  if (mimetype === 'application/pdf') return FILE_ICONS.pdf;
-  return FILE_ICONS.document;
+  if (mimetype.startsWith('image/')) return <Image size={20} />;
+  if (mimetype.startsWith('audio/')) return <Music size={20} />;
+  if (mimetype.startsWith('video/')) return <Video size={20} />;
+  if (mimetype === 'application/pdf') return <FileText size={20} />;
+  return <Paperclip size={20} />;
 }
 
 function formatSize(bytes) {
@@ -89,11 +82,11 @@ export default function MediaUpload({ conversationId, onSent, onClose }) {
       style={{ position:'fixed', inset:0, background:'#00000060', display:'flex', alignItems:'center', justifyContent:'center', zIndex:200 }}
       onClick={e => e.target === e.currentTarget && onClose?.()}
     >
-      <div style={{ background:'#fff', borderRadius:16, width:'100%', maxWidth:440, boxShadow:'0 20px 60px rgba(0,0,0,0.3)', fontFamily:"'Segoe UI', sans-serif", overflow:'hidden' }}>
+      <div style={{ background:'var(--theme-bg-secondary)', borderRadius:16, width:'100%', maxWidth:440, boxShadow:'0 20px 60px rgba(0,0,0,0.3)', fontFamily:"'Segoe UI', sans-serif", overflow:'hidden', border:'1px solid var(--theme-border)' }}>
         {/* Header */}
-        <div style={{ padding:'16px 20px', borderBottom:'1px solid #eee', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <h3 style={{ fontSize:15, fontWeight:600, color:'#111', margin:0 }}>Enviar arquivo</h3>
-          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, color:'#aaa' }}>×</button>
+        <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--theme-border)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <h3 style={{ fontSize:15, fontWeight:600, color:'var(--theme-text)', margin:0 }}>Enviar arquivo</h3>
+          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', fontSize:20, color:'var(--theme-text-muted)' }}>×</button>
         </div>
 
         <div style={{ padding:'20px' }}>
@@ -113,13 +106,13 @@ export default function MediaUpload({ conversationId, onSent, onClose }) {
               onMouseEnter={e => e.currentTarget.style.borderColor = '#075E54'}
               onMouseLeave={e => e.currentTarget.style.borderColor = '#ddd'}
             >
-              <div style={{ fontSize:40, marginBottom:12 }}>📎</div>
-              <p style={{ fontSize:14, fontWeight:500, color:'#333', margin:'0 0 6px' }}>Clique ou arraste um arquivo</p>
-              <p style={{ fontSize:12, color:'#aaa', margin:0 }}>Imagens, áudio, vídeo, PDF, documentos — máx. 16MB</p>
+              <Paperclip size={40} style={{ marginBottom:12, color:'var(--theme-text-muted)' }} />
+              <p style={{ fontSize:14, fontWeight:500, color:'var(--theme-text)', margin:'0 0 6px' }}>Clique ou arraste um arquivo</p>
+              <p style={{ fontSize:12, color:'var(--theme-text-muted)', margin:0 }}>Imagens, áudio, vídeo, PDF, documentos — máx. 16MB</p>
               <input ref={inputRef} type="file" accept={ACCEPT} onChange={e => handleFile(e.target.files[0])} style={{ display:'none' }} />
             </div>
           ) : (
-            <div style={{ border:'1px solid #e0e0e0', borderRadius:12, overflow:'hidden' }}>
+            <div style={{ border:'1px solid var(--theme-border)', borderRadius:12, overflow:'hidden' }}>
               {/* Preview imagem */}
               {preview && (
                 <div style={{ background:'#f8f8f8', display:'flex', justifyContent:'center', padding:'16px', maxHeight:200, overflow:'hidden' }}>
@@ -129,14 +122,14 @@ export default function MediaUpload({ conversationId, onSent, onClose }) {
 
               {/* Info do arquivo */}
               <div style={{ padding:'14px 16px', display:'flex', alignItems:'center', gap:12 }}>
-                <div style={{ width:40, height:40, borderRadius:10, background:'#f0fdf4', display:'flex', alignItems:'center', justifyContent:'center', fontSize:20, flexShrink:0 }}>
+                <div style={{ width:40, height:40, borderRadius:10, background:'var(--theme-primary-subtle)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, color:'var(--theme-primary)' }}>
                   {getFileIcon(file.type)}
                 </div>
                 <div style={{ flex:1, minWidth:0 }}>
-                  <p style={{ fontSize:13, fontWeight:500, color:'#111', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{file.name}</p>
-                  <p style={{ fontSize:12, color:'#aaa', margin:'2px 0 0' }}>{formatSize(file.size)}</p>
+                  <p style={{ fontSize:13, fontWeight:500, color:'var(--theme-text)', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{file.name}</p>
+                  <p style={{ fontSize:12, color:'var(--theme-text-muted)', margin:'2px 0 0' }}>{formatSize(file.size)}</p>
                 </div>
-                <button onClick={() => { setFile(null); setPreview(null); setProgress(0); }} style={{ background:'none', border:'none', cursor:'pointer', color:'#aaa', fontSize:18 }}>×</button>
+                <button onClick={() => { setFile(null); setPreview(null); setProgress(0); }} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--theme-text-muted)', fontSize:18 }}>×</button>
               </div>
 
               {/* Progress bar */}
@@ -150,14 +143,14 @@ export default function MediaUpload({ conversationId, onSent, onClose }) {
         </div>
 
         {/* Footer */}
-        <div style={{ padding:'14px 20px', borderTop:'1px solid #eee', display:'flex', justifyContent:'flex-end', gap:8 }}>
-          <button onClick={onClose} style={{ padding:'9px 18px', borderRadius:8, border:'1px solid #e0e0e0', background:'none', cursor:'pointer', fontSize:13, color:'#555' }}>
+        <div style={{ padding:'14px 20px', borderTop:'1px solid var(--theme-border)', display:'flex', justifyContent:'flex-end', gap:8 }}>
+          <button onClick={onClose} style={{ padding:'9px 18px', borderRadius:8, border:'1px solid var(--theme-border)', background:'none', cursor:'pointer', fontSize:13, color:'var(--theme-text-secondary)' }}>
             Cancelar
           </button>
           <button
             onClick={handleSend}
             disabled={!file || sending}
-            style={{ padding:'9px 18px', borderRadius:8, border:'none', background: file && !sending ? '#075E54' : '#ccc', color:'#fff', cursor: file && !sending ? 'pointer' : 'default', fontSize:13, fontWeight:600 }}
+            style={{ padding:'9px 18px', borderRadius:8, border:'none', background: file && !sending ? 'var(--theme-primary)' : 'var(--theme-border)', color: file && !sending ? 'var(--theme-primary-text)' : 'var(--theme-text-muted)', cursor: file && !sending ? 'pointer' : 'default', fontSize:13, fontWeight:600 }}
           >
             {sending ? `Enviando... ${Math.round(progress)}%` : 'Enviar'}
           </button>

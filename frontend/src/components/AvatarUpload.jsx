@@ -1,5 +1,6 @@
 // src/components/AvatarUpload.jsx
 import { useState, useRef } from 'react';
+import { Camera } from 'lucide-react';
 
 const CLOUD_NAME   = 'dvbah3xab';
 const UPLOAD_PRESET = 'whatsapp_mvp_agents';
@@ -93,7 +94,7 @@ export default function AvatarUpload({ agent, onSaved, onClose }) {
                     onMouseEnter={e => e.currentTarget.style.opacity=1}
                     onMouseLeave={e => e.currentTarget.style.opacity=0}
                   >
-                    <span style={{ fontSize:22 }}>📷</span>
+                    <Camera size={22} color="#fff" />
                   </div>
                 )}
               </div>
@@ -127,7 +128,7 @@ export default function AvatarUpload({ agent, onSaved, onClose }) {
               disabled={uploading}
               style={{ width:'100%', padding:'10px', borderRadius:8, border:'1px solid var(--theme-border)', background: uploading ? 'var(--theme-border)' : 'var(--theme-primary)', color: uploading ? 'var(--theme-text-muted)' : '#fff', cursor: uploading ? 'default' : 'pointer', fontSize:13, fontWeight:600 }}
             >
-              {uploading ? 'Enviando...' : '📷 Escolher foto'}
+              {uploading ? 'Enviando...' : <span style={{ display:'flex', alignItems:'center', gap:6 }}><Camera size={14} /> Escolher foto</span>}
             </button>
           </div>
         </div>

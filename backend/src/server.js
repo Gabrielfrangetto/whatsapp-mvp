@@ -125,6 +125,7 @@ initSocket(server);
 
 // ─── Auto-close por inatividade de 24h ───────────────────────────────────────
 const { runAutoClose } = require('./services/autoclose.service');
+runAutoClose(); // roda na inicialização
 setInterval(runAutoClose, 30 * 60 * 1000); // a cada 30 minutos
 
 // ─── Start ────────────────────────────────────────────────────────────────────

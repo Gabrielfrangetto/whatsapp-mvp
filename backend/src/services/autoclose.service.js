@@ -1,17 +1,17 @@
 // src/services/autoclose.service.js
-const OpenAI = require('openai');
+const Anthropic = require('@anthropic-ai/sdk');
 const { PrismaClient } = require('@prisma/client');
 const { emitConversationUpdate, emitNewMessage } = require('../socket/socket.server');
 
 const prisma = new PrismaClient();
 
 async function pickReason(reasons, messages) {
-  if (!process.env.OPENAI_API_KEY) {
-    console.warn('[AutoClose] OPENAI_API_KEY não definido — usando primeiro motivo disponível');
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.warn('[AutoClose] ANTHROPIC_API_KEY não definido — usando primeiro motivo disponível');
     return reasons[0];
   }
 
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   const convoText = messages.slice(-30).map(m => {
     const who = m.direction === 'INBOUND' ? 'Cliente' : m.direction === 'OUTBOUND' ? 'Agente' : 'Sistema';
@@ -28,13 +28,14 @@ ${reasons.map((r, i) => `${i + 1}. ${r.label}`).join('\n')}
 
 Responda APENAS com o número do motivo escolhido (ex: "2"). Sem explicações.`;
 
-  const response = await client.chat.completions.create({
-    model: 'gpt-4o-mini',
+  const response = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
     max_tokens: 10,
     messages: [{ role: 'user', content: prompt }],
   });
 
-  const picked = parseInt(response.choices[0]?.message?.content?.trim()) - 1;
+  const text = response.content[0]?.text?.trim() || '1';
+  const picked = parseInt(text) - 1;
   const idx = Number.isFinite(picked) && picked >= 0 && picked < reasons.length ? picked : 0;
   return reasons[idx];
 }

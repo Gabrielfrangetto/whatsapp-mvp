@@ -39,11 +39,11 @@ Responda APENAS com o número do motivo escolhido (ex: "2"). Sem explicações.`
   return reasons[idx];
 }
 
-async function runAutoClose() {
+async function runAutoClose(inactivityHours = 24) {
   const result = { found: 0, closed: [], skipped: [], reasonsAvailable: 0, aiError: null };
 
   try {
-    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const cutoff = new Date(Date.now() - inactivityHours * 60 * 60 * 1000);
 
     const conversations = await prisma.conversation.findMany({
       where: {

@@ -295,4 +295,49 @@ async function updateAgent(req, res) {
   }
 }
 
-module.exports = { login, refresh, logout, me, listAgents, createAgent, updateAgent, updatePreferences, updateAgentAvatar };
+const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+async function getAgentSchedule(req, res) {
+  try {
+    const { id } = req.params;
+    const agent = await prisma.agent.findUnique({ where: { id }, select: { workSchedule: true } });
+    if (!agent) return res.status(404).json({ error: 'Agente não encontrado' });
+    res.json({ workSchedule: agent.workSchedule || null });
+  } catch {
+    res.status(500).json({ error: 'Erro interno' });
+  }
+}
+
+async function updateAgentSchedule(req, res) {
+  try {
+    const { id } = req.params;
+    const { workSchedule } = req.body;
+
+    if (!workSchedule || typeof workSchedule !== 'object') {
+      return res.status(400).json({ error: 'workSchedule inválido' });
+    }
+
+    for (const day of DAYS) {
+      const entry = workSchedule[day];
+      if (!entry) continue;
+      if (typeof entry.enabled !== 'boolean') return res.status(400).json({ error: `${day}.enabled inválido` });
+      if (entry.enabled) {
+        if (!TIME_RE.test(entry.start) || !TIME_RE.test(entry.end)) {
+          return res.status(400).json({ error: `Horário inválido para ${day}` });
+        }
+      }
+    }
+
+    const agent = await prisma.agent.update({
+      where: { id },
+      data: { workSchedule },
+      select: { id: true, workSchedule: true },
+    });
+    res.json(agent);
+  } catch {
+    res.status(500).json({ error: 'Erro interno' });
+  }
+}
+
+module.exports = { login, refresh, logout, me, listAgents, createAgent, updateAgent, updatePreferences, updateAgentAvatar, getAgentSchedule, updateAgentSchedule };

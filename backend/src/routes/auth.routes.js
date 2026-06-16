@@ -4,6 +4,7 @@ const { requireAuth, requireRole } = require('../middleware/auth.middleware');
 const {
   login, refresh, logout, me,
   listAgents, createAgent, updateAgent, updatePreferences, updateAgentAvatar,
+  getAgentSchedule, updateAgentSchedule,
 } = require('../controllers/auth.controller');
 
 const router = express.Router();
@@ -20,6 +21,8 @@ router.get('/me', requireAuth, me);
 router.get('/agents', requireAuth, requireRole('ADMIN'), listAgents);
 router.post('/agents', requireAuth, requireRole('ADMIN'), createAgent);
 router.patch('/agents/:id/avatar', requireAuth, requireRole('ADMIN'), updateAgentAvatar);
+router.get('/agents/:id/schedule', requireAuth, requireRole('ADMIN'), getAgentSchedule);
+router.patch('/agents/:id/schedule', requireAuth, requireRole('ADMIN'), updateAgentSchedule);
 router.patch('/agents/:id', requireAuth, updateAgent);
 router.patch('/me/preferences', requireAuth, updatePreferences);
 

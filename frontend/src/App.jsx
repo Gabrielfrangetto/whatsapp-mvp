@@ -22,6 +22,27 @@ function formatTime(dateStr) {
     return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 }
+function formatMsgTime(dateStr) {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+function getDateKey(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+function formatDateLabel(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const msgDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  if (msgDay.getTime() === today.getTime()) return 'Hoje';
+  if (msgDay.getTime() === yesterday.getTime()) return 'Ontem';
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
 function getInitials(name = '') {
   return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || '?';
 }
@@ -60,7 +81,7 @@ function MessageBubble({ message }) {
           </div>
           <div>
             <p style={{ margin:0, fontSize:12, color:'var(--theme-text-secondary)', lineHeight:1.6, whiteSpace:'pre-line' }}>{message.content}</p>
-            <span style={{ fontSize:10, color:'var(--theme-text-muted)', marginTop:3, display:'block' }}>{formatTime(message.timestamp)}</span>
+            <span style={{ fontSize:10, color:'var(--theme-text-muted)', marginTop:3, display:'block' }}>{formatMsgTime(message.timestamp)}</span>
           </div>
         </div>
       </div>
@@ -92,7 +113,7 @@ function MessageBubble({ message }) {
           {message.content}
         </p>
         <div style={{ display:'flex', justifyContent:'flex-end', alignItems:'center', gap:3, marginTop:2, padding: isImage ? '0 8px' : 0 }}>
-          <span style={{ fontSize:11, color:'var(--theme-text-muted)' }}>{formatTime(message.timestamp)}</span>
+          <span style={{ fontSize:11, color:'var(--theme-text-muted)' }}>{formatMsgTime(message.timestamp)}</span>
           {isOut && <span style={{ fontSize:12, color: tickColor }}>{icon}</span>}
         </div>
       </div>
@@ -113,6 +134,17 @@ function TypingIndicator({ name }) {
         </span>
       </div>
       <style>{`@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}`}</style>
+    </div>
+  );
+}
+
+// ─── DateSeparator ────────────────────────────────────────────────────────────
+function DateSeparator({ label }) {
+  return (
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center', margin:'12px 0 6px' }}>
+      <div style={{ background:'var(--theme-bg-bubble-in)', color:'var(--theme-text-secondary)', fontSize:12, fontWeight:500, padding:'4px 14px', borderRadius:20, boxShadow:'0 1px 2px rgba(0,0,0,0.1)' }}>
+        {label}
+      </div>
     </div>
   );
 }
@@ -606,7 +638,15 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
 
       {/* Messages */}
       <div style={{ flex:1, overflowY:'auto', padding:'16px 8%', display:'flex', flexDirection:'column', gap:2 }}>
-        {messages.map(m => <MessageBubble key={m.id} message={m} />)}
+        {messages.map((m, i) => {
+          const showSep = i === 0 || getDateKey(m.timestamp) !== getDateKey(messages[i - 1].timestamp);
+          return (
+            <div key={m.id}>
+              {showSep && <DateSeparator label={formatDateLabel(m.timestamp)} />}
+              <MessageBubble message={m} />
+            </div>
+          );
+        })}
         {typingAgent && <TypingIndicator name={typingAgent} />}
         <div ref={bottomRef} />
       </div>

@@ -56,13 +56,6 @@ async function runAutoClose() {
 
     result.found = conversations.length;
 
-    if (conversations.length === 0) {
-      console.log('[AutoClose] Nenhuma conversa inativa encontrada');
-      return result;
-    }
-
-    console.log(`[AutoClose] 🔍 ${conversations.length} conversa(s) inativa(s) para fechar`);
-
     const reasons = await prisma.resolutionReason.findMany({
       where: { isActive: true },
       orderBy: { label: 'asc' },
@@ -70,6 +63,13 @@ async function runAutoClose() {
 
     result.reasonsAvailable = reasons.length;
     console.log(`[AutoClose] Motivos disponíveis: ${reasons.length} (${reasons.map(r => r.label).join(', ')})`);
+
+    if (conversations.length === 0) {
+      console.log('[AutoClose] Nenhuma conversa inativa encontrada');
+      return result;
+    }
+
+    console.log(`[AutoClose] 🔍 ${conversations.length} conversa(s) inativa(s) para fechar`);
 
     for (const conv of conversations) {
       try {

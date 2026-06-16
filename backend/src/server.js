@@ -131,8 +131,8 @@ setInterval(runAutoClose, 30 * 60 * 1000);
 app.post('/api/admin/autoclose', async (req, res) => {
   if (req.query.secret !== process.env.SETUP_SECRET) return res.status(403).json({ error: 'Proibido' });
   try {
-    await runAutoClose();
-    res.json({ ok: true, ran: new Date().toISOString() });
+    const result = await runAutoClose();
+    res.json({ ok: true, ran: new Date().toISOString(), ...result });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }

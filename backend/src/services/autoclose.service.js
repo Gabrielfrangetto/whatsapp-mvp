@@ -40,6 +40,8 @@ Responda APENAS com o número do motivo escolhido (ex: "2"). Sem explicações.`
 }
 
 async function runAutoClose() {
+  const result = { found: 0, closed: [], skipped: [], reasonsAvailable: 0, aiError: null };
+
   try {
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
@@ -52,7 +54,12 @@ async function runAutoClose() {
       include: { contact: true },
     });
 
-    if (conversations.length === 0) return;
+    result.found = conversations.length;
+
+    if (conversations.length === 0) {
+      console.log('[AutoClose] Nenhuma conversa inativa encontrada');
+      return result;
+    }
 
     console.log(`[AutoClose] 🔍 ${conversations.length} conversa(s) inativa(s) para fechar`);
 
@@ -60,6 +67,9 @@ async function runAutoClose() {
       where: { isActive: true },
       orderBy: { label: 'asc' },
     });
+
+    result.reasonsAvailable = reasons.length;
+    console.log(`[AutoClose] Motivos disponíveis: ${reasons.length} (${reasons.map(r => r.label).join(', ')})`);
 
     for (const conv of conversations) {
       try {
@@ -75,16 +85,14 @@ async function runAutoClose() {
 
         let reasonLabel = 'Inatividade de 24h';
         if (reasons.length > 0) {
-          console.log(`[AutoClose] ${reasons.length} motivo(s) disponível(is), tentando IA...`);
           try {
             const chosen = await pickReason(reasons, messages);
             reasonLabel = chosen.label;
             console.log(`[AutoClose] IA escolheu: "${reasonLabel}"`);
           } catch (aiErr) {
-            console.error('[AutoClose] IA falhou:', aiErr.message, aiErr.status || '');
+            result.aiError = aiErr.message;
+            console.error('[AutoClose] IA falhou:', aiErr.message);
           }
-        } else {
-          console.log('[AutoClose] Nenhum motivo cadastrado, usando padrão');
         }
 
         const internalContent = `🔒 Conversa encerrada automaticamente por inatividade de 24h\nData: ${dateStr} às ${timeStr}\nMotivo: ${reasonLabel}`;
@@ -101,25 +109,27 @@ async function runAutoClose() {
 
         const updatedConv = await prisma.conversation.update({
           where: { id: conv.id },
-          data: {
-            status: 'RESOLVED',
-            lastMessage: internalContent,
-            lastMessageAt: now,
-          },
+          data: { status: 'RESOLVED', lastMessage: internalContent, lastMessageAt: now },
           include: { contact: true },
         });
 
         emitNewMessage(conv.id, internalMessage);
         emitConversationUpdate(updatedConv);
 
-        console.log(`[AutoClose] ✅ ${conv.contact?.name || conv.contact?.phone} → ${reasonLabel}`);
+        const contact = conv.contact?.name || conv.contact?.phone;
+        console.log(`[AutoClose] ✅ ${contact} → ${reasonLabel}`);
+        result.closed.push({ contact, reason: reasonLabel });
       } catch (e) {
         console.error(`[AutoClose] ❌ Erro na conversa ${conv.id}:`, e.message);
+        result.skipped.push({ id: conv.id, error: e.message });
       }
     }
   } catch (e) {
     console.error('[AutoClose] ❌ Erro no ciclo:', e.message);
+    result.cycleError = e.message;
   }
+
+  return result;
 }
 
 module.exports = { runAutoClose };

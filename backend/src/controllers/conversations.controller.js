@@ -35,7 +35,7 @@ async function getMessages(req, res) {
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const [messages, conversation] = await Promise.all([
-      prisma.message.findMany({ where: { conversationId: id }, orderBy: { timestamp: 'asc' }, skip, take: parseInt(limit) }),
+      prisma.message.findMany({ where: { conversationId: id }, orderBy: { timestamp: 'desc' }, skip, take: parseInt(limit) }),
       prisma.conversation.findUnique({ where: { id }, include: { contact: true, assignedAgent: { select: { id: true, name: true } } } }),
     ]);
 
@@ -57,7 +57,8 @@ async function getMessages(req, res) {
       agentColor: m.sentByAgentId ? agentMap[m.sentByAgentId]?.avatarColor : null,
     }));
     
-    res.json({ conversation, messages: enriched });
+    // Retorna em ordem cronológica (mais antigas primeiro) para o frontend renderizar
+    res.json({ conversation, messages: enriched.reverse() });
   } catch (e) {
     res.status(500).json({ error: 'Erro ao buscar mensagens' });
   }

@@ -477,7 +477,12 @@ function ContactDetailsPanel({ conv }) {
 // ─── ChatPanel ────────────────────────────────────────────────────────────────
 const WINDOW_MS = 24 * 60 * 60 * 1000;
 
-function computeWindowOpen(msgs) {
+function computeWindowOpen(msgs, conversation) {
+  // Usa lastMessageAt da conversa quando o último msg foi do cliente — evita bug de paginação
+  if (conversation?.lastMessageDirection === 'INBOUND' && conversation?.lastMessageAt) {
+    return Date.now() - new Date(conversation.lastMessageAt).getTime() < WINDOW_MS;
+  }
+  // Fallback: varre as mensagens carregadas para achar a última INBOUND
   const lastInbound = [...msgs].reverse().find(m => m.direction === 'INBOUND');
   if (!lastInbound) return false;
   return Date.now() - new Date(lastInbound.timestamp).getTime() < WINDOW_MS;
@@ -508,7 +513,7 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
       const msgs = data.messages || [];
       setMessages(msgs);
       setConversation(data.conversation || null);
-      setWindowOpen(computeWindowOpen(msgs));
+      setWindowOpen(computeWindowOpen(msgs, data.conversation));
     } catch {}
   }, []);
 

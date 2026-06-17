@@ -1,4 +1,4 @@
-import { Phone, Calendar, MessageSquare, User } from 'lucide-react';
+import { Phone, Calendar, MessageSquare, User, Pin } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 import { formatTime, getInitials, getAvatarColor } from '../utils/format';
 
@@ -74,6 +74,25 @@ export default function ContactDetailsPanel({ conv }) {
                 <div style={{ fontSize: 13, color: 'var(--theme-text)', fontWeight: 600 }}>{conv.assignedAgent.name}</div>
                 <div style={{ fontSize: 11, color: 'var(--theme-text-muted)' }}>Responsável</div>
               </div>
+            </div>
+          </>
+        )}
+
+        {conv.pinnedBy?.length > 0 && (
+          <>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 4, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <Pin size={10} />
+              Fixado por
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {conv.pinnedBy.map(agent => (
+                <div key={agent.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: agent.avatarColor || 'var(--theme-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 10, flexShrink: 0 }}>
+                    {getInitials(agent.name)}
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--theme-text-secondary)', fontWeight: 500 }}>{agent.name}</div>
+                </div>
+              ))}
             </div>
           </>
         )}

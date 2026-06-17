@@ -4,6 +4,10 @@ const prisma = new PrismaClient();
 
 const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
+// Limite de conversas simultâneas por agente. Agentes no cap são ignorados pelo pickAgent.
+// Ajuste via variável de ambiente MAX_CONCURRENT_PER_AGENT (padrão: 8).
+const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT_PER_AGENT || '8', 10);
+
 /**
  * Verifica se o agente está dentro do seu horário de trabalho configurado.
  * Se não tiver horário configurado, considera sempre disponível.
@@ -53,8 +57,12 @@ async function pickAgent(excludeAgentId = null) {
     })
   );
 
-  withCounts.sort((a, b) => a.count - b.count || a.agent.name.localeCompare(b.agent.name));
-  return withCounts[0].agent;
+  // Descarta agentes que já atingiram o cap de conversas simultâneas
+  const underCap = withCounts.filter(x => x.count < MAX_CONCURRENT);
+  if (underCap.length === 0) return null;
+
+  underCap.sort((a, b) => a.count - b.count || a.agent.name.localeCompare(b.agent.name));
+  return underCap[0].agent;
 }
 
 /**

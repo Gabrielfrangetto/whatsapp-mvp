@@ -43,7 +43,7 @@ export default function Settings({ onClose }) {
   const [hexError, setHexError] = useState('');
 
   const activeHex = isValidHex(hexInput) ? hexInput : color;
-  const contrastWarn = isValidHex(activeHex) && contrastRatio(activeHex, MODE_BG[mode]) < 3;
+  const contrastWarn = isValidHex(activeHex) && contrastRatio(activeHex, MODE_BG[mode]) < 1.8;
 
   function handleHexChange(val) {
     setHexInput(val);

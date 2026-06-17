@@ -103,7 +103,7 @@ export default function ResolveModal({ conversationId, onClose, onResolved }) {
           <button
             onClick={handleResolve}
             disabled={!selected || resolving || reasons.length === 0}
-            style={{ padding:'9px 18px', borderRadius:8, border:'none', background: selected && !resolving ? 'var(--theme-primary)' : 'var(--theme-border)', color: selected && !resolving ? 'var(--theme-primary-text)' : 'var(--theme-text-muted)', cursor: selected && !resolving ? 'pointer' : 'default', fontSize:13, fontWeight:600, display:'flex', alignItems:'center', gap:6 }}
+            style={{ padding:'9px 18px', borderRadius:8, border:'none', background: selected && !resolving ? 'var(--theme-primary-btn)' : 'var(--theme-border)', color: selected && !resolving ? 'var(--theme-primary-btn-text)' : 'var(--theme-text-muted)', cursor: selected && !resolving ? 'pointer' : 'default', fontSize:13, fontWeight:600, display:'flex', alignItems:'center', gap:6 }}
           >
             {resolving ? 'Finalizando...' : <><Check size={13} /> Finalizar</>}
           </button>

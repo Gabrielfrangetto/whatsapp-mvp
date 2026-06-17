@@ -690,7 +690,7 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
             <span style={{ fontSize:12, color:'var(--theme-text-secondary)', textAlign:'center', lineHeight:1.5 }}>
               A Meta permite mensagens livres somente até 24h após a última mensagem do cliente. Use um modelo de mensagem aprovado para retomar o contato.
             </span>
-            <button onClick={() => setShowTemplates(true)} style={{ marginTop:4, padding:'6px 20px', borderRadius:20, border:'1px solid var(--theme-primary)', background:'var(--theme-primary)', color:'var(--theme-primary-text)', fontSize:15, fontWeight:600, cursor:'pointer' }}>
+            <button onClick={() => setShowTemplates(true)} style={{ marginTop:4, padding:'6px 20px', borderRadius:20, border:'1px solid var(--theme-primary-btn)', background:'var(--theme-primary-btn)', color:'var(--theme-primary-btn-text)', fontSize:15, fontWeight:600, cursor:'pointer' }}>
               Enviar modelo de mensagem
             </button>
           </div>
@@ -717,7 +717,7 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
           )}
         </div>
         <button onClick={handleSend} disabled={(!text.trim() && !pastedImage) || sending || !windowOpen}
-          style={{ width:40, height:40, borderRadius:'50%', border:'none', background: (text.trim() || pastedImage) && !sending && windowOpen ? 'var(--theme-primary)' : 'var(--theme-border)', cursor: (text.trim() || pastedImage) && !sending && windowOpen ? 'pointer' : 'default', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, color: (text.trim() || pastedImage) && !sending && windowOpen ? 'var(--theme-primary-text)' : 'var(--theme-text-muted)', flexShrink:0, opacity: windowOpen ? 1 : 0.4, transition:'background 0.2s' }}>
+          style={{ width:40, height:40, borderRadius:'50%', border:'none', background: (text.trim() || pastedImage) && !sending && windowOpen ? 'var(--theme-primary-btn)' : 'var(--theme-border)', cursor: (text.trim() || pastedImage) && !sending && windowOpen ? 'pointer' : 'default', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, color: (text.trim() || pastedImage) && !sending && windowOpen ? 'var(--theme-primary-btn-text)' : 'var(--theme-text-muted)', flexShrink:0, opacity: windowOpen ? 1 : 0.4, transition:'background 0.2s' }}>
           {sending ? <Loader2 size={16} style={{ animation:'spin 0.8s linear infinite' }} /> : <Send size={16} />}
         </button>
       </div>

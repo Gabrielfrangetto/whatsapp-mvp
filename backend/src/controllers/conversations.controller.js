@@ -47,14 +47,15 @@ async function getMessages(req, res) {
     const agentIds = [...new Set(messages.filter(m => m.sentByAgentId).map(m => m.sentByAgentId))];
     const agents = agentIds.length > 0 ? await prisma.agent.findMany({
       where: { id: { in: agentIds } },
-      select: { id: true, name: true, avatarColor: true },
+      select: { id: true, name: true, avatarColor: true, avatarUrl: true },
     }) : [];
     const agentMap = Object.fromEntries(agents.map(a => [a.id, a]));
-    
+
     const enriched = messages.map(m => ({
       ...m,
-      agentName: m.sentByAgentId ? agentMap[m.sentByAgentId]?.name : null,
-      agentColor: m.sentByAgentId ? agentMap[m.sentByAgentId]?.avatarColor : null,
+      agentName:      m.sentByAgentId ? agentMap[m.sentByAgentId]?.name       : null,
+      agentColor:     m.sentByAgentId ? agentMap[m.sentByAgentId]?.avatarColor : null,
+      agentAvatarUrl: m.sentByAgentId ? agentMap[m.sentByAgentId]?.avatarUrl   : null,
     }));
     
     // Retorna em ordem cronológica (mais antigas primeiro) para o frontend renderizar
@@ -99,8 +100,17 @@ try {
       data: { lastMessage: text, lastMessageAt: new Date(), lastMessageDirection: 'OUTBOUND', status: 'OPEN' },
     });
 
-    // Emite em tempo real para outros agentes na mesma conversa
-    emitNewMessage(id, message);
+    // Enriquece o evento com dados do agente para exibir avatar em tempo real
+    const agentInfo = req.agent?.sub ? await prisma.agent.findUnique({
+      where: { id: req.agent.sub },
+      select: { name: true, avatarColor: true, avatarUrl: true },
+    }) : null;
+    emitNewMessage(id, {
+      ...message,
+      agentName:      agentInfo?.name       ?? null,
+      agentColor:     agentInfo?.avatarColor ?? null,
+      agentAvatarUrl: agentInfo?.avatarUrl   ?? null,
+    });
     const updatedConv = await prisma.conversation.findUnique({ where: { id }, include: { contact: true } });
     emitConversationUpdate(updatedConv);
 

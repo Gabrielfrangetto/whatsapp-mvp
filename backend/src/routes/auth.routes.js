@@ -2,11 +2,11 @@
 const express = require('express');
 const rateLimit = require('express-rate-limit');
 const { requireAuth, requireRole } = require('../middleware/auth.middleware');
+const { login, refresh, logout, me } = require('../controllers/auth.controller');
 const {
-  login, refresh, logout, me,
   listAgents, createAgent, updateAgent, updatePreferences, updateAgentAvatar,
   getAgentSchedule, updateAgentSchedule,
-} = require('../controllers/auth.controller');
+} = require('../controllers/agents.controller');
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,

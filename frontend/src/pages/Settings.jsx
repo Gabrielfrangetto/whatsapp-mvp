@@ -134,10 +134,12 @@ export default function Settings({ onClose }) {
                 />
                 {hexError && <p style={{ fontSize: 11, color: '#ef4444', margin: '4px 0 0' }}>{hexError}</p>}
                 {!hexError && contrastWarn && (
-                  <p style={{ fontSize: 11, color: '#f59e0b', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <AlertTriangle size={11} strokeWidth={2.5} />
-                    Baixo contraste no modo {mode === 'dark' ? 'escuro' : 'claro'} — botões e bordas podem ficar pouco visíveis
-                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '8px 10px', borderRadius: 8, background: '#fefce8', border: '1px solid #fde68a' }}>
+                    <AlertTriangle size={13} strokeWidth={2.5} style={{ color: '#d97706', flexShrink: 0 }} />
+                    <p style={{ fontSize: 11, color: '#92400e', margin: 0 }}>
+                      Baixo contraste no modo {mode === 'dark' ? 'escuro' : 'claro'} — botões e bordas podem ficar pouco visíveis
+                    </p>
+                  </div>
                 )}
               </div>
             </div>

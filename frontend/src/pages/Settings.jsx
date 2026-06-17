@@ -2,10 +2,20 @@
 import { useState } from 'react';
 import { useTheme, PRESETS, getContrastText } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { Sun, Moon, Check } from 'lucide-react';
+import { Sun, Moon, Check, AlertTriangle } from 'lucide-react';
 
 function isValidHex(hex) {
   return /^#[0-9A-Fa-f]{6}$/.test(hex);
+}
+
+const MODE_BG = { light: '#f5f6f7', dark: '#1e2227' };
+
+function contrastRatio(hex, bgHex) {
+  const toLinear = c => { const s = c / 255; return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
+  const lum = (r, g, b) => 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+  const parse = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+  const L1 = lum(...parse(hex)), L2 = lum(...parse(bgHex));
+  return (Math.max(L1,L2) + 0.05) / (Math.min(L1,L2) + 0.05);
 }
 
 function ColorSwatch({ color, active, onClick }) {
@@ -31,6 +41,9 @@ export default function Settings({ onClose }) {
 
   const [hexInput, setHexInput] = useState(color);
   const [hexError, setHexError] = useState('');
+
+  const activeHex = isValidHex(hexInput) ? hexInput : color;
+  const contrastWarn = isValidHex(activeHex) && contrastRatio(activeHex, MODE_BG[mode]) < 3;
 
   function handleHexChange(val) {
     setHexInput(val);
@@ -120,6 +133,12 @@ export default function Settings({ onClose }) {
                   }}
                 />
                 {hexError && <p style={{ fontSize: 11, color: '#ef4444', margin: '4px 0 0' }}>{hexError}</p>}
+                {!hexError && contrastWarn && (
+                  <p style={{ fontSize: 11, color: '#f59e0b', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <AlertTriangle size={11} strokeWidth={2.5} />
+                    Baixo contraste no modo {mode === 'dark' ? 'escuro' : 'claro'} — botões e bordas podem ficar pouco visíveis
+                  </p>
+                )}
               </div>
             </div>
           </div>

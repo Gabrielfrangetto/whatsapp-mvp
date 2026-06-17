@@ -14,11 +14,17 @@ const loginLimiter = rateLimit({
   message: { error: 'Muitas tentativas de login. Aguarde 15 minutos.' },
 });
 
+const refreshLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  message: { error: 'Muitas requisições de refresh. Aguarde um momento.' },
+});
+
 const router = express.Router();
 
 // Públicas
 router.post('/login', loginLimiter, login);
-router.post('/refresh', loginLimiter, refresh);
+router.post('/refresh', refreshLimiter, refresh);
 router.post('/logout', logout);
 
 // Autenticadas

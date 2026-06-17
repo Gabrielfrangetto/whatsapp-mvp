@@ -1,6 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const whatsappService = require('../services/whatsapp.service');
-const { emitNewMessage, emitConversationUpdate } = require('../socket/socket.server');
+const { emitNewMessage, emitConversationUpdate, emitPinUpdate } = require('../socket/socket.server');
 
 const prisma = new PrismaClient();
 
@@ -179,13 +179,23 @@ async function togglePin(req, res) {
 
     if (existing) {
       await prisma.conversationPin.delete({ where: { agentId_conversationId: { agentId, conversationId: id } } });
-      res.json({ pinned: false });
     } else {
       const conv = await prisma.conversation.findUnique({ where: { id }, select: { id: true } });
       if (!conv) return res.status(404).json({ error: 'Conversa não encontrada' });
       await prisma.conversationPin.create({ data: { agentId, conversationId: id } });
-      res.json({ pinned: true });
     }
+
+    const pins = await prisma.conversationPin.findMany({
+      where: { conversationId: id },
+      include: { agent: { select: { id: true, name: true, avatarColor: true } } },
+    });
+
+    const pinned   = pins.some(p => p.agentId === agentId);
+    const pinCount = pins.length;
+    const pinnedBy = pins.map(p => p.agent);
+
+    emitPinUpdate(id, pinCount, pinnedBy);
+    res.json({ pinned, pinCount, pinnedBy });
   } catch (e) {
     res.status(500).json({ error: 'Erro ao fixar conversa' });
   }

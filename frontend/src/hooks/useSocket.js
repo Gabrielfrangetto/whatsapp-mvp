@@ -87,6 +87,7 @@ export function useSocket(accessToken, handlers = {}) {
     on('agent:typing',         (data) => handlersRef.current.onTyping?.(data));
     on('agent:stopped_typing', (data) => handlersRef.current.onStoppedTyping?.(data));
     on('agent:status',         (data) => handlersRef.current.onAgentStatus?.(data));
+    on('pin:update',           (data) => handlersRef.current.onPinUpdate?.(data));
 
     ACTIVITY_EVENTS.forEach(e => document.addEventListener(e, handleActivity, { passive: true }));
     scheduleAutoAway();

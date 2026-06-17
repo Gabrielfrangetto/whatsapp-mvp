@@ -88,6 +88,11 @@ export default function Inbox() {
     onAgentStatus:     ({ agentId: id, onlineStatus }) => {
       if (id === agent?.id) setAgentStatusState(onlineStatus);
     },
+    onPinUpdate: ({ conversationId, pinCount, pinnedBy }) => {
+      setConversations(prev => prev.map(c =>
+        c.id === conversationId ? { ...c, pinCount, pinnedBy } : c
+      ));
+    },
   });
 
   socketControls._registerChatHandlers = (handlers) => { chatHandlersRef.current = handlers; };
@@ -118,7 +123,7 @@ export default function Inbox() {
     try {
       const { data } = await api.patch(`/conversations/${convId}/pin`);
       setConversations(prev => {
-        const next = prev.map(c => c.id === convId ? { ...c, pinned: data.pinned } : c);
+        const next = prev.map(c => c.id === convId ? { ...c, pinned: data.pinned, pinCount: data.pinCount, pinnedBy: data.pinnedBy } : c);
         return next.sort((a, b) => (a.pinned !== b.pinned ? (a.pinned ? -1 : 1) : new Date(b.lastMessageAt) - new Date(a.lastMessageAt)));
       });
     } catch {}

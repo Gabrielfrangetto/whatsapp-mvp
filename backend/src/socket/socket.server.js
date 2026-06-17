@@ -184,4 +184,8 @@ function emitNewConversation(conversation) {
   getIO().emit('conversation:new', conversation);
 }
 
-module.exports = { initSocket, getIO, emitNewMessage, emitMessageStatus, emitConversationUpdate, emitNewConversation };
+function emitPinUpdate(conversationId, pinCount, pinnedBy) {
+  getIO().emit('pin:update', { conversationId, pinCount, pinnedBy });
+}
+
+module.exports = { initSocket, getIO, emitNewMessage, emitMessageStatus, emitConversationUpdate, emitNewConversation, emitPinUpdate };

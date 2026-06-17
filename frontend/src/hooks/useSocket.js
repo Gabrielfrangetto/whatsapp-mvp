@@ -33,6 +33,7 @@ export function useSocket(accessToken, handlers = {}) {
   const handlersRef     = useRef(handlers);
   const timerRef        = useRef(null);
   const isAutoAwayRef   = useRef(false);
+  const currentRoomRef  = useRef(null); // room atual para re-join após reconnect
   // null = auto-ONLINE, 'BUSY' | 'OFFLINE' = override manual ativo
   const manualOverrideRef = useRef(null);
 
@@ -67,7 +68,15 @@ export function useSocket(accessToken, handlers = {}) {
 
     const on = (event, cb) => socket.on(event, (...args) => cb(...args));
 
-    on('connect',       () => { console.log('[Socket] 🟢 Conectado:', socket.id); scheduleAutoAway(); });
+    on('connect', () => {
+      console.log('[Socket] 🟢 Conectado:', socket.id);
+      scheduleAutoAway();
+      // Re-join a room atual após reconnect (socket perde memberships ao reconectar)
+      if (currentRoomRef.current) {
+        socket.emit('join:conversation', currentRoomRef.current);
+        console.log('[Socket] 🔄 Re-join room:', currentRoomRef.current);
+      }
+    });
     on('disconnect',    (reason) => console.log('[Socket] 🔴 Desconectado:', reason));
     on('connect_error', (err) => console.warn('[Socket] ⚠️ Erro:', err.message));
 
@@ -101,8 +110,15 @@ export function useSocket(accessToken, handlers = {}) {
     socketRef.current?.emit('agent:set_status', { status });
   }, [scheduleAutoAway]);
 
-  const joinConversation  = useCallback((id) => socketRef.current?.emit('join:conversation', id), []);
-  const leaveConversation = useCallback((id) => socketRef.current?.emit('leave:conversation', id), []);
+  const joinConversation = useCallback((id) => {
+    currentRoomRef.current = id;
+    socketRef.current?.emit('join:conversation', id);
+  }, []);
+
+  const leaveConversation = useCallback((id) => {
+    if (currentRoomRef.current === id) currentRoomRef.current = null;
+    socketRef.current?.emit('leave:conversation', id);
+  }, []);
   const startTyping       = useCallback((id) => socketRef.current?.emit('typing:start', { conversationId: id }), []);
   const stopTyping        = useCallback((id) => socketRef.current?.emit('typing:stop', { conversationId: id }), []);
 

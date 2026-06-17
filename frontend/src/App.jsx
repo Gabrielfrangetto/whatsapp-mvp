@@ -548,6 +548,7 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
       handleStoppedTyping: ({ conversationId: cid }) => {
         if (cid === conversationId) setTypingAgent(null);
       },
+      reloadMessages: () => loadMessages(conversationId),
     };
     socketControls._registerChatHandlers(handlers);
     return () => { clearTimeout(typingTimer.current); socketControls._registerChatHandlers(null); };
@@ -743,6 +744,7 @@ function Inbox() {
   const [agentStatus, setAgentStatusState] = useState('ONLINE');
   const { loadPreferences }               = useTheme();
   const chatHandlersRef    = useRef(null);
+  const selectedRef        = useRef(null);
   const filterDropdownRef  = useRef(null);
   const [filterOpen, setFilterOpen] = useState(false);
 
@@ -753,6 +755,7 @@ function Inbox() {
     return () => document.removeEventListener('mousedown', handler);
   }, [filterOpen]);
 
+  useEffect(() => { selectedRef.current = selected; }, [selected]);
   useEffect(() => { if (agent) loadPreferences(agent); }, [agent]);
 
   const socketControls = useSocket(accessToken, {
@@ -767,6 +770,11 @@ function Inbox() {
       });
     },
     onConversationUpdate: (conv) => {
+      // Se é a conversa aberta e chegou mensagem inbound, garantir que o chat está sincronizado
+      // (cobre o caso de message:new perdido por reconnect do socket)
+      if (conv.id === selectedRef.current && conv.lastMessageDirection === 'INBOUND') {
+        chatHandlersRef.current?.reloadMessages?.();
+      }
       setConversations(prev => {
         const idx = prev.findIndex(c => c.id === conv.id);
         if (idx === -1) return prev;

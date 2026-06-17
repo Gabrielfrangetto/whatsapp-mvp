@@ -126,7 +126,7 @@ export default function AvatarUpload({ agent, onSaved, onClose }) {
             <button
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              style={{ width:'100%', padding:'10px', borderRadius:8, border:'1px solid var(--theme-border)', background: uploading ? 'var(--theme-border)' : 'var(--theme-primary)', color: uploading ? 'var(--theme-text-muted)' : 'var(--theme-primary-text)', cursor: uploading ? 'default' : 'pointer', fontSize:13, fontWeight:600 }}
+              style={{ width:'100%', padding:'10px', borderRadius:8, border: uploading ? '2px solid var(--theme-border)' : '2px solid var(--theme-primary)', background:'none', color: uploading ? 'var(--theme-text-muted)' : 'var(--theme-primary)', cursor: uploading ? 'default' : 'pointer', fontSize:13, fontWeight:600 }}
             >
               {uploading ? 'Enviando...' : <span style={{ display:'flex', alignItems:'center', gap:6 }}><Camera size={14} /> Escolher foto</span>}
             </button>

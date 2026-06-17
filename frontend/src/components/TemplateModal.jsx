@@ -190,7 +190,7 @@ export default function TemplateModal({ conversationId, onClose, onSent }) {
           <button
             onClick={handleSend}
             disabled={!selected || sending}
-            style={{ padding:'9px 18px', borderRadius:8, border:'none', background: selected && !sending ? 'var(--theme-primary-btn)' : 'var(--theme-border-strong)', color: selected && !sending ? 'var(--theme-primary-btn-text)' : 'var(--theme-text-muted)', cursor: selected && !sending ? 'pointer' : 'default', fontSize:13, fontWeight:600, transition:'background 0.2s' }}
+            style={{ padding:'9px 18px', borderRadius:8, border: selected && !sending ? '2px solid var(--theme-primary)' : '2px solid var(--theme-border)', background:'none', color: selected && !sending ? 'var(--theme-primary)' : 'var(--theme-text-muted)', cursor: selected && !sending ? 'pointer' : 'default', fontSize:13, fontWeight:600, transition:'border-color 0.2s, color 0.2s' }}
           >
             {sending ? 'Enviando...' : 'Enviar modelo'}
           </button>

@@ -124,7 +124,7 @@ function AgentForm({ initial = {}, onSave, onClose, isNew }) {
 
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
         <button type="button" onClick={onClose} style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid var(--theme-border)', background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--theme-text-muted)' }}>Cancelar</button>
-        <button type="submit" disabled={loading} style={{ padding: '9px 18px', borderRadius: 8, border: 'none', background: 'var(--theme-primary-btn)', color: 'var(--theme-primary-btn-text)', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+        <button type="submit" disabled={loading} style={{ padding: '9px 18px', borderRadius: 8, border: '2px solid var(--theme-primary)', background: 'none', color: 'var(--theme-primary)', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
           {loading ? 'Salvando...' : (isNew ? 'Criar agente' : 'Salvar')}
         </button>
       </div>
@@ -223,7 +223,7 @@ function WorkScheduleModal({ agent, onClose }) {
           </div>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
             <button onClick={onClose} style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid var(--theme-border)', background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--theme-text-muted)' }}>Cancelar</button>
-            <button onClick={handleSave} disabled={saving} style={{ padding: '9px 18px', borderRadius: 8, border: 'none', background: 'var(--theme-primary-btn)', color: 'var(--theme-primary-btn-text)', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+            <button onClick={handleSave} disabled={saving} style={{ padding: '9px 18px', borderRadius: 8, border: '2px solid var(--theme-primary)', background: 'none', color: 'var(--theme-primary)', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
               {saving ? 'Salvando...' : 'Salvar'}
             </button>
           </div>
@@ -274,7 +274,7 @@ export default function Agents() {
         </div>
         <button
           onClick={() => setModal('new')}
-          style={{ padding: '9px 18px', background: 'var(--theme-primary-btn)', color: 'var(--theme-primary-btn-text)', border: 'none', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}
+          style={{ padding: '9px 18px', background: 'none', border: '2px solid var(--theme-primary)', color: 'var(--theme-primary)', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}
         >
           + Novo Agente
         </button>

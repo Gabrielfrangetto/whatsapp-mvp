@@ -150,7 +150,7 @@ export default function MediaUpload({ conversationId, onSent, onClose }) {
           <button
             onClick={handleSend}
             disabled={!file || sending}
-            style={{ padding:'9px 18px', borderRadius:8, border:'none', background: file && !sending ? 'var(--theme-primary)' : 'var(--theme-border)', color: file && !sending ? 'var(--theme-primary-text)' : 'var(--theme-text-muted)', cursor: file && !sending ? 'pointer' : 'default', fontSize:13, fontWeight:600 }}
+            style={{ padding:'9px 18px', borderRadius:8, border: file && !sending ? '2px solid var(--theme-primary)' : '2px solid var(--theme-border)', background:'none', color: file && !sending ? 'var(--theme-primary)' : 'var(--theme-text-muted)', cursor: file && !sending ? 'pointer' : 'default', fontSize:13, fontWeight:600 }}
           >
             {sending ? `Enviando... ${Math.round(progress)}%` : 'Enviar'}
           </button>

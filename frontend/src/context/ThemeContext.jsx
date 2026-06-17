@@ -34,17 +34,12 @@ function buildThemeVars(color, mode) {
   const primaryText = getContrastText(r, g, b);
 
   if (isDark) {
-    const btnR = Math.min(255, r + 40);
-    const btnG = Math.min(255, g + 40);
-    const btnB = Math.min(255, b + 40);
     return {
       '--theme-primary':        color,
       '--theme-primary-light':  lighten(40),
       '--theme-primary-dark':   darken(20),
       '--theme-primary-subtle': alpha(0.15),
       '--theme-primary-text':   primaryText,
-      '--theme-primary-btn':      `rgb(${btnR},${btnG},${btnB})`,
-      '--theme-primary-btn-text': getContrastText(btnR, btnG, btnB),
       '--theme-bg':             '#1e2227',
       '--theme-bg-secondary':   '#252b33',
       '--theme-bg-tertiary':    '#2d3440',
@@ -71,8 +66,6 @@ function buildThemeVars(color, mode) {
       '--theme-primary-dark':   darken(20),
       '--theme-primary-subtle': alpha(0.1),
       '--theme-primary-text':   primaryText,
-      '--theme-primary-btn':      color,
-      '--theme-primary-btn-text': primaryText,
       '--theme-bg':             '#f5f6f7',
       '--theme-bg-secondary':   '#ffffff',
       '--theme-bg-tertiary':    '#eef0f2',

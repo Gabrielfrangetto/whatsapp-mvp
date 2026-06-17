@@ -59,9 +59,11 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
         </div>
       )}
 
-      {conv.pinned && (
-        <Pin size={10} style={{ position: 'absolute', top: 5, left: 8, color: 'var(--theme-primary)', display: 'block', zIndex: 5 }} />
-      )}
+      {conv.pinned ? (
+        <Pin size={10} style={{ position: 'absolute', top: 5, left: 8, color: 'var(--theme-primary)', zIndex: 5 }} />
+      ) : conv.pinCount > 0 ? (
+        <span style={{ position: 'absolute', top: 4, left: 7, fontSize: 9, fontWeight: 700, color: 'var(--theme-text-muted)', lineHeight: 1, zIndex: 5, fontFamily: 'inherit' }}>{conv.pinCount}</span>
+      ) : null}
 
       <div style={{ width: 44, height: 44, borderRadius: '50%', background: getAvatarColor(name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 15, flexShrink: 0, opacity: pinAnim ? 0 : 1, transition: 'opacity 0.15s' }}>
         {getInitials(name)}

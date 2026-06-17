@@ -18,6 +18,7 @@ async function listConversations(req, res) {
           contact: true,
           assignedAgent: { select: { id: true, name: true, avatarColor: true } },
           pins: { where: { agentId }, select: { agentId: true } },
+          _count: { select: { pins: true } },
         },
         orderBy: { lastMessageAt: 'desc' },
         skip,
@@ -26,7 +27,7 @@ async function listConversations(req, res) {
       prisma.conversation.count({ where }),
     ]);
 
-    const data = conversations.map(({ pins, ...c }) => ({ ...c, pinned: pins.length > 0 }));
+    const data = conversations.map(({ pins, _count, ...c }) => ({ ...c, pinned: pins.length > 0, pinCount: _count.pins }));
 
     // Pins do agente sobem para o topo, mantendo ordem por lastMessageAt dentro de cada grupo
     data.sort((a, b) => {

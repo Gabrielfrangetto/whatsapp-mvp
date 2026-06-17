@@ -15,6 +15,13 @@ export const PRESETS = [
   { name: 'Ardósia',   color: '#475569', mode: 'dark',  desc: 'Azul ardósia escuro' },
 ];
 
+function getContrastText(r, g, b) {
+  // WCAG relative luminance — pick black or white for maximum contrast
+  const toLinear = (c) => { const s = c / 255; return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
+  const L = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+  return L > 0.179 ? '#1a1d21' : '#ffffff';
+}
+
 function buildThemeVars(color, mode) {
   const isDark = mode === 'dark';
   const r = parseInt(color.slice(1, 3), 16);
@@ -24,6 +31,7 @@ function buildThemeVars(color, mode) {
   const lighten = (amt) => `rgb(${Math.min(255,r+amt)},${Math.min(255,g+amt)},${Math.min(255,b+amt)})`;
   const darken  = (amt) => `rgb(${Math.max(0,r-amt)},${Math.max(0,g-amt)},${Math.max(0,b-amt)})`;
   const alpha   = (a)   => `rgba(${r},${g},${b},${a})`;
+  const primaryText = getContrastText(r, g, b);
 
   if (isDark) {
     return {
@@ -31,7 +39,7 @@ function buildThemeVars(color, mode) {
       '--theme-primary-light':  lighten(40),
       '--theme-primary-dark':   darken(20),
       '--theme-primary-subtle': alpha(0.15),
-      '--theme-primary-text':   '#ffffff',
+      '--theme-primary-text':   primaryText,
       '--theme-bg':             '#1e2227',
       '--theme-bg-secondary':   '#252b33',
       '--theme-bg-tertiary':    '#2d3440',
@@ -57,7 +65,7 @@ function buildThemeVars(color, mode) {
       '--theme-primary-light':  lighten(40),
       '--theme-primary-dark':   darken(20),
       '--theme-primary-subtle': alpha(0.1),
-      '--theme-primary-text':   '#ffffff',
+      '--theme-primary-text':   primaryText,
       '--theme-bg':             '#f5f6f7',
       '--theme-bg-secondary':   '#ffffff',
       '--theme-bg-tertiary':    '#eef0f2',

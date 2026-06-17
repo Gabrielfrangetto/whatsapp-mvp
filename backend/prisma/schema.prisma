@@ -24,8 +24,9 @@ model Agent {
   onlineStatus  AgentOnlineStatus @default(OFFLINE)
   workSchedule  Json?
 
-  conversations Conversation[] @relation("AssignedAgent")
-  refreshTokens RefreshToken[]
+  conversations    Conversation[] @relation("AssignedAgent")
+  refreshTokens    RefreshToken[]
+  conversationPins ConversationPin[]
 }
 
 model RefreshToken {
@@ -59,11 +60,11 @@ model Conversation {
   lastMessageAt        DateTime?
   lastMessageDirection String?
   unreadCount   Int        @default(0)
-  pinned        Boolean    @default(false)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
   messages Message[]
+  pins     ConversationPin[]
 }
 
 model Message {
@@ -94,6 +95,17 @@ model MessageTemplate {
   variables String?
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
+}
+
+model ConversationPin {
+  agentId        String
+  conversationId String
+  createdAt      DateTime @default(now())
+
+  agent        Agent        @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@id([agentId, conversationId])
 }
 
 model Sticker {

@@ -1,4 +1,3 @@
-// src/controllers/conversations.controller.js
 const { PrismaClient } = require('@prisma/client');
 const whatsappService = require('../services/whatsapp.service');
 const { emitNewMessage, emitConversationUpdate } = require('../socket/socket.server');
@@ -8,13 +7,18 @@ const prisma = new PrismaClient();
 async function listConversations(req, res) {
   try {
     const { status, page = 1, limit = 20 } = req.query;
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const skip  = (parseInt(page) - 1) * parseInt(limit);
     const where = status ? { status } : {};
+    const agentId = req.agent.sub;
 
     const [conversations, total] = await Promise.all([
       prisma.conversation.findMany({
         where,
-        include: { contact: true, assignedAgent: { select: { id: true, name: true, avatarColor: true } } },
+        include: {
+          contact: true,
+          assignedAgent: { select: { id: true, name: true, avatarColor: true } },
+          pins: { where: { agentId }, select: { agentId: true } },
+        },
         orderBy: { lastMessageAt: 'desc' },
         skip,
         take: parseInt(limit),
@@ -22,8 +26,17 @@ async function listConversations(req, res) {
       prisma.conversation.count({ where }),
     ]);
 
-    res.json({ data: conversations, pagination: { page: parseInt(page), limit: parseInt(limit), total } });
+    const data = conversations.map(({ pins, ...c }) => ({ ...c, pinned: pins.length > 0 }));
+
+    // Pins do agente sobem para o topo, mantendo ordem por lastMessageAt dentro de cada grupo
+    data.sort((a, b) => {
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+      return new Date(b.lastMessageAt) - new Date(a.lastMessageAt);
+    });
+
+    res.json({ data, pagination: { page: parseInt(page), limit: parseInt(limit), total } });
   } catch (e) {
+    console.error(e);
     res.status(500).json({ error: 'Erro ao listar conversas' });
   }
 }
@@ -43,7 +56,6 @@ async function getMessages(req, res) {
 
     await prisma.conversation.update({ where: { id }, data: { unreadCount: 0 } });
 
-        // Enriquece mensagens com nome do agente
     const agentIds = [...new Set(messages.filter(m => m.sentByAgentId).map(m => m.sentByAgentId))];
     const agents = agentIds.length > 0 ? await prisma.agent.findMany({
       where: { id: { in: agentIds } },
@@ -57,8 +69,7 @@ async function getMessages(req, res) {
       agentColor:     m.sentByAgentId ? agentMap[m.sentByAgentId]?.avatarColor : null,
       agentAvatarUrl: m.sentByAgentId ? agentMap[m.sentByAgentId]?.avatarUrl   : null,
     }));
-    
-    // Retorna em ordem cronológica (mais antigas primeiro) para o frontend renderizar
+
     res.json({ conversation, messages: enriched.reverse() });
   } catch (e) {
     res.status(500).json({ error: 'Erro ao buscar mensagens' });
@@ -75,17 +86,16 @@ async function sendMessage(req, res) {
     if (!conversation) return res.status(404).json({ error: 'Conversa não encontrada' });
 
     let waResponse;
-try {
-  waResponse = await whatsappService.sendTextMessage(conversation.contact.phone, text);
-} catch (e) {
-  console.error('[sendMessage] WhatsApp API error:', e.response?.data || e.message);
-  return res.status(500).json({ error: 'Erro ao enviar via WhatsApp: ' + (e.response?.data?.error?.message || e.message) });
-}
-    const waMessageId = waResponse.messages?.[0]?.id;
+    try {
+      waResponse = await whatsappService.sendTextMessage(conversation.contact.phone, text);
+    } catch (e) {
+      console.error('[sendMessage] WhatsApp API error:', e.response?.data || e.message);
+      return res.status(500).json({ error: 'Erro ao enviar via WhatsApp: ' + (e.response?.data?.error?.message || e.message) });
+    }
 
     const message = await prisma.message.create({
       data: {
-        waMessageId,
+        waMessageId: waResponse.messages?.[0]?.id,
         conversationId: id,
         direction: 'OUTBOUND',
         type: 'TEXT',
@@ -100,17 +110,13 @@ try {
       data: { lastMessage: text, lastMessageAt: new Date(), lastMessageDirection: 'OUTBOUND', status: 'OPEN' },
     });
 
-    // Enriquece o evento com dados do agente para exibir avatar em tempo real
     const agentInfo = req.agent?.sub ? await prisma.agent.findUnique({
       where: { id: req.agent.sub },
       select: { name: true, avatarColor: true, avatarUrl: true },
     }) : null;
-    emitNewMessage(id, {
-      ...message,
-      agentName:      agentInfo?.name       ?? null,
-      agentColor:     agentInfo?.avatarColor ?? null,
-      agentAvatarUrl: agentInfo?.avatarUrl   ?? null,
-    });
+
+    emitNewMessage(id, { ...message, agentName: agentInfo?.name ?? null, agentColor: agentInfo?.avatarColor ?? null, agentAvatarUrl: agentInfo?.avatarUrl ?? null });
+
     const updatedConv = await prisma.conversation.findUnique({ where: { id }, include: { contact: true } });
     emitConversationUpdate(updatedConv);
 
@@ -131,10 +137,7 @@ async function updateConversationStatus(req, res) {
 
     const conversation = await prisma.conversation.update({
       where: { id },
-      data: {
-        ...(status && { status }),
-        ...(assignedToId !== undefined && { assignedToId }),
-      },
+      data: { ...(status && { status }), ...(assignedToId !== undefined && { assignedToId }) },
       include: { contact: true, assignedAgent: { select: { id: true, name: true } } },
     });
 
@@ -148,14 +151,11 @@ async function updateConversationStatus(req, res) {
 async function getStats(req, res) {
   try {
     const startOfDay = new Date(new Date().setHours(0, 0, 0, 0));
-
     const [open, pending, resolved, totalToday] = await Promise.all([
       prisma.conversation.count({ where: { status: 'OPEN' } }),
       prisma.conversation.count({ where: { status: 'PENDING' } }),
       prisma.conversation.count({ where: { status: 'RESOLVED' } }),
       prisma.conversation.count({ where: { createdAt: { gte: startOfDay } } }),
-      // futuro — estatísticas avançadas:
-      // prisma.message.count({ where: { createdAt: { gte: startOfDay }, direction: 'INBOUND' } }),
     ]);
     res.json({ open, pending, resolved, totalToday });
   } catch (e) {
@@ -166,17 +166,21 @@ async function getStats(req, res) {
 async function togglePin(req, res) {
   try {
     const { id } = req.params;
-    const conv = await prisma.conversation.findUnique({ where: { id }, select: { pinned: true } });
-    if (!conv) return res.status(404).json({ error: 'Conversa não encontrada' });
+    const agentId = req.agent.sub;
 
-    const updated = await prisma.conversation.update({
-      where: { id },
-      data: { pinned: !conv.pinned },
-      include: { contact: true, assignedAgent: { select: { id: true, name: true, avatarColor: true } } },
+    const existing = await prisma.conversationPin.findUnique({
+      where: { agentId_conversationId: { agentId, conversationId: id } },
     });
 
-    emitConversationUpdate(updated);
-    res.json(updated);
+    if (existing) {
+      await prisma.conversationPin.delete({ where: { agentId_conversationId: { agentId, conversationId: id } } });
+      res.json({ pinned: false });
+    } else {
+      const conv = await prisma.conversation.findUnique({ where: { id }, select: { id: true } });
+      if (!conv) return res.status(404).json({ error: 'Conversa não encontrada' });
+      await prisma.conversationPin.create({ data: { agentId, conversationId: id } });
+      res.json({ pinned: true });
+    }
   } catch (e) {
     res.status(500).json({ error: 'Erro ao fixar conversa' });
   }

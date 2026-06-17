@@ -44,7 +44,7 @@ export default function Inbox() {
         if (idx === -1) return prev;
         const next = [...prev];
         next[idx] = { ...next[idx], lastMessage: msg.content, lastMessageAt: msg.timestamp || new Date().toISOString(), lastMessageDirection: msg.direction || 'INBOUND' };
-        return next.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
+        return next.sort((a, b) => (a.pinned !== b.pinned ? (a.pinned ? -1 : 1) : new Date(b.lastMessageAt) - new Date(a.lastMessageAt)));
       });
     },
     onConversationUpdate: (conv) => {
@@ -65,8 +65,8 @@ export default function Inbox() {
           });
         }
         const next = [...prev];
-        next[idx] = { ...next[idx], ...conv };
-        return next.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
+        next[idx] = { ...next[idx], ...conv, pinned: prev[idx].pinned };
+        return next.sort((a, b) => (a.pinned !== b.pinned ? (a.pinned ? -1 : 1) : new Date(b.lastMessageAt) - new Date(a.lastMessageAt)));
       });
     },
     onNewConversation: (conv) => {
@@ -117,7 +117,10 @@ export default function Inbox() {
   const handleTogglePin = async (convId) => {
     try {
       const { data } = await api.patch(`/conversations/${convId}/pin`);
-      setConversations(prev => prev.map(c => c.id === convId ? { ...c, pinned: data.pinned } : c));
+      setConversations(prev => {
+        const next = prev.map(c => c.id === convId ? { ...c, pinned: data.pinned } : c);
+        return next.sort((a, b) => (a.pinned !== b.pinned ? (a.pinned ? -1 : 1) : new Date(b.lastMessageAt) - new Date(a.lastMessageAt)));
+      });
     } catch {}
   };
 
@@ -127,7 +130,7 @@ export default function Inbox() {
       if (idx === -1) return prev;
       const next = [...prev];
       next[idx] = { ...next[idx], lastMessage: content, lastMessageAt: new Date().toISOString(), lastMessageDirection: 'OUTBOUND' };
-      return next.sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
+      return next.sort((a, b) => (a.pinned !== b.pinned ? (a.pinned ? -1 : 1) : new Date(b.lastMessageAt) - new Date(a.lastMessageAt)));
     });
   };
 

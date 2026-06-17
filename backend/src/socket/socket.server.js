@@ -2,6 +2,7 @@
 const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
+const { pickupPendingConversations } = require('../services/assignment.service');
 
 const prisma = new PrismaClient();
 
@@ -59,6 +60,8 @@ function initSocket(httpServer) {
       await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: 'ONLINE' } });
       io.emit('agent:status', { agentId, onlineStatus: 'ONLINE' });
       console.log(`[Assignment] ✅ ${name} ficou ONLINE`);
+      const picked = await pickupPendingConversations();
+      for (const { conv } of picked) emitConversationUpdate(conv);
     }
 
     // ─── Entrar na sala de uma conversa ────────────────────────────────────────
@@ -78,6 +81,10 @@ function initSocket(httpServer) {
       await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: status } });
       io.emit('agent:status', { agentId, onlineStatus: status });
       console.log(`[Status] ${name} → ${status} (manual)`);
+      if (status === 'ONLINE') {
+        const picked = await pickupPendingConversations();
+        for (const { conv } of picked) emitConversationUpdate(conv);
+      }
     });
 
     // ─── Inatividade (2h) — só age se o agente estiver ONLINE ─────────────────
@@ -96,6 +103,8 @@ function initSocket(httpServer) {
       await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: 'ONLINE' } });
       io.emit('agent:status', { agentId, onlineStatus: 'ONLINE' });
       console.log(`[Inatividade] 🟢 ${name} voltou — marcado ONLINE`);
+      const picked = await pickupPendingConversations();
+      for (const { conv } of picked) emitConversationUpdate(conv);
     });
 
     // ─── Indicador de digitação ────────────────────────────────────────────────

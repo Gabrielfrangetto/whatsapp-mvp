@@ -2,7 +2,7 @@
 const { PrismaClient } = require('@prisma/client');
 const whatsappService = require('../services/whatsapp.service');
 const { emitNewMessage, emitMessageStatus, emitConversationUpdate, emitNewConversation } = require('../socket/socket.server');
-const { assignConversation } = require('../services/assignment.service');
+const { assignConversation, pickAgent } = require('../services/assignment.service');
 
 const prisma = new PrismaClient();
 
@@ -82,18 +82,38 @@ async function processInbound(msg, contactInfo) {
         });
       }
 
-      // Auto-assign para o agente online com menor carga
+      // Tenta atribuir ao agente disponível no horário atual
       const assigned = await assignConversation(conv.id);
       if (assigned) {
         conv = assigned.conv;
         console.log(`[Assignment] 📋 Conversa ${conv.id} → ${assigned.agent.name}`);
+      } else {
+        // Sem agente disponível (offline ou fora do horário) → Pendente
+        conv = await prisma.conversation.update({
+          where: { id: conv.id },
+          data: { status: 'PENDING' },
+        });
+        console.log(`[Assignment] ⏳ Conversa ${conv.id} → PENDENTE (sem agente disponível)`);
       }
     } else {
       // Conversa existente: atualiza última mensagem e contador de não lidas
-      conv = await prisma.conversation.update({
-        where: { id: conv.id },
-        data: { lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND', unreadCount: { increment: 1 } },
-      });
+      const msgUpdates = { lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND', unreadCount: { increment: 1 } };
+
+      if (conv.status === 'PENDING') {
+        // Tenta promover para OPEN se houver agente disponível agora
+        const agent = await pickAgent();
+        if (agent) {
+          conv = await prisma.conversation.update({
+            where: { id: conv.id },
+            data: { ...msgUpdates, status: 'OPEN', assignedToId: agent.id },
+          });
+          console.log(`[Assignment] 📋 Pendente ${conv.id} promovido → ${agent.name}`);
+        } else {
+          conv = await prisma.conversation.update({ where: { id: conv.id }, data: msgUpdates });
+        }
+      } else {
+        conv = await prisma.conversation.update({ where: { id: conv.id }, data: msgUpdates });
+      }
     }
     const message = await prisma.message.create({
       data: {

@@ -75,6 +75,7 @@ function AgentForm({ initial = {}, onSave, onClose, isNew }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPw, setShowPw] = useState(false);
+  const [pwFocused, setPwFocused] = useState(false);
   const [pwError, setPwError] = useState('');
 
   const fieldStyle = {
@@ -138,8 +139,10 @@ function AgentForm({ initial = {}, onSave, onClose, isNew }) {
           <input
             type={showPw ? 'text' : 'password'}
             placeholder={isNew ? 'Mínimo 8 caracteres' : '••••••••'}
-            {...field('password')}
+            value={form.password}
             onChange={e => { setForm(f => ({ ...f, password: e.target.value })); setPwError(''); }}
+            onFocus={() => setPwFocused(true)}
+            onBlur={() => setPwFocused(false)}
             style={{ ...fieldStyle, paddingRight: 38, border: pwError ? '1px solid #ef4444' : '1px solid var(--theme-border)' }}
           />
           <button
@@ -150,6 +153,23 @@ function AgentForm({ initial = {}, onSave, onClose, isNew }) {
             {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         </div>
+
+        {(pwFocused || form.password.length > 0) && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 12px', marginTop: 8, padding: '10px 12px', borderRadius: 8, background: 'var(--theme-bg)', border: '1px solid var(--theme-border)' }}>
+            {PASSWORD_RULES.map(rule => {
+              const ok = rule.test(form.password);
+              return (
+                <div key={rule.label} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ width: 14, height: 14, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: ok ? '#22c55e' : 'var(--theme-border)', transition: 'background 0.2s' }}>
+                    {ok && <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><polyline points="1,4 3,6 7,2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                  </div>
+                  <span style={{ fontSize: 11, color: ok ? '#22c55e' : 'var(--theme-text-muted)', transition: 'color 0.2s' }}>{rule.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {pwError && <p style={{ fontSize: 11, color: '#ef4444', margin: '4px 0 0' }}>{pwError}</p>}
       </div>
 

@@ -318,11 +318,11 @@ function NavRail({ section, onSection, agent, agentStatus = 'ONLINE', onStatusCh
   }, [statusOpen]);
 
   const navBg = (() => {
-    if (mode === 'dark') return '#0d1117';
     const r = parseInt(color.slice(1, 3), 16);
     const g = parseInt(color.slice(3, 5), 16);
     const b = parseInt(color.slice(5, 7), 16);
-    return `rgb(${Math.max(0,r-55)},${Math.max(0,g-55)},${Math.max(0,b-55)})`;
+    const offset = mode === 'dark' ? 75 : 55;
+    return `rgb(${Math.max(0,r-offset)},${Math.max(0,g-offset)},${Math.max(0,b-offset)})`;
   })();
 
   return (

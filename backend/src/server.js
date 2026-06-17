@@ -51,12 +51,6 @@ app.use(cors({
 
 app.use(cookieParser());
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20, // mais restritivo para login
-  message: { error: 'Muitas tentativas. Aguarde 15 minutos.' },
-});
-
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
@@ -96,8 +90,8 @@ app.use(express.static(frontendDist));
 app.use('/webhook', webhookRoutes);
 app.use('/api', apiLimiter, mediaRoutes);
 
-// Auth: rotas públicas + rate limiting específico
-app.use('/api/auth', authLimiter, authRoutes);
+// Auth: login com limiter estrito; restante usa apiLimiter
+app.use('/api/auth', apiLimiter, authRoutes);
 // ... após as outras rotas:
 app.use('/api/templates', apiLimiter, templatesRoutes);
 app.use('/api/templates/conversations', apiLimiter, requireAuth, templatesRoutes);

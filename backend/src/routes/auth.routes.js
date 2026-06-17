@@ -1,5 +1,6 @@
 // src/routes/auth.routes.js
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const { requireAuth, requireRole } = require('../middleware/auth.middleware');
 const {
   login, refresh, logout, me,
@@ -7,11 +8,17 @@ const {
   getAgentSchedule, updateAgentSchedule,
 } = require('../controllers/auth.controller');
 
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: 'Muitas tentativas de login. Aguarde 15 minutos.' },
+});
+
 const router = express.Router();
 
 // Públicas
-router.post('/login', login);
-router.post('/refresh', refresh);
+router.post('/login', loginLimiter, login);
+router.post('/refresh', loginLimiter, refresh);
 router.post('/logout', logout);
 
 // Autenticadas

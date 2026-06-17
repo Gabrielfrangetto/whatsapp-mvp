@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth, api } from '../context/AuthContext';
 import ResolutionReasons from './ResolutionReasons';
 import AvatarUpload from '../components/AvatarUpload';
-import { Shield, Headphones, Camera, Clock } from 'lucide-react';
+import { Shield, Headphones, Camera, Clock, Eye, EyeOff } from 'lucide-react';
 
 function Avatar({ name = '', color = '#25D366', size = 36, avatarUrl }) {
   const initials = name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
@@ -57,10 +57,25 @@ function Modal({ title, onClose, children }) {
   );
 }
 
+const PASSWORD_RULES = [
+  { test: v => v.length >= 8,          label: 'Mínimo 8 caracteres' },
+  { test: v => /[A-Z]/.test(v),        label: 'Uma letra maiúscula' },
+  { test: v => /[a-z]/.test(v),        label: 'Uma letra minúscula' },
+  { test: v => /[0-9]/.test(v),        label: 'Um número' },
+  { test: v => /[^A-Za-z0-9]/.test(v), label: 'Um símbolo (!@#$…)' },
+];
+
+function validatePassword(v) {
+  const failed = PASSWORD_RULES.filter(r => !r.test(v)).map(r => r.label);
+  return failed.length === 0 ? '' : `A senha precisa ter: ${failed.join(', ')}.`;
+}
+
 function AgentForm({ initial = {}, onSave, onClose, isNew }) {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'AGENT', ...initial });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPw, setShowPw] = useState(false);
+  const [pwError, setPwError] = useState('');
 
   const fieldStyle = {
     width: '100%', padding: '10px 12px', border: '1px solid var(--theme-border)',
@@ -76,7 +91,15 @@ function AgentForm({ initial = {}, onSave, onClose, isNew }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError(''); setLoading(true);
+    setError('');
+    if (form.password) {
+      const err = validatePassword(form.password);
+      if (err) { setPwError(err); return; }
+    } else if (isNew) {
+      setPwError('A senha é obrigatória.');
+      return;
+    }
+    setLoading(true);
     try {
       if (isNew) {
         await api.post('/auth/agents', form);
@@ -111,7 +134,23 @@ function AgentForm({ initial = {}, onSave, onClose, isNew }) {
         <label style={{ display: 'block', fontSize: 12, color: 'var(--theme-text-muted)', marginBottom: 6, fontWeight: 500 }}>
           {isNew ? 'SENHA' : 'NOVA SENHA (deixe em branco para manter)'}
         </label>
-        <input type="password" placeholder={isNew ? 'Mínimo 8 caracteres' : '••••••••'} {...field('password')} required={isNew} />
+        <div style={{ position: 'relative' }}>
+          <input
+            type={showPw ? 'text' : 'password'}
+            placeholder={isNew ? 'Mínimo 8 caracteres' : '••••••••'}
+            {...field('password')}
+            onChange={e => { setForm(f => ({ ...f, password: e.target.value })); setPwError(''); }}
+            style={{ ...fieldStyle, paddingRight: 38, border: pwError ? '1px solid #ef4444' : '1px solid var(--theme-border)' }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPw(v => !v)}
+            style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--theme-text-muted)', display: 'flex', padding: 0 }}
+          >
+            {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
+        {pwError && <p style={{ fontSize: 11, color: '#ef4444', margin: '4px 0 0' }}>{pwError}</p>}
       </div>
 
       <div style={{ marginBottom: 20 }}>

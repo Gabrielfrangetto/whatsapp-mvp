@@ -893,7 +893,7 @@ function Inbox() {
 
             {/* Stats */}
             <div style={{ display:'flex', borderBottom:'1px solid var(--theme-border)' }}>
-              {[['Abertas', stats.open, '#25D366'], ['Pendentes', stats.pending, '#F59E0B'], ['Hoje', stats.totalToday, 'var(--theme-primary)']].map(([label, val, color]) => (
+              {[['Abertas', stats.open, '#25D366'], ['Pendentes', stats.pending, '#F59E0B'], ['Hoje', stats.totalToday, 'var(--theme-text)']].map(([label, val, color]) => (
                 <div key={label} style={{ flex:1, padding:'10px 0', textAlign:'center', borderRight:'1px solid var(--theme-border)' }}>
                   <div style={{ fontWeight:700, fontSize:16, color }}>{val}</div>
                   <div style={{ fontSize:10, color:'var(--theme-text-muted)', marginTop:1 }}>{label}</div>
@@ -913,7 +913,7 @@ function Inbox() {
             <div ref={filterDropdownRef} style={{ position:'relative', padding:'6px 12px', borderBottom:'1px solid var(--theme-border)' }}>
               <button
                 onClick={() => setFilterOpen(v => !v)}
-                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px', borderRadius:8, border:'none', background:'none', color: filter ? 'var(--theme-primary)' : 'var(--theme-text-secondary)', fontSize:13, fontWeight: filter ? 600 : 400, cursor:'pointer', fontFamily:'inherit', transition:'background 0.15s' }}
+                style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'7px 10px', borderRadius:8, border:'none', background:'none', color:'var(--theme-text-secondary)', fontSize:13, fontWeight: filter ? 600 : 400, cursor:'pointer', fontFamily:'inherit', transition:'background 0.15s' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--theme-bg-hover)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
               >
@@ -926,7 +926,7 @@ function Inbox() {
                     <button
                       key={o.value}
                       onClick={() => { handleFilterChange(o.value); setFilterOpen(false); }}
-                      style={{ width:'100%', display:'block', padding:'9px 14px', border:'none', background: o.value === filter ? 'var(--theme-primary-subtle)' : 'none', color: o.value === filter ? 'var(--theme-primary)' : 'var(--theme-text)', fontSize:13, fontWeight: o.value === filter ? 600 : 400, cursor:'pointer', textAlign:'left', fontFamily:'inherit', transition:'background 0.12s' }}
+                      style={{ width:'100%', display:'block', padding:'9px 14px', border:'none', background: o.value === filter ? 'var(--theme-bg-hover)' : 'none', color:'var(--theme-text)', fontSize:13, fontWeight: o.value === filter ? 600 : 400, cursor:'pointer', textAlign:'left', fontFamily:'inherit', transition:'background 0.12s' }}
                       onMouseEnter={e => { if (o.value !== filter) e.currentTarget.style.background = 'var(--theme-bg-hover)'; }}
                       onMouseLeave={e => { if (o.value !== filter) e.currentTarget.style.background = 'none'; }}
                     >

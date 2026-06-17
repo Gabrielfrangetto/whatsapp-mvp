@@ -1,0 +1,83 @@
+import { Phone, Calendar, MessageSquare, User } from 'lucide-react';
+import StatusBadge from './StatusBadge';
+import { formatTime, getInitials, getAvatarColor } from '../utils/format';
+
+export default function ContactDetailsPanel({ conv }) {
+  if (!conv) {
+    return (
+      <div style={{ width: 260, background: 'var(--theme-bg-sidebar)', borderLeft: '1px solid var(--theme-border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, padding: '0 24px', flexShrink: 0 }}>
+        <User size={44} style={{ opacity: .18, color: 'var(--theme-text)' }} />
+        <p style={{ color: 'var(--theme-text-muted)', fontSize: 13, textAlign: 'center', margin: 0, lineHeight: 1.7 }}>
+          Selecione uma conversa para ver os detalhes do contato
+        </p>
+      </div>
+    );
+  }
+
+  const name  = conv.contact?.name || conv.contact?.phone || 'Desconhecido';
+  const phone = conv.contact?.phone;
+
+  return (
+    <div style={{ width: 260, background: 'var(--theme-bg-sidebar)', borderLeft: '1px solid var(--theme-border)', display: 'flex', flexDirection: 'column', overflowY: 'auto', flexShrink: 0 }}>
+
+      <div style={{ padding: '28px 16px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, borderBottom: '1px solid var(--theme-border)' }}>
+        <div style={{ width: 68, height: 68, borderRadius: '50%', background: getAvatarColor(name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 24 }}>
+          {getInitials(name)}
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--theme-text)' }}>{name}</div>
+          {phone && (
+            <div style={{ fontSize: 12, color: 'var(--theme-text-muted)', marginTop: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+              <Phone size={11} />
+              {phone}
+            </div>
+          )}
+        </div>
+        <StatusBadge status={conv.status} />
+      </div>
+
+      <div style={{ padding: '18px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Conversa</div>
+
+        {conv.createdAt && (
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <Calendar size={15} style={{ color: 'var(--theme-text-muted)', flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--theme-text-muted)' }}>Iniciada em</div>
+              <div style={{ fontSize: 13, color: 'var(--theme-text-secondary)', marginTop: 2 }}>
+                {new Date(conv.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {conv.lastMessageAt && (
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <MessageSquare size={15} style={{ color: 'var(--theme-text-muted)', flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <div style={{ fontSize: 11, color: 'var(--theme-text-muted)' }}>Última atividade</div>
+              <div style={{ fontSize: 13, color: 'var(--theme-text-secondary)', marginTop: 2 }}>
+                {formatTime(conv.lastMessageAt)}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {conv.assignedAgent && (
+          <>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 4 }}>Atendente</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: conv.assignedAgent.avatarColor || 'var(--theme-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-primary-text)', fontWeight: 700, fontSize: 11, flexShrink: 0 }}>
+                {getInitials(conv.assignedAgent.name)}
+              </div>
+              <div>
+                <div style={{ fontSize: 13, color: 'var(--theme-text)', fontWeight: 600 }}>{conv.assignedAgent.name}</div>
+                <div style={{ fontSize: 11, color: 'var(--theme-text-muted)' }}>Responsável</div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

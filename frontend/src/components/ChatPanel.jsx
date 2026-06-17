@@ -185,11 +185,17 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '16px 8%', display: 'flex', flexDirection: 'column', gap: 2 }}>
         {messages.map((m, i) => {
-          const showSep = i === 0 || getDateKey(m.timestamp) !== getDateKey(messages[i - 1].timestamp);
+          const prev = messages[i - 1];
+          const next = messages[i + 1];
+          const showSep = i === 0 || getDateKey(m.timestamp) !== getDateKey(prev.timestamp);
+          const sameAgentAsPrev = m.direction === 'OUTBOUND' && prev?.direction === 'OUTBOUND' && prev?.sentByAgentId === m.sentByAgentId && !showSep;
+          const sameAgentAsNext = m.direction === 'OUTBOUND' && next?.direction === 'OUTBOUND' && next?.sentByAgentId === m.sentByAgentId;
+          const showAvatar   = m.direction === 'OUTBOUND' && !sameAgentAsNext;
+          const showAgentName = m.direction === 'OUTBOUND' && !sameAgentAsPrev && !!m.agentName;
           return (
             <div key={m.id}>
               {showSep && <DateSeparator label={formatDateLabel(m.timestamp)} />}
-              <MessageBubble message={m} />
+              <MessageBubble message={m} showAvatar={showAvatar} showAgentName={showAgentName} />
             </div>
           );
         })}

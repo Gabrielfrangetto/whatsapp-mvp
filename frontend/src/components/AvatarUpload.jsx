@@ -84,7 +84,7 @@ export default function AvatarUpload({ agent, onSaved, onClose }) {
                 {preview ? (
                   <img src={preview} alt="avatar" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
                 ) : (
-                  <div style={{ width:'100%', height:'100%', background: agent?.avatarColor || 'var(--theme-primary)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:32, fontWeight:700, color:'#fff' }}>
+                  <div style={{ width:'100%', height:'100%', background: agent?.avatarColor || 'var(--theme-primary)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:32, fontWeight:700, color:'var(--theme-primary-text)' }}>
                     {(agent?.name || '?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase()}
                   </div>
                 )}
@@ -126,7 +126,7 @@ export default function AvatarUpload({ agent, onSaved, onClose }) {
             <button
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              style={{ width:'100%', padding:'10px', borderRadius:8, border:'1px solid var(--theme-border)', background: uploading ? 'var(--theme-border)' : 'var(--theme-primary)', color: uploading ? 'var(--theme-text-muted)' : '#fff', cursor: uploading ? 'default' : 'pointer', fontSize:13, fontWeight:600 }}
+              style={{ width:'100%', padding:'10px', borderRadius:8, border:'1px solid var(--theme-border)', background: uploading ? 'var(--theme-border)' : 'var(--theme-primary)', color: uploading ? 'var(--theme-text-muted)' : 'var(--theme-primary-text)', cursor: uploading ? 'default' : 'pointer', fontSize:13, fontWeight:600 }}
             >
               {uploading ? 'Enviando...' : <span style={{ display:'flex', alignItems:'center', gap:6 }}><Camera size={14} /> Escolher foto</span>}
             </button>

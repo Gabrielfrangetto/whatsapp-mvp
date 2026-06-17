@@ -67,7 +67,7 @@ export default function ResolutionReasons() {
         <button
           type="submit"
           disabled={adding || !newLabel.trim()}
-          style={{ padding: '9px 16px', background: newLabel.trim() ? 'var(--theme-primary)' : 'var(--theme-border)', color: newLabel.trim() ? '#fff' : 'var(--theme-text-muted)', border: 'none', borderRadius: 8, cursor: newLabel.trim() ? 'pointer' : 'default', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}
+          style={{ padding: '9px 16px', background: newLabel.trim() ? 'var(--theme-primary)' : 'var(--theme-border)', color: newLabel.trim() ? 'var(--theme-primary-text)' : 'var(--theme-text-muted)', border: 'none', borderRadius: 8, cursor: newLabel.trim() ? 'pointer' : 'default', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' }}
         >
           {adding ? 'Adicionando...' : '+ Adicionar'}
         </button>

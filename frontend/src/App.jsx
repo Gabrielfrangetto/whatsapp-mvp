@@ -329,7 +329,7 @@ function NavRail({ section, onSection, agent, agentStatus = 'ONLINE', onStatusCh
     <div style={{ width:64, background:navBg, display:'flex', flexDirection:'column', alignItems:'center', paddingTop:12, paddingBottom:12, gap:2, flexShrink:0, borderRight:'1px solid rgba(0,0,0,0.3)', zIndex:10 }}>
 
       {/* App logo */}
-      <div style={{ width:40, height:40, borderRadius:12, background:'var(--theme-primary)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', marginBottom:12, flexShrink:0 }}>
+      <div style={{ width:40, height:40, borderRadius:12, background:'var(--theme-primary)', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--theme-primary-text)', marginBottom:12, flexShrink:0 }}>
         <MessageSquare size={20} />
       </div>
 
@@ -359,7 +359,7 @@ function NavRail({ section, onSection, agent, agentStatus = 'ONLINE', onStatusCh
         <div ref={statusRef} style={{ position:'relative' }}>
           <div
             onClick={() => setStatusOpen(v => !v)}
-            style={{ width:40, height:40, borderRadius:'50%', background:agent?.avatarColor || 'var(--theme-primary)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:13, overflow:'hidden', position:'relative', border:`2px solid rgba(255,255,255,0.2)`, flexShrink:0, cursor:'pointer' }}
+            style={{ width:40, height:40, borderRadius:'50%', background:agent?.avatarColor || 'var(--theme-primary)', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--theme-primary-text)', fontWeight:700, fontSize:13, overflow:'hidden', position:'relative', border:`2px solid rgba(255,255,255,0.2)`, flexShrink:0, cursor:'pointer' }}
             title={`${agent?.name} • ${STATUS_META[agentStatus]?.label}`}
           >
             {agent?.avatarUrl
@@ -459,7 +459,7 @@ function ContactDetailsPanel({ conv }) {
           <>
             <div style={{ fontSize:11, fontWeight:600, color:'var(--theme-text-muted)', textTransform:'uppercase', letterSpacing:'0.06em', marginTop:4 }}>Atendente</div>
             <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-              <div style={{ width:32, height:32, borderRadius:'50%', background:conv.assignedAgent.avatarColor || 'var(--theme-primary)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:700, fontSize:11, flexShrink:0 }}>
+              <div style={{ width:32, height:32, borderRadius:'50%', background:conv.assignedAgent.avatarColor || 'var(--theme-primary)', display:'flex', alignItems:'center', justifyContent:'center', color:'var(--theme-primary-text)', fontWeight:700, fontSize:11, flexShrink:0 }}>
                 {getInitials(conv.assignedAgent.name)}
               </div>
               <div>
@@ -636,8 +636,8 @@ function ChatPanel({ conversationId, socketControls, onMessageSent }) {
         </div>
         {conversation && <StatusBadge status={conversation.status} />}
         {conversation?.status !== 'RESOLVED'
-          ? <button onClick={() => setShowResolve(true)} style={{ background:'rgba(255,255,255,0.2)', color:'#fff', border:'1px solid rgba(255,255,255,0.3)', borderRadius:8, padding:'6px 14px', cursor:'pointer', fontSize:12, fontWeight:600, display:'flex', alignItems:'center', gap:5 }}><Check size={13} /> Resolver</button>
-          : <button onClick={() => handleStatus('OPEN')} style={{ background:'rgba(255,255,255,0.1)', color:'#fff', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, padding:'6px 14px', cursor:'pointer', fontSize:12, fontWeight:600 }}>Reabrir</button>
+          ? <button onClick={() => setShowResolve(true)} style={{ background:'rgba(255,255,255,0.2)', color:'var(--theme-primary-text)', border:'1px solid rgba(255,255,255,0.3)', borderRadius:8, padding:'6px 14px', cursor:'pointer', fontSize:12, fontWeight:600, display:'flex', alignItems:'center', gap:5 }}><Check size={13} /> Resolver</button>
+          : <button onClick={() => handleStatus('OPEN')} style={{ background:'rgba(255,255,255,0.1)', color:'var(--theme-primary-text)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:8, padding:'6px 14px', cursor:'pointer', fontSize:12, fontWeight:600 }}>Reabrir</button>
         }
       </div>
 

@@ -15,7 +15,7 @@ export const PRESETS = [
   { name: 'Ardósia',   color: '#475569', mode: 'dark',  desc: 'Azul ardósia escuro' },
 ];
 
-function getContrastText(r, g, b) {
+export function getContrastText(r, g, b) {
   // WCAG relative luminance — pick black or white for maximum contrast
   const toLinear = (c) => { const s = c / 255; return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
   const L = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
@@ -56,8 +56,8 @@ function buildThemeVars(color, mode) {
       '--theme-border-strong':  'rgba(255,255,255,0.15)',
       '--theme-msg-text-out':   '#e8edf3',
       '--theme-msg-text-in':    '#e8edf3',
-      '--theme-header-text':    '#ffffff',
-      '--theme-header-sub':     alpha(0.6),
+      '--theme-header-text':    primaryText,
+      '--theme-header-sub':     primaryText === '#ffffff' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.55)',
     };
   } else {
     return {
@@ -82,8 +82,8 @@ function buildThemeVars(color, mode) {
       '--theme-border-strong':  'rgba(0,0,0,0.15)',
       '--theme-msg-text-out':   '#1a1d21',
       '--theme-msg-text-in':    '#1a1d21',
-      '--theme-header-text':    '#ffffff',
-      '--theme-header-sub':     alpha(0.75),
+      '--theme-header-text':    primaryText,
+      '--theme-header-sub':     primaryText === '#ffffff' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.55)',
     };
   }
 }

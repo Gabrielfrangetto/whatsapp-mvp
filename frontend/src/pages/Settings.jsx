@@ -1,6 +1,6 @@
 // src/pages/Settings.jsx
 import { useState } from 'react';
-import { useTheme, PRESETS } from '../context/ThemeContext';
+import { useTheme, PRESETS, getContrastText } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { Sun, Moon, Check } from 'lucide-react';
 
@@ -150,7 +150,7 @@ export default function Settings({ onClose }) {
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--theme-text-secondary)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{preset.desc}</div>
                     </div>
-                    {active && <div style={{ marginLeft: 'auto', width: 18, height: 18, borderRadius: '50%', background: preset.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0 }}><Check size={11} strokeWidth={3} /></div>}
+                    {active && <div style={{ marginLeft: 'auto', width: 18, height: 18, borderRadius: '50%', background: preset.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: getContrastText(parseInt(preset.color.slice(1,3),16), parseInt(preset.color.slice(3,5),16), parseInt(preset.color.slice(5,7),16)), flexShrink: 0 }}><Check size={11} strokeWidth={3} /></div>}
                   </div>
                 );
               })}

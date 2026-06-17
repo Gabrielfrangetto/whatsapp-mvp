@@ -130,7 +130,7 @@ export default function StickerPanel({ conversationId, onClose, onSent }) {
                   borderRadius: 6,
                   border: 'none',
                   background: 'var(--theme-primary)',
-                  color: '#fff',
+                  color: 'var(--theme-primary-text)',
                   cursor: 'pointer',
                   fontWeight: 700,
                 }}
@@ -209,7 +209,7 @@ export default function StickerPanel({ conversationId, onClose, onSent }) {
                 borderRadius: 7,
                 border: 'none',
                 background: 'var(--theme-primary)',
-                color: '#fff',
+                color: 'var(--theme-primary-text)',
                 cursor: uploading || !addName.trim() ? 'not-allowed' : 'pointer',
                 fontSize: 12,
                 fontWeight: 700,

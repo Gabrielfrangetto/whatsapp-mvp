@@ -85,7 +85,7 @@ export default function ResolveModal({ conversationId, onClose, onResolved }) {
                     background: selected === r.id ? 'var(--theme-primary)' : 'transparent',
                     display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0,
                   }}>
-                    {selected === r.id && <Check size={11} strokeWidth={3} color="#fff" />}
+                    {selected === r.id && <Check size={11} strokeWidth={3} color="var(--theme-primary-text)" />}
                   </div>
                   <span style={{ fontSize:14, color:'var(--theme-text)', fontWeight: selected === r.id ? 500 : 400 }}>
                     {r.label}

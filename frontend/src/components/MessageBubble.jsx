@@ -7,7 +7,7 @@ function AgentAvatar({ name, color, avatarUrl, size = 26 }) {
     return (
       <>
         <img
-          src={`${import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app'}${avatarUrl}`}
+          src={avatarUrl.startsWith('http') ? avatarUrl : `${import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app'}${avatarUrl}`}
           alt={name}
           title={name}
           style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}

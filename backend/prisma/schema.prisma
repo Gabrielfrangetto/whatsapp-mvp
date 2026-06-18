@@ -118,11 +118,12 @@ model Sticker {
 }
 
 model StickerFavorite {
-  id        String   @id @default(uuid())
-  agentId   String
-  mediaUrl  String
-  name      String?
-  createdAt DateTime @default(now())
+  id         String    @id @default(uuid())
+  agentId    String
+  mediaUrl   String
+  name       String?
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
 
   agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
 

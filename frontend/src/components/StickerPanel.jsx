@@ -1,25 +1,34 @@
 import { useState, useEffect, useRef } from 'react';
 import { api, useAuth } from '../context/AuthContext';
-import { uploadToCloudinary } from '../utils/cloudinaryUpload';
 import StickerItem from './StickerItem';
+import StickerAddForm from './StickerAddForm';
+import { uploadToCloudinary } from '../utils/cloudinaryUpload';
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app';
 
 export default function StickerPanel({ conversationId, onClose, onSent }) {
   const { agent } = useAuth();
+  const [tab, setTab]           = useState('favorites');
   const [stickers, setStickers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(null);
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [sending, setSending]   = useState(null);
   const [uploading, setUploading] = useState(false);
-  const [addName, setAddName] = useState('');
-  const [showAdd, setShowAdd] = useState(false);
+  const [addName, setAddName]   = useState('');
+  const [showAdd, setShowAdd]   = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
-  const inputRef = useRef();
+  const inputRef    = useRef();
   const pendingFile = useRef(null);
   const isAdmin = agent?.role === 'ADMIN';
 
   async function load() {
     try {
-      const { data } = await api.get('/stickers');
-      setStickers(data);
+      const [s, f] = await Promise.all([
+        api.get('/stickers'),
+        api.get('/favorites'),
+      ]);
+      setStickers(s.data);
+      setFavorites(f.data);
     } catch {}
     setLoading(false);
   }
@@ -38,6 +47,35 @@ export default function StickerPanel({ conversationId, onClose, onSent }) {
     } finally {
       setSending(null);
     }
+  }
+
+  async function handleSendFavorite(fav) {
+    if (sending) return;
+    setSending(fav.id);
+    try {
+      await api.post(`/favorites/send/${conversationId}`, { favoriteId: fav.id });
+      setFavorites(prev => {
+        const updated = prev.find(f => f.id === fav.id);
+        if (!updated) return prev;
+        const rest = prev.filter(f => f.id !== fav.id);
+        return [{ ...updated, lastUsedAt: new Date().toISOString() }, ...rest];
+      });
+      onSent?.();
+      onClose();
+    } catch (e) {
+      console.error('[StickerPanel] sendFavorite error', e);
+    } finally {
+      setSending(null);
+    }
+  }
+
+  async function handleUnfavorite(fav, e) {
+    e.stopPropagation();
+    if (!confirm('Remover dos favoritos?')) return;
+    try {
+      await api.post('/favorites/toggle', { mediaUrl: fav.mediaUrl });
+      setFavorites(prev => prev.filter(f => f.id !== fav.id));
+    } catch {}
   }
 
   async function handleDelete(id, e) {
@@ -83,177 +121,65 @@ export default function StickerPanel({ conversationId, onClose, onSent }) {
     }
   }
 
+  const emptyMsg = (msg) => (
+    <div style={{ gridColumn: '1/-1', textAlign: 'center', color: 'var(--theme-text-muted)', fontSize: 12, padding: '24px 0' }}>{msg}</div>
+  );
+
   return (
-    <div style={{
-      position: 'absolute',
-      bottom: 'calc(100% + 8px)',
-      right: 0,
-      width: 300,
-      background: 'var(--theme-bg-secondary)',
-      border: '1px solid var(--theme-border)',
-      borderRadius: 12,
-      boxShadow: '0 -4px 32px rgba(0,0,0,0.16)',
-      zIndex: 50,
-      display: 'flex',
-      flexDirection: 'column',
-      maxHeight: 340,
-      overflow: 'hidden',
-    }}>
+    <div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', right: 0, width: 300, background: 'var(--theme-bg-secondary)', border: '1px solid var(--theme-border)', borderRadius: 12, boxShadow: '0 -4px 32px rgba(0,0,0,0.16)', zIndex: 50, display: 'flex', flexDirection: 'column', maxHeight: 360, overflow: 'hidden' }}>
+
       {/* Header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '10px 12px',
-        borderBottom: '1px solid var(--theme-border)',
-        flexShrink: 0,
-      }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderBottom: '1px solid var(--theme-border)', flexShrink: 0 }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--theme-text)' }}>Stickers</span>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          {isAdmin && !showAdd && (
+          {isAdmin && !showAdd && tab === 'all' && (
             <>
-              <button
-                onClick={() => inputRef.current?.click()}
-                style={{
-                  fontSize: 11,
-                  padding: '4px 10px',
-                  borderRadius: 6,
-                  border: '2px solid var(--theme-primary)',
-                  background: 'none',
-                  color: 'var(--theme-primary)',
-                  cursor: 'pointer',
-                  fontWeight: 700,
-                }}
-              >
+              <button onClick={() => inputRef.current?.click()} style={{ fontSize: 11, padding: '4px 10px', borderRadius: 6, border: '2px solid var(--theme-primary)', background: 'none', color: 'var(--theme-primary)', cursor: 'pointer', fontWeight: 700 }}>
                 + Adicionar
               </button>
-              <input
-                ref={inputRef}
-                type="file"
-                accept="image/*"
-                style={{ display: 'none' }}
-                onChange={handleFileSelect}
-              />
+              <input ref={inputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFileSelect} />
             </>
           )}
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'var(--theme-text-muted)',
-              fontSize: 20,
-              lineHeight: 1,
-              padding: '0 2px',
-            }}
-          >
-            ×
-          </button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--theme-text-muted)', fontSize: 20, lineHeight: 1, padding: '0 2px' }}>×</button>
         </div>
       </div>
 
-      {/* Add form */}
-      {showAdd && (
-        <div style={{
-          padding: '10px 12px',
-          borderBottom: '1px solid var(--theme-border)',
-          flexShrink: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 8,
-        }}>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            {previewUrl && (
-              <img
-                src={previewUrl}
-                alt="preview"
-                style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--theme-border)' }}
-              />
-            )}
-            <input
-              autoFocus
-              value={addName}
-              onChange={e => setAddName(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleUpload()}
-              placeholder="Nome do sticker"
-              style={{
-                flex: 1,
-                padding: '7px 10px',
-                borderRadius: 7,
-                border: '1px solid var(--theme-border)',
-                fontSize: 12,
-                background: 'var(--theme-bg-input)',
-                color: 'var(--theme-text)',
-                outline: 'none',
-              }}
-            />
-          </div>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button
-              onClick={handleUpload}
-              disabled={uploading || !addName.trim()}
-              style={{
-                flex: 1,
-                padding: '6px 0',
-                borderRadius: 7,
-                border: '2px solid var(--theme-primary)',
-                background: 'none',
-                color: 'var(--theme-primary)',
-                cursor: uploading || !addName.trim() ? 'not-allowed' : 'pointer',
-                fontSize: 12,
-                fontWeight: 700,
-                opacity: !addName.trim() ? 0.5 : 1,
-              }}
-            >
-              {uploading ? 'Salvando...' : 'Salvar'}
-            </button>
-            <button
-              onClick={cancelAdd}
-              style={{
-                padding: '6px 14px',
-                borderRadius: 7,
-                border: '1px solid var(--theme-border)',
-                background: 'none',
-                color: 'var(--theme-text-muted)',
-                cursor: 'pointer',
-                fontSize: 12,
-              }}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
+      {/* Tabs */}
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--theme-border)', flexShrink: 0 }}>
+        {[['favorites', '★ Favoritos'], ['all', 'Todos']].map(([key, label]) => (
+          <button key={key} onClick={() => setTab(key)} style={{ flex: 1, padding: '7px 0', background: 'none', border: 'none', borderBottom: tab === key ? '2px solid var(--theme-primary)' : '2px solid transparent', color: tab === key ? 'var(--theme-primary)' : 'var(--theme-text-muted)', cursor: 'pointer', fontSize: 12, fontWeight: 600, transition: 'color 0.15s, border-color 0.15s' }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Add form (only in Todos tab) */}
+      {showAdd && tab === 'all' && (
+        <StickerAddForm previewUrl={previewUrl} addName={addName} setAddName={setAddName} onUpload={handleUpload} onCancel={cancelAdd} uploading={uploading} />
       )}
 
       {/* Grid */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: 10,
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: 8,
-        alignContent: 'start',
-      }}>
-        {loading ? (
-          <div style={{ gridColumn: '1/-1', textAlign: 'center', color: 'var(--theme-text-muted)', fontSize: 12, padding: '24px 0' }}>
-            Carregando...
-          </div>
-        ) : stickers.length === 0 ? (
-          <div style={{ gridColumn: '1/-1', textAlign: 'center', color: 'var(--theme-text-muted)', fontSize: 12, padding: '24px 0' }}>
-            Nenhum sticker cadastrado
-          </div>
-        ) : stickers.map(s => (
-          <StickerItem
-            key={s.id}
-            sticker={s}
-            sending={sending === s.id}
-            isAdmin={isAdmin}
-            onSend={handleSend}
-            onDelete={handleDelete}
-          />
-        ))}
+      <div style={{ flex: 1, overflowY: 'auto', padding: 10, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, alignContent: 'start' }}>
+        {loading ? emptyMsg('Carregando...') : tab === 'favorites' ? (
+          favorites.length === 0
+            ? emptyMsg('Nenhum sticker favoritado')
+            : favorites.map(fav => (
+              <StickerItem
+                key={fav.id}
+                sticker={{ id: fav.id, url: `${API_URL}/api/media/${fav.mediaUrl}`, name: fav.name || '—' }}
+                sending={sending === fav.id}
+                isAdmin={true}
+                onSend={() => handleSendFavorite(fav)}
+                onDelete={(_, e) => handleUnfavorite(fav, e)}
+              />
+            ))
+        ) : (
+          stickers.length === 0
+            ? emptyMsg('Nenhum sticker cadastrado')
+            : stickers.map(s => (
+              <StickerItem key={s.id} sticker={s} sending={sending === s.id} isAdmin={isAdmin} onSend={handleSend} onDelete={handleDelete} />
+            ))
+        )}
       </div>
     </div>
   );

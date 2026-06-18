@@ -197,7 +197,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
         </div>
         {conversation && <StatusBadge status={conversation.status} />}
         {conversation?.status !== 'RESOLVED'
-          ? <button onClick={() => setShowResolve(true)} style={{ background: 'rgba(255,255,255,0.2)', color: 'var(--theme-primary-text)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}><Check size={13} /> Resolver</button>
+          ? <button onClick={() => setShowResolve(true)} style={{ background: 'transparent', color: 'var(--theme-primary-text)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}><Check size={13} /> Resolver</button>
           : <button onClick={() => handleStatus('OPEN')} style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--theme-primary-text)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Reabrir</button>
         }
       </div>

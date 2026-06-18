@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { formatMsgTime } from '../utils/format';
 
 function Ticks({ status }) {
@@ -17,14 +17,27 @@ export default function StickerBubble({ message, showAgentName, isOut, onSaveSti
   const [hovered, setHovered]       = useState(false);
   const [showMenu, setShowMenu]     = useState(false);
   const [dotHovered, setDotHovered] = useState(false);
+  const wrapperRef = useRef(null);
   const API_URL = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app';
   const showDot = !isOut && (hovered || showMenu);
 
+  useEffect(() => {
+    if (!showMenu) return;
+    function handleOutside(e) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [showMenu]);
+
   return (
     <div
+      ref={wrapperRef}
       style={{ display: 'flex', flexDirection: 'column', alignItems: isOut ? 'flex-end' : 'flex-start', gap: 3 }}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false); setShowMenu(false); }}
+      onMouseLeave={() => setHovered(false)}
     >
       {/* Name bubble — only for outbound */}
       {isOut && showAgentName && message.agentName && (

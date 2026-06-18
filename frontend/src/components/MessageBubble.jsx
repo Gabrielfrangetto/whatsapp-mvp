@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { SmilePlus } from 'lucide-react';
 import { getInitials, formatMsgTime, getAvatarColor } from '../utils/format';
 import StickerBubble from './StickerBubble';
@@ -142,8 +142,20 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
   const [showPicker, setShowPicker] = useState(false);
   const [showMenu, setShowMenu]     = useState(false);
   const [dotHovered, setDotHovered] = useState(false);
-  const pickerRef = useRef(null);
-  const menuRef   = useRef(null);
+  const pickerRef  = useRef(null);
+  const menuRef    = useRef(null);
+  const bubbleRef  = useRef(null);
+
+  useEffect(() => {
+    if (!showMenu) return;
+    function handleOutside(e) {
+      if (bubbleRef.current && !bubbleRef.current.contains(e.target)) {
+        setShowMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [showMenu]);
 
   if (isInternal) {
     return (
@@ -326,9 +338,10 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
 
   return (
     <div
+      ref={bubbleRef}
       style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 6, marginBottom: 2 }}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false); setShowPicker(false); setShowMenu(false); }}
+      onMouseLeave={() => { setHovered(false); setShowPicker(false); }}
     >
       <div style={{ width: 26, flexShrink: 0 }}>
         {showContactAvatar && (

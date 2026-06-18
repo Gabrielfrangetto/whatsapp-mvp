@@ -48,7 +48,7 @@ function ReactionBubble({ reactions, isOut }) {
       display: 'flex',
       justifyContent: isOut ? 'flex-end' : 'flex-start',
       gap: 2,
-      marginTop: -6,
+      marginTop: -5,
       position: 'relative',
       zIndex: 1,
     }}>

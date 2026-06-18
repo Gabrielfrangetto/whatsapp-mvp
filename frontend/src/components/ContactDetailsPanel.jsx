@@ -2,6 +2,22 @@ import { Phone, Calendar, MessageSquare, User, Pin } from 'lucide-react';
 import StatusBadge from './StatusBadge';
 import { formatTime, getInitials, getAvatarColor } from '../utils/format';
 
+function AgentAvatar({ name, color, avatarUrl, size = 32 }) {
+  const bg = color || 'var(--theme-primary)';
+  const fallbackStyle = { width: size, height: size, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: size * 0.34, lineHeight: 1, flexShrink: 0 };
+  if (avatarUrl) {
+    const src = avatarUrl.startsWith('http') ? avatarUrl : `${import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app'}${avatarUrl}`;
+    return (
+      <>
+        <img src={src} alt={name} title={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+          onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+        <div title={name} style={{ ...fallbackStyle, display: 'none' }}>{getInitials(name)}</div>
+      </>
+    );
+  }
+  return <div title={name} style={fallbackStyle}>{getInitials(name)}</div>;
+}
+
 export default function ContactDetailsPanel({ conv }) {
   if (!conv) {
     return (
@@ -67,9 +83,7 @@ export default function ContactDetailsPanel({ conv }) {
           <>
             <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 4 }}>Atendente</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: conv.assignedAgent.avatarColor || 'var(--theme-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-primary-text)', fontWeight: 700, fontSize: 11, flexShrink: 0 }}>
-                {getInitials(conv.assignedAgent.name)}
-              </div>
+              <AgentAvatar name={conv.assignedAgent.name} color={conv.assignedAgent.avatarColor} avatarUrl={conv.assignedAgent.avatarUrl} size={32} />
               <div>
                 <div style={{ fontSize: 13, color: 'var(--theme-text)', fontWeight: 600 }}>{conv.assignedAgent.name}</div>
                 <div style={{ fontSize: 11, color: 'var(--theme-text-muted)' }}>Responsável</div>
@@ -87,9 +101,7 @@ export default function ContactDetailsPanel({ conv }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {conv.pinnedBy.map(agent => (
                 <div key={agent.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: '50%', background: agent.avatarColor || 'var(--theme-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 10, flexShrink: 0 }}>
-                    {getInitials(agent.name)}
-                  </div>
+                  <AgentAvatar name={agent.name} color={agent.avatarColor} avatarUrl={agent.avatarUrl} size={28} />
                   <div style={{ fontSize: 13, color: 'var(--theme-text-secondary)', fontWeight: 500 }}>{agent.name}</div>
                 </div>
               ))}

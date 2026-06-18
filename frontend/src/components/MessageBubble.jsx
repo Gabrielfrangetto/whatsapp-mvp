@@ -66,6 +66,7 @@ function ReactionBubble({ reactions, isOut }) {
           <span style={{
             flex: '0 0 14px',
             height: 14,
+            marginTop: 2,
             backgroundImage: `url(${emojiToTwemojiUrl(emoji)})`,
             backgroundSize: 'contain',
             backgroundRepeat: 'no-repeat',

@@ -26,12 +26,23 @@ function AgentAvatar({ name, color, avatarUrl, size = 26 }) {
   );
 }
 
+function Ticks({ status }) {
+  const color = status === 'READ' ? '#53bdeb' : 'var(--theme-text-muted)';
+  if (status === 'FAILED') return <span style={{ fontSize: 12, color: '#ef4444' }}>✗</span>;
+  if (status === 'DELIVERED' || status === 'READ') return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', color }}>
+      <span style={{ fontSize: 12 }}>✓</span>
+      <span style={{ fontSize: 12, marginLeft: -5 }}>✓</span>
+    </span>
+  );
+  if (status === 'SENT') return <span style={{ fontSize: 12, color }}>✓</span>;
+  return null;
+}
+
 export default function MessageBubble({ message, showAvatar, showAgentName }) {
   const isOut      = message.direction === 'OUTBOUND';
   const isInternal = message.direction === 'INTERNAL' || message.type === 'INTERNAL';
   const isImage    = (message.type === 'IMAGE' && message.mediaUrl) || (message.content === '🎭 Sticker' && message.mediaUrl);
-  const icon       = { SENT: '✓', DELIVERED: '✓✓', READ: '✓✓', FAILED: '✗' }[message.status] || '';
-  const tickColor  = message.status === 'READ' ? '#53bdeb' : 'var(--theme-text-muted)';
   const API_URL    = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app';
 
   if (isInternal) {
@@ -80,7 +91,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName }) {
       </p>
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 3, marginTop: 2, padding: isImage ? '0 8px' : 0 }}>
         <span style={{ fontSize: 11, color: 'var(--theme-text-muted)' }}>{formatMsgTime(message.timestamp)}</span>
-        {isOut && <span style={{ fontSize: 12, color: tickColor }}>{icon}</span>}
+        {isOut && <Ticks status={message.status} />}
       </div>
     </div>
   );

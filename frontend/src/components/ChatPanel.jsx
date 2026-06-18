@@ -185,20 +185,20 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--theme-bg-chat)', minWidth: 0 }}>
       {/* Header */}
-      <div style={{ background: 'var(--theme-primary)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
+      <div style={{ background: 'var(--theme-bg-secondary)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 14, borderBottom: '1px solid var(--theme-border)' }}>
         <div style={{ width: 40, height: 40, borderRadius: '50%', background: getAvatarColor(name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 14 }}>
           {getInitials(name)}
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, color: 'var(--theme-header-text)', fontSize: 15 }}>{name}</div>
-          <div style={{ fontSize: 12, color: typingAgent ? '#a5f3d0' : 'var(--theme-header-sub)', fontStyle: typingAgent ? 'italic' : 'normal' }}>
+          <div style={{ fontWeight: 700, color: 'var(--theme-text)', fontSize: 15 }}>{name}</div>
+          <div style={{ fontSize: 12, color: 'var(--theme-text-secondary)', fontStyle: typingAgent ? 'italic' : 'normal' }}>
             {typingAgent ? `${typingAgent} está digitando...` : conversation?.contact?.phone}
           </div>
         </div>
         {conversation && <StatusBadge status={conversation.status} />}
         {conversation?.status !== 'RESOLVED'
-          ? <button onClick={() => setShowResolve(true)} style={{ background: 'transparent', color: 'var(--theme-primary-text)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}><Check size={13} /> Resolver</button>
-          : <button onClick={() => handleStatus('OPEN')} style={{ background: 'rgba(255,255,255,0.1)', color: 'var(--theme-primary-text)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Reabrir</button>
+          ? <button onClick={() => setShowResolve(true)} style={{ background: 'transparent', color: 'var(--theme-text)', border: '1px solid var(--theme-border-strong)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}><Check size={13} /> Resolver</button>
+          : <button onClick={() => handleStatus('OPEN')} style={{ background: 'transparent', color: 'var(--theme-text)', border: '1px solid var(--theme-border-strong)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Reabrir</button>
         }
       </div>
 

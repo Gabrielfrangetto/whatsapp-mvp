@@ -16,7 +16,7 @@ function AgentAvatar({ name, color, avatarUrl, size = 26 }) {
   return (
     <div
       title={name}
-      style={{ width: size, height: size, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: size * 0.38, fontWeight: 700, flexShrink: 0, userSelect: 'none' }}
+      style={{ width: size, height: size, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: size * 0.38, fontWeight: 700, lineHeight: 1, flexShrink: 0, userSelect: 'none' }}
     >
       {getInitials(name || 'A')}
     </div>
@@ -35,7 +35,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName }) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0' }}>
         <div style={{ background: 'var(--theme-primary-subtle)', border: '1px solid var(--theme-primary-subtle)', borderRadius: 10, padding: '10px 14px', maxWidth: '80%', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-          <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--theme-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-primary-text)', fontSize: 11, fontWeight: 700, flexShrink: 0, marginTop: 1 }}>
+          <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--theme-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-primary-text)', fontSize: 11, fontWeight: 700, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>
             {getInitials(message.agentName || 'A')}
           </div>
           <div>

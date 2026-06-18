@@ -215,7 +215,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, onRe
           borderRadius: '0 12px 0 38px',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
-          background: 'radial-gradient(circle at top right, var(--theme-bg-bubble-in) 25%, transparent 75%)',
+          background: 'var(--theme-bg-bubble-in)',
           pointerEvents: 'none',
           zIndex: 4,
           opacity: (hovered || showMenu) ? 1 : 0,

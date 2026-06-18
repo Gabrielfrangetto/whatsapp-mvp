@@ -158,8 +158,24 @@ export default function MessageBubble({ message, showAvatar, showAgentName, onRe
 
   const hasReactions = message.reactions && Object.keys(message.reactions).length > 0;
 
-  const bubble = (
-    <div style={{ maxWidth: '65%', display: 'flex', flexDirection: 'column', marginBottom: hasReactions ? 8 : 0 }}>
+  const reactBtn = onReact && (hovered || showPicker) && (
+    <div ref={pickerRef} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+      {showPicker && (
+        <QuickReactBar isOut={isOut} onReact={(emoji) => { onReact(emoji); setShowPicker(false); setHovered(false); }} />
+      )}
+      <button
+        onClick={(e) => { e.stopPropagation(); setShowPicker(v => !v); }}
+        style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          padding: 3, borderRadius: '50%', lineHeight: 1, display: 'flex',
+          color: 'var(--theme-text-muted)', transition: 'color 0.15s',
+        }}
+        title="Reagir"
+      ><SmilePlus size={16} strokeWidth={1.5} /></button>
+    </div>
+  );
+
+  const coloredBubble = (
     <div style={{ background: isOut ? 'var(--theme-bg-bubble-out)' : 'var(--theme-bg-bubble-in)', borderRadius: isOut ? '12px 0 12px 12px' : '0 12px 12px 12px', padding: isImage ? '4px 4px 5px' : '8px 12px 5px', boxShadow: '0 1px 2px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
       {showAgentName && message.agentName && (
         <div style={{ fontSize: 11, fontWeight: 700, color: message.agentColor || 'var(--theme-primary)', marginBottom: 3, whiteSpace: 'nowrap' }}>
@@ -192,24 +208,16 @@ export default function MessageBubble({ message, showAvatar, showAgentName, onRe
         {isOut && <Ticks status={message.status} />}
       </div>
     </div>
-    <ReactionBubble reactions={message.reactions} isOut={isOut} />
-    </div>
   );
 
-  const reactBtn = onReact && (hovered || showPicker) && (
-    <div ref={pickerRef} style={{ position: 'relative', alignSelf: 'center' }}>
-      {showPicker && (
-        <QuickReactBar isOut={isOut} onReact={(emoji) => { onReact(emoji); setShowPicker(false); setHovered(false); }} />
-      )}
-      <button
-        onClick={(e) => { e.stopPropagation(); setShowPicker(v => !v); }}
-        style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          padding: 3, borderRadius: '50%', lineHeight: 1, display: 'flex',
-          color: 'var(--theme-text-muted)', transition: 'color 0.15s',
-        }}
-        title="Reagir"
-      ><SmilePlus size={16} strokeWidth={1.5} /></button>
+  const bubble = (
+    <div style={{ maxWidth: '65%', display: 'flex', flexDirection: 'column', marginBottom: hasReactions ? 8 : 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        {isOut && reactBtn}
+        {coloredBubble}
+        {!isOut && reactBtn}
+      </div>
+      <ReactionBubble reactions={message.reactions} isOut={isOut} />
     </div>
   );
 
@@ -220,7 +228,6 @@ export default function MessageBubble({ message, showAvatar, showAgentName, onRe
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => { setHovered(false); setShowPicker(false); }}
       >
-        {reactBtn}
         {bubble}
         <div style={{ width: 26, flexShrink: 0 }}>
           {showAvatar && (
@@ -238,7 +245,6 @@ export default function MessageBubble({ message, showAvatar, showAgentName, onRe
       onMouseLeave={() => { setHovered(false); setShowPicker(false); }}
     >
       {bubble}
-      {reactBtn}
     </div>
   );
 }

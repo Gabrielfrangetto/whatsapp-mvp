@@ -36,11 +36,10 @@ export default function Inbox() {
   useEffect(() => { selectedRef.current = selected; }, [selected]);
   useEffect(() => { if (agent) loadPreferences(agent); }, [agent]);
 
-  const totalUnread = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
   useEffect(() => {
-    document.title = totalUnread > 0 ? `(${totalUnread}) WhatsApp MVP` : 'WhatsApp MVP';
-    return () => { document.title = 'WhatsApp MVP'; };
-  }, [totalUnread]);
+    const n = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+    document.title = n > 0 ? `(${n}) WhatsApp MVP` : 'WhatsApp MVP';
+  }, [conversations]);
 
   const socketControls = useSocket(accessToken, {
     onMessage: (msg) => {

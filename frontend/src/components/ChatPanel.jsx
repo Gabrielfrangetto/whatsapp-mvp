@@ -190,7 +190,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
           const showSep = i === 0 || getDateKey(m.timestamp) !== getDateKey(prev.timestamp);
           const sameAgentAsPrev = m.direction === 'OUTBOUND' && prev?.direction === 'OUTBOUND' && prev?.sentByAgentId === m.sentByAgentId && !showSep;
           const sameAgentAsNext = m.direction === 'OUTBOUND' && next?.direction === 'OUTBOUND' && next?.sentByAgentId === m.sentByAgentId;
-          const showAvatar   = m.direction === 'OUTBOUND' && !sameAgentAsNext;
+          const showAvatar   = m.direction === 'OUTBOUND' && !sameAgentAsPrev;
           const showAgentName = m.direction === 'OUTBOUND' && !sameAgentAsPrev && !!m.agentName;
           return (
             <div key={m.id}>

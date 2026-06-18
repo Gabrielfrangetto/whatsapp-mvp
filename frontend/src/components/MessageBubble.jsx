@@ -84,7 +84,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName }) {
 
   if (isOut) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', gap: 6, marginBottom: 2 }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start', gap: 6, marginBottom: 2 }}>
         {bubble}
         <div style={{ width: 26, flexShrink: 0 }}>
           {showAvatar && (

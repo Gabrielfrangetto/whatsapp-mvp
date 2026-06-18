@@ -26,6 +26,13 @@ function AgentAvatar({ name, color, avatarUrl, size = 26 }) {
   );
 }
 
+function emojiToTwemojiUrl(emoji) {
+  const codePoints = [...emoji]
+    .map(c => c.codePointAt(0).toString(16).toLowerCase())
+    .filter(cp => cp !== 'fe0f');
+  return `https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/${codePoints.join('-')}.svg`;
+}
+
 function ReactionBubble({ reactions, isOut }) {
   if (!reactions) return null;
   const entries = Object.values(reactions);
@@ -47,17 +54,23 @@ function ReactionBubble({ reactions, isOut }) {
         <span key={emoji} style={{
           background: 'var(--theme-bg)',
           borderRadius: 10,
-          padding: '2px 5px',
-          fontSize: 13,
-          lineHeight: 1,
+          padding: '3px 2px',
           boxShadow: '0 0 0 1px var(--theme-border), 0 1px 3px rgba(0,0,0,0.10)',
           userSelect: 'none',
           whiteSpace: 'nowrap',
           display: 'inline-flex',
           alignItems: 'center',
-          gap: 3,
+          justifyContent: 'center',
+          gap: 2,
         }}>
-          {emoji}{count > 1 ? <span style={{ fontSize: 11, color: 'var(--theme-text-secondary)', lineHeight: 1 }}>{count}</span> : ''}
+          <img
+            src={emojiToTwemojiUrl(emoji)}
+            alt={emoji}
+            style={{ width: 14, height: 14, display: 'block', flexShrink: 0 }}
+            onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'inline'; }}
+          />
+          <span style={{ display: 'none', fontSize: 13, lineHeight: 1 }}>{emoji}</span>
+          {count > 1 && <span style={{ fontSize: 11, color: 'var(--theme-text-secondary)', lineHeight: 1 }}>{count}</span>}
         </span>
       ))}
     </div>

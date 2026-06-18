@@ -49,8 +49,6 @@ export default function StickerBubble({ message, showAgentName, isOut, onSaveSti
             position: 'absolute', top: 0, right: 0,
             width: 38, height: 38,
             borderRadius: '0 0 0 38px',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
             background: 'var(--theme-bg-bubble-in)',
             pointerEvents: 'none',
             zIndex: 4,

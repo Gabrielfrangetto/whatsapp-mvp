@@ -1,7 +1,7 @@
 // src/controllers/webhook.controller.js
 const { PrismaClient } = require('@prisma/client');
 const whatsappService = require('../services/whatsapp.service');
-const { emitNewMessage, emitMessageStatus, emitConversationUpdate, emitNewConversation } = require('../socket/socket.server');
+const { emitNewMessage, emitMessageStatus, emitMessageReaction, emitConversationUpdate, emitNewConversation } = require('../socket/socket.server');
 const { assignConversation, pickAgent } = require('../services/assignment.service');
 
 const prisma = new PrismaClient();
@@ -39,8 +39,32 @@ async function receiveWebhook(req, res) {
   }
 }
 
+async function processReaction(msg) {
+  try {
+    const { message_id: waMessageId, emoji } = msg.reaction;
+    const from = msg.from;
+
+    const target = await prisma.message.findFirst({ where: { waMessageId } });
+    if (!target) return;
+
+    const reactions = (target.reactions || {});
+    if (emoji === '') {
+      delete reactions[from];
+    } else {
+      reactions[from] = emoji;
+    }
+
+    await prisma.message.update({ where: { id: target.id }, data: { reactions } });
+    emitMessageReaction(target.conversationId, target.id, reactions);
+  } catch (e) {
+    console.error('[Webhook] processReaction error:', e.message);
+  }
+}
+
 async function processInbound(msg, contactInfo) {
   try {
+    if (msg.type === 'reaction') return processReaction(msg);
+
     const phone = msg.from;
     const content = extractContent(msg);
     const timestamp = new Date(parseInt(msg.timestamp) * 1000);

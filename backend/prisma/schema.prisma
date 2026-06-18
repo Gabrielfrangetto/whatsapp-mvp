@@ -80,6 +80,7 @@ model Message {
   sentByAgentId  String?
   timestamp      DateTime    @default(now())
   createdAt      DateTime    @default(now())
+  reactions      Json?
 }
 
 model MessageTemplate {

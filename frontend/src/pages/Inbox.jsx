@@ -83,6 +83,7 @@ export default function Inbox() {
       });
     },
     onMessageStatus:   (data) => chatHandlersRef.current?.handleStatus(data),
+    onMessageReaction: (data) => chatHandlersRef.current?.handleReaction(data),
     onTyping:          (data) => chatHandlersRef.current?.handleTyping(data),
     onStoppedTyping:   (data) => chatHandlersRef.current?.handleStoppedTyping(data),
     onAgentStatus:     ({ agentId: id, onlineStatus }) => {

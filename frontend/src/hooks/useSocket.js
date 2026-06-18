@@ -84,6 +84,7 @@ export function useSocket(accessToken, handlers = {}) {
     on('conversation:update',  (conv) => handlersRef.current.onConversationUpdate?.(conv));
     on('conversation:new',     (conv) => handlersRef.current.onNewConversation?.(conv));
     on('message:status',       (data) => handlersRef.current.onMessageStatus?.(data));
+    on('message:reaction',     (data) => handlersRef.current.onMessageReaction?.(data));
     on('agent:typing',         (data) => handlersRef.current.onTyping?.(data));
     on('agent:stopped_typing', (data) => handlersRef.current.onStoppedTyping?.(data));
     on('agent:status',         (data) => handlersRef.current.onAgentStatus?.(data));

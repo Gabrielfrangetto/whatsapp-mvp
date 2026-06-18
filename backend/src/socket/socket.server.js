@@ -188,4 +188,8 @@ function emitPinUpdate(conversationId, pinCount, pinnedBy) {
   getIO().emit('pin:update', { conversationId, pinCount, pinnedBy });
 }
 
-module.exports = { initSocket, getIO, emitNewMessage, emitMessageStatus, emitConversationUpdate, emitNewConversation, emitPinUpdate };
+function emitMessageReaction(conversationId, messageId, reactions) {
+  getIO().to(`conv:${conversationId}`).emit('message:reaction', { messageId, reactions });
+}
+
+module.exports = { initSocket, getIO, emitNewMessage, emitMessageStatus, emitMessageReaction, emitConversationUpdate, emitNewConversation, emitPinUpdate };

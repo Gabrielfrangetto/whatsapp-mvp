@@ -89,6 +89,9 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
       handleStatus: ({ waMessageId, status }) => {
         setMessages(prev => prev.map(m => m.waMessageId === waMessageId ? { ...m, status } : m));
       },
+      handleReaction: ({ messageId, reactions }) => {
+        setMessages(prev => prev.map(m => m.id === messageId ? { ...m, reactions } : m));
+      },
       handleTyping: ({ agentName, conversationId: cid }) => {
         if (cid !== conversationId) return;
         setTypingAgent(agentName);

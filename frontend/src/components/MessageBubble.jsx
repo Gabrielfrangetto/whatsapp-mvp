@@ -178,7 +178,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, onRe
   const coloredBubble = (
     <div style={{ background: isOut ? 'var(--theme-bg-bubble-out)' : 'var(--theme-bg-bubble-in)', borderRadius: isOut ? '12px 0 12px 12px' : '0 12px 12px 12px', padding: isImage ? '4px 4px 5px' : '8px 12px 5px', boxShadow: '0 1px 2px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
       {showAgentName && message.agentName && (
-        <div style={{ fontSize: 11, fontWeight: 700, color: message.agentColor || 'var(--theme-primary)', marginBottom: 3, whiteSpace: 'nowrap' }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--theme-text)', marginBottom: 3, whiteSpace: 'nowrap' }}>
           {message.agentName}
         </div>
       )}

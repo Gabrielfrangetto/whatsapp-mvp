@@ -64,14 +64,12 @@ function ReactionBubble({ reactions, isOut }) {
           gap: 2,
         }}>
           <span style={{
-            display: 'inline-block',
-            width: 14,
+            flex: '0 0 14px',
             height: 14,
             backgroundImage: `url(${emojiToTwemojiUrl(emoji)})`,
             backgroundSize: 'contain',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
-            flexShrink: 0,
           }} />
           {count > 1 && <span style={{ fontSize: 11, color: 'var(--theme-text-secondary)', lineHeight: 1 }}>{count}</span>}
         </span>

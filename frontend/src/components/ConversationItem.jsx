@@ -62,7 +62,7 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
       {conv.pinned ? (
         <Pin size={10} style={{ position: 'absolute', top: 5, left: 8, color: 'var(--theme-primary)', zIndex: 5 }} />
       ) : conv.pinCount > 0 ? (
-        <span style={{ position: 'absolute', top: 4, left: 6, width: 15, height: 15, borderRadius: '50%', background: 'var(--theme-text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: '#fff', lineHeight: 1, zIndex: 5, flexShrink: 0 }}>{conv.pinCount}</span>
+        <span style={{ position: 'absolute', top: 4, left: 6, width: 15, height: 15, borderRadius: '50%', background: 'var(--theme-text-muted)', display: 'block', fontSize: 8, fontWeight: 700, color: '#fff', lineHeight: '15px', textAlign: 'center', zIndex: 5 }}>{conv.pinCount}</span>
       ) : null}
 
       <div style={{ width: 44, height: 44, borderRadius: '50%', background: getAvatarColor(name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 15, flexShrink: 0, opacity: pinAnim ? 0 : 1, transition: 'opacity 0.15s' }}>

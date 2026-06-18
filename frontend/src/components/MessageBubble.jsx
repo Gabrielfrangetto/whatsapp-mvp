@@ -211,17 +211,15 @@ export default function MessageBubble({ message, showAvatar, showAgentName, onRe
       {backdropVisible && (
         <div style={{
           position: 'absolute', top: 0, right: 0,
-          width: 56, height: 56,
-          borderRadius: '0 12px 0 56px',
+          width: 38, height: 38,
+          borderRadius: '0 12px 0 38px',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
-          background: dotHovered
-            ? 'radial-gradient(circle at top right, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.4) 60%, transparent 80%)'
-            : 'radial-gradient(circle at top right, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.3) 60%, transparent 80%)',
+          background: 'radial-gradient(circle at top right, var(--theme-bg-bubble-in) 25%, transparent 75%)',
           pointerEvents: 'none',
           zIndex: 4,
           opacity: (hovered || showMenu) ? 1 : 0,
-          transition: 'opacity 0.18s ease, background 0.15s ease',
+          transition: 'opacity 0.18s ease',
         }} />
       )}
 

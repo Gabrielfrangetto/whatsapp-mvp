@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { SmilePlus } from 'lucide-react';
 import { getInitials, formatMsgTime, getAvatarColor } from '../utils/format';
+import StickerBubble from './StickerBubble';
 
 const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '👍', '🙏'];
 
@@ -135,6 +136,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
   const isOut      = message.direction === 'OUTBOUND';
   const isInternal = message.direction === 'INTERNAL' || message.type === 'INTERNAL';
   const isImage    = (message.type === 'IMAGE' && message.mediaUrl) || (message.content === '🎭 Sticker' && message.mediaUrl);
+  const isSticker  = isImage && message.content === 'Sticker';
   const API_URL    = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app';
   const [hovered, setHovered]       = useState(false);
   const [showPicker, setShowPicker] = useState(false);
@@ -155,6 +157,20 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
             <span style={{ fontSize: 10, color: 'var(--theme-text-muted)', marginTop: 3, display: 'block' }}>{formatMsgTime(message.timestamp)}</span>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (isSticker) {
+    return (
+      <div style={{ display: 'flex', justifyContent: isOut ? 'flex-end' : 'flex-start', alignItems: 'flex-start', gap: 6, marginBottom: 2 }}>
+        {!isOut && (
+          <div style={{ width: 26, flexShrink: 0 }}>
+            {showContactAvatar && <AgentAvatar name={contactName || '?'} color={getAvatarColor(contactName || '?')} avatarUrl={contactProfilePic} size={26} />}
+          </div>
+        )}
+        <StickerBubble message={message} showAgentName={showAgentName} isOut={isOut} onSaveSticker={onSaveSticker} onFavorite={onFavorite} isFavorited={isFavorited} />
+        {isOut && <div style={{ width: 26, flexShrink: 0 }}>{showAvatar && <AgentAvatar name={message.agentName} color={message.agentColor} avatarUrl={message.agentAvatarUrl} size={26} />}</div>}
       </div>
     );
   }

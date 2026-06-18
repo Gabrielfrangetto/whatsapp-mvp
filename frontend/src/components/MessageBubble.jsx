@@ -216,8 +216,8 @@ export default function MessageBubble({ message, showAvatar, showAgentName, onRe
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
           background: dotHovered
-            ? 'radial-gradient(circle at top right, rgba(0,0,0,0.65) 0%, transparent 75%)'
-            : 'radial-gradient(circle at top right, rgba(0,0,0,0.52) 0%, transparent 70%)',
+            ? 'radial-gradient(circle at top right, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.4) 60%, transparent 80%)'
+            : 'radial-gradient(circle at top right, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.3) 60%, transparent 80%)',
           pointerEvents: 'none',
           zIndex: 4,
           opacity: (hovered || showMenu) ? 1 : 0,

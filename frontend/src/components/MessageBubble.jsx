@@ -63,13 +63,16 @@ function ReactionBubble({ reactions, isOut }) {
           justifyContent: 'center',
           gap: 2,
         }}>
-          <img
-            src={emojiToTwemojiUrl(emoji)}
-            alt={emoji}
-            style={{ width: 14, height: 14, display: 'block', flexShrink: 0 }}
-            onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'inline'; }}
-          />
-          <span style={{ display: 'none', fontSize: 13, lineHeight: 1 }}>{emoji}</span>
+          <span style={{
+            display: 'inline-block',
+            width: 14,
+            height: 14,
+            backgroundImage: `url(${emojiToTwemojiUrl(emoji)})`,
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            flexShrink: 0,
+          }} />
           {count > 1 && <span style={{ fontSize: 11, color: 'var(--theme-text-secondary)', lineHeight: 1 }}>{count}</span>}
         </span>
       ))}

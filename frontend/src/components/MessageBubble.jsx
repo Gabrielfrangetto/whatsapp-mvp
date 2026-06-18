@@ -136,9 +136,10 @@ export default function MessageBubble({ message, showAvatar, showAgentName, onRe
   const isInternal = message.direction === 'INTERNAL' || message.type === 'INTERNAL';
   const isImage    = (message.type === 'IMAGE' && message.mediaUrl) || (message.content === '🎭 Sticker' && message.mediaUrl);
   const API_URL    = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app';
-  const [hovered, setHovered]     = useState(false);
+  const [hovered, setHovered]       = useState(false);
   const [showPicker, setShowPicker] = useState(false);
-  const [showMenu, setShowMenu]   = useState(false);
+  const [showMenu, setShowMenu]     = useState(false);
+  const [dotHovered, setDotHovered] = useState(false);
   const pickerRef = useRef(null);
   const menuRef   = useRef(null);
 
@@ -210,14 +211,36 @@ export default function MessageBubble({ message, showAvatar, showAgentName, onRe
         <button
           ref={menuRef}
           onClick={(e) => { e.stopPropagation(); setShowMenu(v => !v); }}
-          style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.35)', border: 'none', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', fontSize: 14, lineHeight: 1, zIndex: 5 }}
+          onMouseEnter={() => setDotHovered(true)}
+          onMouseLeave={() => setDotHovered(false)}
+          style={{
+            position: 'absolute', top: 4, right: 4,
+            background: dotHovered ? 'rgba(0,0,0,0.52)' : 'rgba(0,0,0,0.28)',
+            backdropFilter: dotHovered ? 'blur(10px)' : 'blur(0px)',
+            WebkitBackdropFilter: dotHovered ? 'blur(10px)' : 'blur(0px)',
+            border: 'none', borderRadius: '50%',
+            width: 24, height: 24,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', color: '#fff', fontSize: 15, lineHeight: 1, zIndex: 5,
+            transition: 'background 0.15s ease, backdrop-filter 0.15s ease',
+          }}
         >⋮</button>
       )}
 
-      {/* Dropdown menu */}
-      {showMenu && (
+      {/* Dropdown menu — always in DOM when showDotMenu, fades in/out */}
+      {showDotMenu && (
         <div
-          style={{ position: 'absolute', top: 28, right: 4, background: 'var(--theme-bg-secondary)', border: '1px solid var(--theme-border)', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.18)', zIndex: 20, minWidth: 150, overflow: 'hidden' }}
+          style={{
+            position: 'absolute', top: 30, right: 4,
+            background: 'var(--theme-bg-secondary)',
+            border: '1px solid var(--theme-border)',
+            borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+            zIndex: 20, minWidth: 150, overflow: 'hidden',
+            opacity: showMenu ? 1 : 0,
+            transform: showMenu ? 'translateY(0) scale(1)' : 'translateY(-4px) scale(0.97)',
+            transition: 'opacity 0.1s ease, transform 0.1s ease',
+            pointerEvents: showMenu ? 'auto' : 'none',
+          }}
           onClick={e => e.stopPropagation()}
         >
           {onSaveSticker && (

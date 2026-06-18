@@ -17,7 +17,9 @@ export default function StickerBubble({ message, showAgentName, isOut, onSaveSti
   const [hovered, setHovered]       = useState(false);
   const [showMenu, setShowMenu]     = useState(false);
   const [dotHovered, setDotHovered] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
   const wrapperRef = useRef(null);
+  const dotBtnRef  = useRef(null);
   const API_URL = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app';
   const showDot = !isOut && (hovered || showMenu);
 
@@ -73,7 +75,15 @@ export default function StickerBubble({ message, showAgentName, isOut, onSaveSti
         {/* 3-dot button */}
         {showDot && (
           <button
-            onClick={(e) => { e.stopPropagation(); setShowMenu(v => !v); }}
+            ref={dotBtnRef}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!showMenu) {
+                const rect = dotBtnRef.current?.getBoundingClientRect();
+                setOpenUpward(rect ? rect.bottom + 110 > window.innerHeight : false);
+              }
+              setShowMenu(v => !v);
+            }}
             onMouseEnter={() => setDotHovered(true)}
             onMouseLeave={() => setDotHovered(false)}
             style={{ position: 'absolute', top: 4, right: 4, background: 'transparent', border: 'none', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--theme-text)', fontSize: 15, lineHeight: 1, zIndex: 5 }}
@@ -83,7 +93,7 @@ export default function StickerBubble({ message, showAgentName, isOut, onSaveSti
         {/* Dropdown */}
         {showDot && (
           <div
-            style={{ position: 'absolute', top: 30, right: 4, background: 'var(--theme-bg-secondary)', border: '1px solid var(--theme-border)', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.18)', zIndex: 20, minWidth: 150, overflow: 'hidden', opacity: showMenu ? 1 : 0, transform: showMenu ? 'translateY(0) scale(1)' : 'translateY(-4px) scale(0.97)', transition: 'opacity 0.1s ease, transform 0.1s ease', pointerEvents: showMenu ? 'auto' : 'none' }}
+            style={{ position: 'absolute', ...(openUpward ? { bottom: 30, top: 'auto' } : { top: 30, bottom: 'auto' }), right: 4, background: 'var(--theme-bg-secondary)', border: '1px solid var(--theme-border)', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.18)', zIndex: 20, minWidth: 150, overflow: 'hidden', opacity: showMenu ? 1 : 0, transform: showMenu ? 'translateY(0) scale(1)' : 'translateY(-4px) scale(0.97)', transition: 'opacity 0.1s ease, transform 0.1s ease', pointerEvents: showMenu ? 'auto' : 'none' }}
             onClick={e => e.stopPropagation()}
           >
             {onSaveSticker && (

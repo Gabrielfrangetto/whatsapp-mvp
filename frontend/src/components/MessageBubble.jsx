@@ -142,9 +142,11 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
   const [showPicker, setShowPicker] = useState(false);
   const [showMenu, setShowMenu]     = useState(false);
   const [dotHovered, setDotHovered] = useState(false);
+  const [openUpward, setOpenUpward] = useState(false);
   const pickerRef  = useRef(null);
   const menuRef    = useRef(null);
   const bubbleRef  = useRef(null);
+  const dotBtnRef  = useRef(null);
 
   useEffect(() => {
     if (!showMenu) return;
@@ -252,8 +254,15 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
       {/* 3-dot button */}
       {showDotMenu && (
         <button
-          ref={menuRef}
-          onClick={(e) => { e.stopPropagation(); setShowMenu(v => !v); }}
+          ref={dotBtnRef}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!showMenu) {
+              const rect = dotBtnRef.current?.getBoundingClientRect();
+              setOpenUpward(rect ? rect.bottom + 110 > window.innerHeight : false);
+            }
+            setShowMenu(v => !v);
+          }}
           onMouseEnter={() => setDotHovered(true)}
           onMouseLeave={() => setDotHovered(false)}
           style={{
@@ -271,7 +280,9 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
       {showDotMenu && (
         <div
           style={{
-            position: 'absolute', top: 30, right: 4,
+            position: 'absolute',
+            ...(openUpward ? { bottom: 30, top: 'auto' } : { top: 30, bottom: 'auto' }),
+            right: 4,
             background: 'var(--theme-bg-secondary)',
             border: '1px solid var(--theme-border)',
             borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.18)',

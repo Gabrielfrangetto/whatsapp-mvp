@@ -48,7 +48,7 @@ function ReactionBubble({ reactions, isOut }) {
       display: 'flex',
       justifyContent: isOut ? 'flex-end' : 'flex-start',
       gap: 2,
-      marginTop: -8,
+      marginTop: -7,
       position: 'relative',
       zIndex: 1,
     }}>
@@ -56,7 +56,7 @@ function ReactionBubble({ reactions, isOut }) {
         <span key={emoji} style={{
           background: 'var(--theme-bg)',
           borderRadius: 10,
-          padding: '2px 2px 3px',
+          padding: '2px 3px 3px',
           boxShadow: '0 0 0 1px var(--theme-border), 0 1px 3px rgba(0,0,0,0.10)',
           userSelect: 'none',
           whiteSpace: 'nowrap',

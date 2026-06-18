@@ -206,25 +206,38 @@ export default function MessageBubble({ message, showAvatar, showAgentName, onRe
         </div>
       </div>
 
-      {/* 3-dot menu button */}
+      {/* 3-dot menu button + corner backdrop that bleeds over the image */}
       {showDotMenu && (
-        <button
-          ref={menuRef}
-          onClick={(e) => { e.stopPropagation(); setShowMenu(v => !v); }}
-          onMouseEnter={() => setDotHovered(true)}
-          onMouseLeave={() => setDotHovered(false)}
-          style={{
-            position: 'absolute', top: 4, right: 4,
-            background: dotHovered ? 'rgba(0,0,0,0.52)' : 'rgba(0,0,0,0.28)',
-            backdropFilter: dotHovered ? 'blur(10px)' : 'blur(0px)',
-            WebkitBackdropFilter: dotHovered ? 'blur(10px)' : 'blur(0px)',
-            border: 'none', borderRadius: '50%',
-            width: 24, height: 24,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', color: '#fff', fontSize: 15, lineHeight: 1, zIndex: 5,
-            transition: 'background 0.15s ease, backdrop-filter 0.15s ease',
-          }}
-        >⋮</button>
+        <>
+          {/* Larger blur area that overflows the bubble corner */}
+          <div style={{
+            position: 'absolute', top: 0, right: 0,
+            width: 56, height: 56,
+            borderRadius: '0 12px 0 56px',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            background: dotHovered
+              ? 'radial-gradient(circle at top right, rgba(0,0,0,0.45) 0%, transparent 75%)'
+              : 'radial-gradient(circle at top right, rgba(0,0,0,0.22) 0%, transparent 70%)',
+            pointerEvents: 'none',
+            zIndex: 4,
+            transition: 'background 0.15s ease',
+          }} />
+          <button
+            ref={menuRef}
+            onClick={(e) => { e.stopPropagation(); setShowMenu(v => !v); }}
+            onMouseEnter={() => setDotHovered(true)}
+            onMouseLeave={() => setDotHovered(false)}
+            style={{
+              position: 'absolute', top: 4, right: 4,
+              background: 'transparent',
+              border: 'none', borderRadius: '50%',
+              width: 24, height: 24,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', color: '#fff', fontSize: 15, lineHeight: 1, zIndex: 5,
+            }}
+          >⋮</button>
+        </>
       )}
 
       {/* Dropdown menu — always in DOM when showDotMenu, fades in/out */}

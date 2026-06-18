@@ -10,6 +10,8 @@ import TemplateModal from './TemplateModal';
 import ResolveModal from './ResolveModal';
 import StickerPanel from './StickerPanel';
 import { getInitials, getAvatarColor, getDateKey, formatDateLabel } from '../utils/format';
+import { useStickerFavorites } from '../hooks/useStickerFavorites';
+import { useSaveSticker } from '../hooks/useSaveSticker';
 import metaLogo from '../assets/images/meta_logo.svg';
 
 const WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -41,6 +43,8 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
   const typingTimer  = useRef(null);
   const prevConvId   = useRef(null);
   const stickerBtnRef = useRef(null);
+  const { favorites, toggleFavorite } = useStickerFavorites();
+  const handleSaveSticker = useSaveSticker();
 
   const loadMessages = useCallback(async (id) => {
     if (!id) return;
@@ -220,6 +224,9 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
                 showAvatar={showAvatar}
                 showAgentName={showAgentName}
                 onReact={m.waMessageId ? (emoji) => handleReact(m.id, emoji) : null}
+                onSaveSticker={handleSaveSticker}
+                onFavorite={(msg) => toggleFavorite(msg.mediaUrl, msg.content)}
+                isFavorited={favorites.has(m.mediaUrl)}
               />
             </div>
           );

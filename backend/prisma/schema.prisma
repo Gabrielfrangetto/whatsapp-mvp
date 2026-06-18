@@ -27,6 +27,7 @@ model Agent {
   conversations    Conversation[] @relation("AssignedAgent")
   refreshTokens    RefreshToken[]
   conversationPins ConversationPin[]
+  stickerFavorites StickerFavorite[]
 }
 
 model RefreshToken {
@@ -114,6 +115,18 @@ model Sticker {
   name      String
   url       String
   createdAt DateTime @default(now())
+}
+
+model StickerFavorite {
+  id        String   @id @default(uuid())
+  agentId   String
+  mediaUrl  String
+  name      String?
+  createdAt DateTime @default(now())
+
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([agentId, mediaUrl])
 }
 
 // Motivos de finalização cadastráveis pelo admin

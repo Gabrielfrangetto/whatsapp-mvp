@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { api, useAuth } from '../context/AuthContext';
+import { uploadToCloudinary } from '../utils/cloudinaryUpload';
 import StickerItem from './StickerItem';
-
-const CLOUD_NAME = 'dvbah3xab';
-const UPLOAD_PRESET = 'whatsapp_mvp_agents';
 
 export default function StickerPanel({ conversationId, onClose, onSent }) {
   const { agent } = useAuth();
@@ -69,43 +67,13 @@ export default function StickerPanel({ conversationId, onClose, onSent }) {
     pendingFile.current = null;
   }
 
-  function toWebP(file) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      const objUrl = URL.createObjectURL(file);
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        canvas.getContext('2d').drawImage(img, 0, 0);
-        URL.revokeObjectURL(objUrl);
-        canvas.toBlob(
-          (blob) => resolve(new File([blob], 'sticker.webp', { type: 'image/webp' })),
-          'image/webp',
-          0.92,
-        );
-      };
-      img.src = objUrl;
-    });
-  }
-
   async function handleUpload() {
     const file = pendingFile.current;
     if (!file || !addName.trim()) return;
     setUploading(true);
     try {
-      const webpFile = await toWebP(file);
-      const form = new FormData();
-      form.append('file', webpFile);
-      form.append('upload_preset', UPLOAD_PRESET);
-      form.append('folder', 'stickers');
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-        method: 'POST',
-        body: form,
-      });
-      const data = await res.json();
-      if (!data.secure_url) throw new Error('Upload falhou');
-      await api.post('/stickers', { name: addName.trim(), url: data.secure_url });
+      const url = await uploadToCloudinary(file);
+      await api.post('/stickers', { name: addName.trim(), url });
       cancelAdd();
       load();
     } catch (e) {

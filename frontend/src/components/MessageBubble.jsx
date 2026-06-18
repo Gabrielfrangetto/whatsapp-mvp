@@ -131,14 +131,16 @@ function Ticks({ status }) {
   return null;
 }
 
-export default function MessageBubble({ message, showAvatar, showAgentName, onReact }) {
+export default function MessageBubble({ message, showAvatar, showAgentName, onReact, onSaveSticker, onFavorite, isFavorited }) {
   const isOut      = message.direction === 'OUTBOUND';
   const isInternal = message.direction === 'INTERNAL' || message.type === 'INTERNAL';
   const isImage    = (message.type === 'IMAGE' && message.mediaUrl) || (message.content === '🎭 Sticker' && message.mediaUrl);
   const API_URL    = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app';
   const [hovered, setHovered]     = useState(false);
   const [showPicker, setShowPicker] = useState(false);
+  const [showMenu, setShowMenu]   = useState(false);
   const pickerRef = useRef(null);
+  const menuRef   = useRef(null);
 
   if (isInternal) {
     return (
@@ -175,38 +177,71 @@ export default function MessageBubble({ message, showAvatar, showAgentName, onRe
     </div>
   );
 
+  const showDotMenu = !isOut && isImage && (hovered || showMenu);
+
   const coloredBubble = (
-    <div style={{ background: isOut ? 'var(--theme-bg-bubble-out)' : 'var(--theme-bg-bubble-in)', borderRadius: isOut ? '12px 0 12px 12px' : '0 12px 12px 12px', padding: isImage ? '4px 4px 5px' : '8px 12px 5px', boxShadow: '0 1px 2px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
-      {showAgentName && message.agentName && (
-        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--theme-text)', marginBottom: 3, whiteSpace: 'nowrap' }}>
-          {message.agentName}
+    <div style={{ position: 'relative' }}>
+      <div style={{ background: isOut ? 'var(--theme-bg-bubble-out)' : 'var(--theme-bg-bubble-in)', borderRadius: isOut ? '12px 0 12px 12px' : '0 12px 12px 12px', padding: isImage ? '4px 4px 5px' : '8px 12px 5px', boxShadow: '0 1px 2px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
+        {showAgentName && message.agentName && (
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--theme-text)', marginBottom: 3, whiteSpace: 'nowrap' }}>
+            {message.agentName}
+          </div>
+        )}
+        {isImage && (
+          <img
+            src={`${API_URL}/api/media/${message.mediaUrl}`}
+            alt="imagem"
+            style={{ maxWidth: '100%', maxHeight: 240, borderRadius: 8, display: 'block', cursor: 'pointer' }}
+            onClick={() => window.open(`${API_URL}/api/media/${message.mediaUrl}`, '_blank')}
+            onError={e => { e.target.style.display = 'none'; }}
+          />
+        )}
+        <p style={{ margin: isImage ? '4px 8px 0' : 0, fontSize: 14, color: isOut ? 'var(--theme-msg-text-out)' : 'var(--theme-msg-text-in)', lineHeight: 1.5, wordBreak: 'break-word', display: isImage && (message.content === '📷 Imagem' || message.content === '' || message.content === 'Sticker') ? 'none' : 'block' }}>
+          {message.content}
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 3, marginTop: 2, padding: isImage ? '0 8px' : 0 }}>
+          <span style={{ fontSize: 11, color: 'var(--theme-text-muted)' }}>{formatMsgTime(message.timestamp)}</span>
+          {isOut && <Ticks status={message.status} />}
+        </div>
+      </div>
+
+      {/* 3-dot menu button */}
+      {showDotMenu && (
+        <button
+          ref={menuRef}
+          onClick={(e) => { e.stopPropagation(); setShowMenu(v => !v); }}
+          style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.35)', border: 'none', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', fontSize: 14, lineHeight: 1, zIndex: 5 }}
+        >⋮</button>
+      )}
+
+      {/* Dropdown menu */}
+      {showMenu && (
+        <div
+          style={{ position: 'absolute', top: 28, right: 4, background: 'var(--theme-bg-secondary)', border: '1px solid var(--theme-border)', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.18)', zIndex: 20, minWidth: 150, overflow: 'hidden' }}
+          onClick={e => e.stopPropagation()}
+        >
+          {onSaveSticker && (
+            <button
+              onClick={() => { setShowMenu(false); onSaveSticker(message); }}
+              style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 13, color: 'var(--theme-text)', display: 'flex', alignItems: 'center', gap: 8 }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--theme-bg-hover)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+            >
+              💾 Salvar sticker
+            </button>
+          )}
+          {onFavorite && (
+            <button
+              onClick={() => { setShowMenu(false); onFavorite(message); }}
+              style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 13, color: isFavorited ? 'var(--theme-primary)' : 'var(--theme-text)', display: 'flex', alignItems: 'center', gap: 8 }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--theme-bg-hover)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+            >
+              {isFavorited ? '★ Favoritado' : '☆ Favoritar'}
+            </button>
+          )}
         </div>
       )}
-      {isImage && (
-        <img
-          src={`${API_URL}/api/media/${message.mediaUrl}`}
-          alt="imagem"
-          style={{ maxWidth: '100%', maxHeight: 240, borderRadius: 8, display: 'block', cursor: 'pointer' }}
-          onClick={() => window.open(`${API_URL}/api/media/${message.mediaUrl}`, '_blank')}
-          onError={e => { e.target.style.display = 'none'; }}
-        />
-      )}
-      {isImage && message.direction === 'INBOUND' && (
-        <a
-          href={`${API_URL}/api/media/${message.mediaUrl}`}
-          download target="_blank" rel="noreferrer"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, fontSize: 11, color: 'var(--theme-text-muted)', textDecoration: 'none', padding: '4px 8px', marginTop: 2, borderRadius: 6, background: 'rgba(0,0,0,0.04)', width: 'fit-content', marginLeft: 'auto', marginRight: 4 }}
-        >
-          ⬇ Salvar
-        </a>
-      )}
-      <p style={{ margin: isImage ? '4px 8px 0' : 0, fontSize: 14, color: isOut ? 'var(--theme-msg-text-out)' : 'var(--theme-msg-text-in)', lineHeight: 1.5, wordBreak: 'break-word', display: isImage && (message.content === '📷 Imagem' || message.content === '' || message.content === 'Sticker') ? 'none' : 'block' }}>
-        {message.content}
-      </p>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 3, marginTop: 2, padding: isImage ? '0 8px' : 0 }}>
-        <span style={{ fontSize: 11, color: 'var(--theme-text-muted)' }}>{formatMsgTime(message.timestamp)}</span>
-        {isOut && <Ticks status={message.status} />}
-      </div>
     </div>
   );
 
@@ -242,7 +277,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, onRe
     <div
       style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 2 }}
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => { setHovered(false); setShowPicker(false); }}
+      onMouseLeave={() => { setHovered(false); setShowPicker(false); setShowMenu(false); }}
     >
       {bubble}
     </div>

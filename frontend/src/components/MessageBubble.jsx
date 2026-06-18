@@ -46,12 +46,11 @@ function ReactionBubble({ reactions, isOut }) {
       {Object.entries(counts).map(([emoji, count]) => (
         <span key={emoji} style={{
           background: 'var(--theme-bg)',
-          border: '1px solid var(--theme-border)',
           borderRadius: 10,
-          padding: '3px 6px',
+          padding: '2px 5px',
           fontSize: 13,
           lineHeight: 1,
-          boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+          boxShadow: '0 0 0 1px var(--theme-border), 0 1px 3px rgba(0,0,0,0.10)',
           userSelect: 'none',
           whiteSpace: 'nowrap',
           display: 'inline-flex',

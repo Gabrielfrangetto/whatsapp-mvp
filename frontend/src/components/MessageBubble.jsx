@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { SmilePlus } from 'lucide-react';
-import { getInitials, formatMsgTime } from '../utils/format';
+import { getInitials, formatMsgTime, getAvatarColor } from '../utils/format';
 
 const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '👍', '🙏'];
 
@@ -131,7 +131,7 @@ function Ticks({ status }) {
   return null;
 }
 
-export default function MessageBubble({ message, showAvatar, showAgentName, onReact, onSaveSticker, onFavorite, isFavorited }) {
+export default function MessageBubble({ message, showAvatar, showAgentName, showContactAvatar, contactName, contactProfilePic, onReact, onSaveSticker, onFavorite, isFavorited }) {
   const isOut      = message.direction === 'OUTBOUND';
   const isInternal = message.direction === 'INTERNAL' || message.type === 'INTERNAL';
   const isImage    = (message.type === 'IMAGE' && message.mediaUrl) || (message.content === '🎭 Sticker' && message.mediaUrl);
@@ -312,10 +312,15 @@ export default function MessageBubble({ message, showAvatar, showAgentName, onRe
 
   return (
     <div
-      style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 2 }}
+      style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 6, marginBottom: 2 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setShowPicker(false); setShowMenu(false); }}
     >
+      <div style={{ width: 26, flexShrink: 0 }}>
+        {showContactAvatar && (
+          <AgentAvatar name={contactName || '?'} color={getAvatarColor(contactName || '?')} avatarUrl={contactProfilePic} size={26} />
+        )}
+      </div>
       {bubble}
     </div>
   );

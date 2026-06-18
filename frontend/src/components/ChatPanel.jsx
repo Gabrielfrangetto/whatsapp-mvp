@@ -214,8 +214,10 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
           const showSep = i === 0 || getDateKey(m.timestamp) !== getDateKey(prev.timestamp);
           const sameAgentAsPrev = m.direction === 'OUTBOUND' && prev?.direction === 'OUTBOUND' && prev?.sentByAgentId === m.sentByAgentId && !showSep;
           const sameAgentAsNext = m.direction === 'OUTBOUND' && next?.direction === 'OUTBOUND' && next?.sentByAgentId === m.sentByAgentId;
-          const showAvatar   = m.direction === 'OUTBOUND' && !sameAgentAsPrev;
-          const showAgentName = m.direction === 'OUTBOUND' && !sameAgentAsPrev && !!m.agentName;
+          const showAvatar        = m.direction === 'OUTBOUND' && !sameAgentAsPrev;
+          const showAgentName     = m.direction === 'OUTBOUND' && !sameAgentAsPrev && !!m.agentName;
+          const sameClientAsPrev  = m.direction === 'INBOUND' && prev?.direction === 'INBOUND' && !showSep;
+          const showContactAvatar = m.direction === 'INBOUND' && !sameClientAsPrev;
           return (
             <div key={m.id}>
               {showSep && <DateSeparator label={formatDateLabel(m.timestamp)} />}
@@ -223,6 +225,9 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
                 message={m}
                 showAvatar={showAvatar}
                 showAgentName={showAgentName}
+                showContactAvatar={showContactAvatar}
+                contactName={conversation?.contact?.name || conversation?.contact?.phone}
+                contactProfilePic={conversation?.contact?.profilePic}
                 onReact={m.waMessageId ? (emoji) => handleReact(m.id, emoji) : null}
                 onSaveSticker={handleSaveSticker}
                 onFavorite={(msg) => toggleFavorite(msg.mediaUrl, msg.content)}

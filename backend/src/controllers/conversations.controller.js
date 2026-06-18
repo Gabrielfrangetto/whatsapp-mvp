@@ -16,8 +16,8 @@ async function listConversations(req, res) {
         where,
         include: {
           contact: true,
-          assignedAgent: { select: { id: true, name: true, avatarColor: true } },
-          pins: { include: { agent: { select: { id: true, name: true, avatarColor: true } } } },
+          assignedAgent: { select: { id: true, name: true, avatarColor: true, avatarUrl: true } },
+          pins: { include: { agent: { select: { id: true, name: true, avatarColor: true, avatarUrl: true } } } },
         },
         orderBy: { lastMessageAt: 'desc' },
         skip,
@@ -187,7 +187,7 @@ async function togglePin(req, res) {
 
     const pins = await prisma.conversationPin.findMany({
       where: { conversationId: id },
-      include: { agent: { select: { id: true, name: true, avatarColor: true } } },
+      include: { agent: { select: { id: true, name: true, avatarColor: true, avatarUrl: true } } },
     });
 
     const pinned   = pins.some(p => p.agentId === agentId);

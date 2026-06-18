@@ -2,22 +2,25 @@ import { getInitials, formatMsgTime } from '../utils/format';
 
 function AgentAvatar({ name, color, avatarUrl, size = 26 }) {
   const bg = color || '#25D366';
+  const fallbackStyle = { width: size, height: size, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: size * 0.38, fontWeight: 700, lineHeight: 1, flexShrink: 0, userSelect: 'none' };
   if (avatarUrl) {
     return (
-      <img
-        src={`${import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app'}${avatarUrl}`}
-        alt={name}
-        title={name}
-        style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-        onError={e => { e.target.style.display = 'none'; e.target.nextSibling && (e.target.nextSibling.style.display = 'flex'); }}
-      />
+      <>
+        <img
+          src={`${import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app'}${avatarUrl}`}
+          alt={name}
+          title={name}
+          style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+          onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+        />
+        <div title={name} style={{ ...fallbackStyle, display: 'none' }}>
+          {getInitials(name || 'A')}
+        </div>
+      </>
     );
   }
   return (
-    <div
-      title={name}
-      style={{ width: size, height: size, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: size * 0.38, fontWeight: 700, lineHeight: 1, flexShrink: 0, userSelect: 'none' }}
-    >
+    <div title={name} style={fallbackStyle}>
       {getInitials(name || 'A')}
     </div>
   );

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { SmilePlus } from 'lucide-react';
 import { getInitials, formatMsgTime } from '../utils/format';
 
 const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '👍', '🙏'];
@@ -204,11 +205,11 @@ export default function MessageBubble({ message, showAvatar, showAgentName, onRe
         onClick={(e) => { e.stopPropagation(); setShowPicker(v => !v); }}
         style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          fontSize: 16, padding: 3, borderRadius: '50%', lineHeight: 1,
+          padding: 3, borderRadius: '50%', lineHeight: 1, display: 'flex',
           color: 'var(--theme-text-muted)', transition: 'color 0.15s',
         }}
         title="Reagir"
-      >😊</button>
+      ><SmilePlus size={16} strokeWidth={1.5} /></button>
     </div>
   );
 

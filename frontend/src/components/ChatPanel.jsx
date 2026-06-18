@@ -13,6 +13,7 @@ import { getInitials, getAvatarColor, getDateKey, formatDateLabel } from '../uti
 import metaLogo from '../assets/images/meta_logo.svg';
 
 const WINDOW_MS = 24 * 60 * 60 * 1000;
+const STATUS_RANK = { SENT: 0, DELIVERED: 1, READ: 2 };
 
 function computeWindowOpen(msgs, conversation) {
   if (conversation?.lastMessageDirection === 'INBOUND' && conversation?.lastMessageAt) {
@@ -46,7 +47,16 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
     try {
       const { data } = await api.get(`/conversations/${id}/messages`);
       const msgs = data.messages || [];
-      setMessages(msgs);
+      setMessages(prev => {
+        const prevMap = new Map(prev.map(m => [m.id, m]));
+        return msgs.map(m => {
+          const existing = prevMap.get(m.id);
+          if (existing && (STATUS_RANK[existing.status] ?? -1) > (STATUS_RANK[m.status] ?? -1)) {
+            return { ...m, status: existing.status };
+          }
+          return m;
+        });
+      });
       setConversation(data.conversation || null);
       setWindowOpen(computeWindowOpen(msgs, data.conversation));
     } catch {}

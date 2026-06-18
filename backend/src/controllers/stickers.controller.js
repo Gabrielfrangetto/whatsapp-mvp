@@ -72,10 +72,10 @@ async function sendSticker(req, res) {
     );
     const mediaId = uploadRes.data.id;
 
-    // Envia como imagem para o contato
+    // Envia como sticker para o contato
     const sendRes = await axios.post(
       `${META_API}/${PHONE_NUMBER_ID}/messages`,
-      { messaging_product: 'whatsapp', to: phone, type: 'image', image: { id: mediaId } },
+      { messaging_product: 'whatsapp', to: phone, type: 'sticker', sticker: { id: mediaId } },
       { headers: { Authorization: `Bearer ${ACCESS_TOKEN()}`, 'Content-Type': 'application/json' } }
     );
     const waMessageId = sendRes.data.messages?.[0]?.id;

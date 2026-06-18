@@ -1,6 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const whatsappService = require('../services/whatsapp.service');
-const { emitNewMessage, emitConversationUpdate, emitPinUpdate } = require('../socket/socket.server');
+const { emitNewMessage, emitConversationUpdate, emitPinUpdate, emitMessageReaction } = require('../socket/socket.server');
 
 const prisma = new PrismaClient();
 
@@ -201,4 +201,29 @@ async function togglePin(req, res) {
   }
 }
 
-module.exports = { listConversations, getMessages, sendMessage, updateConversationStatus, getStats, togglePin };
+async function reactToMessage(req, res) {
+  try {
+    const { id } = req.params;
+    const { messageId, emoji } = req.body;
+    if (!messageId || !emoji) return res.status(400).json({ error: 'messageId e emoji obrigatórios' });
+
+    const message = await prisma.message.findFirst({ where: { id: messageId, conversationId: id } });
+    if (!message) return res.status(404).json({ error: 'Mensagem não encontrada' });
+    if (!message.waMessageId) return res.status(400).json({ error: 'Mensagem sem waMessageId' });
+
+    const conversation = await prisma.conversation.findUnique({ where: { id }, include: { contact: true } });
+    await whatsappService.sendReaction(conversation.contact.phone, message.waMessageId, emoji);
+
+    const agentId = req.agent?.sub;
+    const reactions = { ...(message.reactions || {}), [agentId]: emoji };
+    await prisma.message.update({ where: { id: messageId }, data: { reactions } });
+
+    emitMessageReaction(id, messageId, reactions);
+    res.json({ reactions });
+  } catch (e) {
+    console.error('[reactToMessage]', e.message);
+    res.status(500).json({ error: 'Erro ao reagir à mensagem' });
+  }
+}
+
+module.exports = { listConversations, getMessages, sendMessage, updateConversationStatus, getStats, togglePin, reactToMessage };

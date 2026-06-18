@@ -1,4 +1,40 @@
+import { useState, useRef } from 'react';
 import { getInitials, formatMsgTime } from '../utils/format';
+
+const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '👍', '🙏'];
+
+function QuickReactBar({ onReact, isOut }) {
+  return (
+    <div style={{
+      position: 'absolute',
+      bottom: 'calc(100% + 6px)',
+      [isOut ? 'right' : 'left']: 0,
+      background: 'var(--theme-bg)',
+      borderRadius: 24,
+      boxShadow: '0 2px 16px rgba(0,0,0,0.18)',
+      padding: '5px 8px',
+      display: 'flex',
+      gap: 2,
+      zIndex: 20,
+    }}>
+      {QUICK_REACTIONS.map(emoji => (
+        <button
+          key={emoji}
+          onClick={(e) => { e.stopPropagation(); onReact(emoji); }}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: 22, padding: '2px 3px', borderRadius: '50%',
+            lineHeight: 1, transition: 'transform 0.1s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.3)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+        >
+          {emoji}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function AgentAvatar({ name, color, avatarUrl, size = 26 }) {
   const bg = color || '#25D366';
@@ -94,11 +130,14 @@ function Ticks({ status }) {
   return null;
 }
 
-export default function MessageBubble({ message, showAvatar, showAgentName }) {
+export default function MessageBubble({ message, showAvatar, showAgentName, onReact }) {
   const isOut      = message.direction === 'OUTBOUND';
   const isInternal = message.direction === 'INTERNAL' || message.type === 'INTERNAL';
   const isImage    = (message.type === 'IMAGE' && message.mediaUrl) || (message.content === '🎭 Sticker' && message.mediaUrl);
   const API_URL    = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app';
+  const [hovered, setHovered]     = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+  const pickerRef = useRef(null);
 
   if (isInternal) {
     return (
@@ -156,18 +195,35 @@ export default function MessageBubble({ message, showAvatar, showAgentName }) {
     </div>
   );
 
+  const reactBtn = onReact && (hovered || showPicker) && (
+    <div ref={pickerRef} style={{ position: 'relative', alignSelf: 'center' }}>
+      {showPicker && (
+        <QuickReactBar isOut={isOut} onReact={(emoji) => { onReact(emoji); setShowPicker(false); setHovered(false); }} />
+      )}
+      <button
+        onClick={(e) => { e.stopPropagation(); setShowPicker(v => !v); }}
+        style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontSize: 16, padding: 3, borderRadius: '50%', lineHeight: 1,
+          color: 'var(--theme-text-muted)', transition: 'color 0.15s',
+        }}
+        title="Reagir"
+      >😊</button>
+    </div>
+  );
+
   if (isOut) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start', gap: 6, marginBottom: 2 }}>
+      <div
+        style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start', gap: 6, marginBottom: 2 }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => { setHovered(false); setShowPicker(false); }}
+      >
+        {reactBtn}
         {bubble}
         <div style={{ width: 26, flexShrink: 0 }}>
           {showAvatar && (
-            <AgentAvatar
-              name={message.agentName}
-              color={message.agentColor}
-              avatarUrl={message.agentAvatarUrl}
-              size={26}
-            />
+            <AgentAvatar name={message.agentName} color={message.agentColor} avatarUrl={message.agentAvatarUrl} size={26} />
           )}
         </div>
       </div>
@@ -175,8 +231,13 @@ export default function MessageBubble({ message, showAvatar, showAgentName }) {
   }
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 2 }}>
+    <div
+      style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 2 }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setHovered(false); setShowPicker(false); }}
+    >
       {bubble}
+      {reactBtn}
     </div>
   );
 }

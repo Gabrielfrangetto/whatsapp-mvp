@@ -40,4 +40,15 @@ async function markAsRead(messageId) {
   return data;
 }
 
-module.exports = { sendTextMessage, sendTemplateMessage, markAsRead };
+async function sendReaction(to, waMessageId, emoji) {
+  const { data } = await api.post(`/${PHONE_NUMBER_ID}/messages`, {
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to,
+    type: 'reaction',
+    reaction: { message_id: waMessageId, emoji },
+  });
+  return data;
+}
+
+module.exports = { sendTextMessage, sendTemplateMessage, markAsRead, sendReaction };

@@ -158,6 +158,13 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
     finally { setSending(false); }
   };
 
+  const handleReact = async (messageId, emoji) => {
+    try {
+      const { data } = await api.post(`/conversations/${conversationId}/react`, { messageId, emoji });
+      setMessages(prev => prev.map(m => m.id === messageId ? { ...m, reactions: data.reactions } : m));
+    } catch {}
+  };
+
   const handleStatus = async (status) => {
     try {
       await api.patch(`/conversations/${conversationId}/status`, { status });
@@ -208,7 +215,12 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
           return (
             <div key={m.id}>
               {showSep && <DateSeparator label={formatDateLabel(m.timestamp)} />}
-              <MessageBubble message={m} showAvatar={showAvatar} showAgentName={showAgentName} />
+              <MessageBubble
+                message={m}
+                showAvatar={showAvatar}
+                showAgentName={showAgentName}
+                onReact={m.waMessageId ? (emoji) => handleReact(m.id, emoji) : null}
+              />
             </div>
           );
         })}

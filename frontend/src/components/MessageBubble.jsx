@@ -56,7 +56,7 @@ function ReactionBubble({ reactions, isOut }) {
         <span key={emoji} style={{
           background: 'var(--theme-bg)',
           borderRadius: 10,
-          padding: '3px 2px',
+          padding: '2px 2px 3px',
           boxShadow: '0 0 0 1px var(--theme-border), 0 1px 3px rgba(0,0,0,0.10)',
           userSelect: 'none',
           whiteSpace: 'nowrap',

@@ -47,15 +47,18 @@ function ReactionBubble({ reactions, isOut }) {
         <span key={emoji} style={{
           background: 'var(--theme-bg)',
           border: '1px solid var(--theme-border)',
-          borderRadius: 10,
-          padding: '1px 6px',
-          fontSize: 12,
-          lineHeight: 1.4,
+          borderRadius: 12,
+          padding: '2px 7px',
+          fontSize: 16,
+          lineHeight: 1.6,
           boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
           userSelect: 'none',
           whiteSpace: 'nowrap',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 3,
         }}>
-          {emoji}{count > 1 ? ` ${count}` : ''}
+          {emoji}{count > 1 ? <span style={{ fontSize: 12, color: 'var(--theme-text-secondary)' }}>{count}</span> : ''}
         </span>
       ))}
     </div>

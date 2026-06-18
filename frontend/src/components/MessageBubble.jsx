@@ -46,7 +46,7 @@ function ReactionBubble({ reactions, isOut }) {
   return (
     <div style={{
       display: 'flex',
-      justifyContent: isOut ? 'flex-start' : 'flex-end',
+      justifyContent: isOut ? 'flex-end' : 'flex-start',
       gap: 2,
       marginTop: -8,
       position: 'relative',

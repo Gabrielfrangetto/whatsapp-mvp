@@ -229,8 +229,6 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
           position: 'absolute', top: 0, right: 0,
           width: 38, height: 38,
           borderRadius: '0 12px 0 38px',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
           background: 'var(--theme-bg-bubble-in)',
           pointerEvents: 'none',
           zIndex: 4,

@@ -207,7 +207,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
       </div>
 
       {/* Messages */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 3%', display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 1.5%', display: 'flex', flexDirection: 'column', gap: 2 }}>
         {messages.map((m, i) => {
           const prev = messages[i - 1];
           const next = messages[i + 1];

@@ -82,6 +82,10 @@ model Message {
   timestamp      DateTime    @default(now())
   createdAt      DateTime    @default(now())
   reactions      Json?
+  quotedMessageId   String?
+  quotedMessage     Message?  @relation("MessageQuotes", fields: [quotedMessageId], references: [id])
+  quotedBy          Message[] @relation("MessageQuotes")
+  quotedWaMessageId String?
 }
 
 model MessageTemplate {

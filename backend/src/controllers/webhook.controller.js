@@ -139,6 +139,13 @@ async function processInbound(msg, contactInfo) {
         conv = await prisma.conversation.update({ where: { id: conv.id }, data: msgUpdates });
       }
     }
+    let quotedMessageId = null;
+    let quotedWaMessageId = null;
+    if (msg.context?.id) {
+      const quoted = await prisma.message.findFirst({ where: { waMessageId: msg.context.id } });
+      if (quoted) { quotedMessageId = quoted.id; quotedWaMessageId = quoted.waMessageId; }
+    }
+
     const message = await prisma.message.create({
       data: {
         waMessageId: msg.id,
@@ -146,9 +153,11 @@ async function processInbound(msg, contactInfo) {
         direction: 'INBOUND',
         type: mapType(msg.type),
         content,
-        mediaUrl: msg.image?.id || msg.audio?.id || msg.document?.id || msg.sticker?.id || null, // ← adicione msg.sticker?.id
+        mediaUrl: msg.image?.id || msg.audio?.id || msg.document?.id || msg.sticker?.id || null,
         status: 'DELIVERED',
         timestamp,
+        quotedMessageId,
+        quotedWaMessageId,
       },
     });
 

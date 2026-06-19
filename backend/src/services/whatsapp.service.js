@@ -21,6 +21,18 @@ async function sendTextMessage(to, text) {
   return data;
 }
 
+async function sendTextMessageWithQuote(to, text, quotedWaMessageId) {
+  const { data } = await api.post(`/${PHONE_NUMBER_ID}/messages`, {
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to,
+    context: { message_id: quotedWaMessageId },
+    type: 'text',
+    text: { preview_url: false, body: text },
+  });
+  return data;
+}
+
 async function sendTemplateMessage(to, templateName, languageCode = 'pt_BR', components = []) {
   const { data } = await api.post(`/${PHONE_NUMBER_ID}/messages`, {
     messaging_product: 'whatsapp',
@@ -51,4 +63,4 @@ async function sendReaction(to, waMessageId, emoji) {
   return data;
 }
 
-module.exports = { sendTextMessage, sendTemplateMessage, markAsRead, sendReaction };
+module.exports = { sendTextMessage, sendTextMessageWithQuote, sendTemplateMessage, markAsRead, sendReaction };

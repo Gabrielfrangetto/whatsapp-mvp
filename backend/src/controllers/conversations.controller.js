@@ -53,7 +53,13 @@ async function getMessages(req, res) {
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const [messages, conversation] = await Promise.all([
-      prisma.message.findMany({ where: { conversationId: id }, orderBy: { timestamp: 'desc' }, skip, take: parseInt(limit) }),
+      prisma.message.findMany({
+        where: { conversationId: id },
+        orderBy: { timestamp: 'desc' },
+        skip,
+        take: parseInt(limit),
+        include: { quotedMessage: true },
+      }),
       prisma.conversation.findUnique({ where: { id }, include: { contact: true, assignedAgent: { select: { id: true, name: true } } } }),
     ]);
 
@@ -61,9 +67,11 @@ async function getMessages(req, res) {
 
     await prisma.conversation.update({ where: { id }, data: { unreadCount: 0 } });
 
-    const agentIds = [...new Set(messages.filter(m => m.sentByAgentId).map(m => m.sentByAgentId))];
-    const agents = agentIds.length > 0 ? await prisma.agent.findMany({
-      where: { id: { in: agentIds } },
+    const allAgentIds = [...new Set(
+      messages.flatMap(m => [m.sentByAgentId, m.quotedMessage?.sentByAgentId].filter(Boolean))
+    )];
+    const agents = allAgentIds.length > 0 ? await prisma.agent.findMany({
+      where: { id: { in: allAgentIds } },
       select: { id: true, name: true, avatarColor: true, avatarUrl: true },
     }) : [];
     const agentMap = Object.fromEntries(agents.map(a => [a.id, a]));
@@ -73,6 +81,12 @@ async function getMessages(req, res) {
       agentName:      m.sentByAgentId ? agentMap[m.sentByAgentId]?.name       : null,
       agentColor:     m.sentByAgentId ? agentMap[m.sentByAgentId]?.avatarColor : null,
       agentAvatarUrl: m.sentByAgentId ? agentMap[m.sentByAgentId]?.avatarUrl   : null,
+      quotedMessage:  m.quotedMessage ? {
+        ...m.quotedMessage,
+        senderName: m.quotedMessage.direction === 'INBOUND'
+          ? (conversation.contact.name || conversation.contact.phone)
+          : (agentMap[m.quotedMessage.sentByAgentId]?.name || 'Atendente'),
+      } : null,
     }));
 
     res.json({ conversation, messages: enriched.reverse() });
@@ -84,15 +98,25 @@ async function getMessages(req, res) {
 async function sendMessage(req, res) {
   try {
     const { id } = req.params;
-    const { text } = req.body;
+    const { text, quotedMessageId } = req.body;
     if (!text?.trim()) return res.status(400).json({ error: 'Texto obrigatório' });
 
     const conversation = await prisma.conversation.findUnique({ where: { id }, include: { contact: true } });
     if (!conversation) return res.status(404).json({ error: 'Conversa não encontrada' });
 
+    let quotedWaMessageId = null;
+    if (quotedMessageId) {
+      const quoted = await prisma.message.findFirst({ where: { id: quotedMessageId, conversationId: id } });
+      quotedWaMessageId = quoted?.waMessageId ?? null;
+    }
+
     let waResponse;
     try {
-      waResponse = await whatsappService.sendTextMessage(conversation.contact.phone, text);
+      if (quotedWaMessageId) {
+        waResponse = await whatsappService.sendTextMessageWithQuote(conversation.contact.phone, text, quotedWaMessageId);
+      } else {
+        waResponse = await whatsappService.sendTextMessage(conversation.contact.phone, text);
+      }
     } catch (e) {
       console.error('[sendMessage] WhatsApp API error:', e.response?.data || e.message);
       return res.status(500).json({ error: 'Erro ao enviar via WhatsApp: ' + (e.response?.data?.error?.message || e.message) });
@@ -107,6 +131,8 @@ async function sendMessage(req, res) {
         content: text,
         status: 'SENT',
         sentByAgentId: req.agent?.sub ?? null,
+        quotedMessageId: quotedMessageId ?? null,
+        quotedWaMessageId: quotedWaMessageId,
       },
     });
 

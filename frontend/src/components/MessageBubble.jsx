@@ -471,7 +471,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
   if (isOut) {
     return (
       <div
-        style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start', gap: 6, marginBottom: 2 }}
+        style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start', gap: 6 }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => { setHovered(false); setShowPicker(false); }}
       >
@@ -488,7 +488,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
   return (
     <div
       ref={bubbleRef}
-      style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 6, marginBottom: 2 }}
+      style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start', gap: 6 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setShowPicker(false); }}
     >

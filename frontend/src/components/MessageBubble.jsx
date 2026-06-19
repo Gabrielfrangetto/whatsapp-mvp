@@ -143,6 +143,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
   const [showMenu, setShowMenu]     = useState(false);
   const [dotHovered, setDotHovered] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
+  const [imgModal, setImgModal]     = useState(false);
   const pickerRef  = useRef(null);
   const menuRef    = useRef(null);
   const bubbleRef  = useRef(null);
@@ -224,10 +225,36 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
           <img
             src={`${API_URL}/api/media/${message.mediaUrl}`}
             alt="imagem"
-            style={{ maxWidth: '100%', maxHeight: 240, borderRadius: 8, display: 'block', cursor: 'pointer' }}
-            onClick={() => window.open(`${API_URL}/api/media/${message.mediaUrl}`, '_blank')}
+            style={{ maxWidth: '100%', maxHeight: 240, borderRadius: 8, display: 'block', cursor: 'zoom-in' }}
+            onClick={(e) => { e.stopPropagation(); setImgModal(true); }}
             onError={e => { e.target.style.display = 'none'; }}
           />
+        )}
+        {imgModal && (
+          <div
+            onClick={() => setImgModal(false)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 9999,
+              background: 'rgba(0,0,0,0.85)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <button
+              onClick={() => setImgModal(false)}
+              style={{
+                position: 'fixed', top: 16, right: 20,
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: '#fff', fontSize: 32, lineHeight: 1, padding: 4,
+                zIndex: 10000,
+              }}
+            >×</button>
+            <img
+              src={`${API_URL}/api/media/${message.mediaUrl}`}
+              alt="imagem"
+              onClick={e => e.stopPropagation()}
+              style={{ maxWidth: '95vw', maxHeight: '95vh', objectFit: 'contain', borderRadius: 4 }}
+            />
+          </div>
         )}
         <p style={{ margin: isImage ? '4px 8px 0' : 0, fontSize: 14, color: isOut ? 'var(--theme-msg-text-out)' : 'var(--theme-msg-text-in)', lineHeight: 1.5, wordBreak: 'break-word', display: isImage && (message.content === '📷 Imagem' || message.content === '' || message.content === 'Sticker') ? 'none' : 'block' }}>
           {message.content}

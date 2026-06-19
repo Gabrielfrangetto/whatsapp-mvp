@@ -241,7 +241,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
           >
             <div
               onClick={e => e.stopPropagation()}
-              style={{ position: 'fixed', top: 12, right: 16, display: 'flex', alignItems: 'center', gap: 10, zIndex: 10000 }}
+              style={{ position: 'fixed', top: 12, right: 16, display: 'flex', alignItems: 'center', gap: 20, zIndex: 10000 }}
             >
               <a
                 href={`${API_URL}/api/media/${message.mediaUrl}`}

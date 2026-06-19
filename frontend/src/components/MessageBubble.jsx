@@ -132,7 +132,7 @@ function Ticks({ status }) {
   return null;
 }
 
-export default function MessageBubble({ message, showAvatar, showAgentName, showContactAvatar, contactName, contactProfilePic, onReact, onReply, onSaveSticker, onFavorite, isFavorited }) {
+export default function MessageBubble({ message, showAvatar, showAgentName, showContactAvatar, contactName, contactProfilePic, onReact, onReply, onScrollToMessage, isHighlighted, onSaveSticker, onFavorite, isFavorited }) {
   const isOut      = message.direction === 'OUTBOUND';
   const isInternal = message.direction === 'INTERNAL' || message.type === 'INTERNAL';
   const isSticker  = (message.type === 'STICKER' || (message.type === 'IMAGE' && message.content === 'Sticker')) && !!message.mediaUrl;
@@ -250,7 +250,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
   const backdropVisible = isImage;
 
   const coloredBubble = (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative', transition: 'filter 0.3s', filter: isHighlighted ? 'brightness(0.82)' : 'none' }}>
       <div style={{ background: isOut ? 'var(--theme-bg-bubble-out)' : 'var(--theme-bg-bubble-in)', borderRadius: isOut ? '12px 0 12px 12px' : '0 12px 12px 12px', padding: isImage ? '4px 4px 5px' : '8px 12px 5px', boxShadow: '0 1px 2px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
         {showAgentName && message.agentName && (
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--theme-text)', marginBottom: 3, whiteSpace: 'nowrap', paddingLeft: isImage ? 6 : 0, paddingTop: isImage ? 4 : 0 }}>
@@ -263,7 +263,10 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
           const isQImg = q.type === 'IMAGE' && !isQSticker;
           const hasMedia = (isQImg || isQSticker) && q.mediaUrl;
           return (
-            <div style={{ borderLeft: '3px solid var(--theme-primary)', borderRadius: '0 4px 4px 0', background: isOut ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.05)', padding: '4px 8px', marginLeft: isImage ? 4 : 0, marginRight: isImage ? 4 : 0, marginTop: isImage ? 4 : 0, marginBottom: 6, overflow: 'hidden' }}>
+            <div
+              onClick={() => onScrollToMessage && onScrollToMessage(q.id)}
+              style={{ borderLeft: '3px solid var(--theme-primary)', borderRadius: '0 4px 4px 0', background: isOut ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.05)', padding: '4px 8px', marginLeft: isImage ? 4 : 0, marginRight: isImage ? 4 : 0, marginTop: isImage ? 4 : 0, marginBottom: 6, overflow: 'hidden', cursor: onScrollToMessage ? 'pointer' : 'default' }}
+            >
               <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-primary)', marginBottom: hasMedia ? 4 : 2 }}>
                 {q.senderName}
               </div>

@@ -41,7 +41,9 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
   const [showStickers, setShowStickers]   = useState(false);
   const [windowOpen, setWindowOpen]       = useState(true);
   const [replyingTo, setReplyingTo]       = useState(null);
+  const [highlightedId, setHighlightedId] = useState(null);
   const bottomRef    = useRef(null);
+  const msgsContainerRef = useRef(null);
   const typingTimer  = useRef(null);
   const prevConvId   = useRef(null);
   const stickerBtnRef = useRef(null);
@@ -144,6 +146,14 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
     setReplyingTo(message);
   };
 
+  const handleScrollToMessage = (id) => {
+    const el = document.getElementById(`msg-${id}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setHighlightedId(id);
+    setTimeout(() => setHighlightedId(null), 1500);
+  };
+
   const handleSend = async () => {
     if ((!text.trim() && !pastedImage) || sending || !conversationId) return;
     const msg = text;
@@ -216,7 +226,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
       </div>
 
       {/* Messages */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 1.5%', display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div ref={msgsContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 1.5%', display: 'flex', flexDirection: 'column', gap: 2 }}>
         {messages.map((m, i) => {
           const prev = messages[i - 1];
           const next = messages[i + 1];
@@ -228,7 +238,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
           const sameClientAsPrev  = m.direction === 'INBOUND' && prev?.direction === 'INBOUND' && !showSep;
           const showContactAvatar = m.direction === 'INBOUND' && !sameClientAsPrev;
           return (
-            <div key={m.id}>
+            <div key={m.id} id={`msg-${m.id}`}>
               {showSep && <DateSeparator label={formatDateLabel(m.timestamp)} />}
               <MessageBubble
                 message={m}
@@ -239,6 +249,8 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
                 contactProfilePic={conversation?.contact?.profilePic}
                 onReact={m.waMessageId ? (emoji) => handleReact(m.id, emoji) : null}
                 onReply={handleReply}
+                onScrollToMessage={handleScrollToMessage}
+                isHighlighted={highlightedId === m.id}
                 onSaveSticker={m.type === 'STICKER' || m.content === 'Sticker' ? handleSaveSticker : null}
                 onFavorite={m.type === 'STICKER' || m.content === 'Sticker' ? (msg) => toggleFavorite(msg.mediaUrl, msg.content) : null}
                 isFavorited={favorites.has(m.mediaUrl)}

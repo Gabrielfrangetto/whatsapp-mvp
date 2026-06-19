@@ -5,7 +5,7 @@ export default function StickerItem({ sticker, sending, isAdmin, onSend, onDelet
 
   return (
     <div
-      style={{ position: 'relative', cursor: sending ? 'wait' : 'pointer', width: '100%' }}
+      style={{ position: 'relative', cursor: sending ? 'wait' : 'pointer' }}
       title={sticker.name}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -20,7 +20,7 @@ export default function StickerItem({ sticker, sending, isAdmin, onSend, onDelet
           opacity: sending ? 0.4 : 1, transition: 'border-color 0.15s, opacity 0.15s',
         }}
       >
-        <img src={sticker.url} alt={sticker.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        <img src={sticker.url} alt={sticker.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>
       {isAdmin && hovered && !sending && (
         <button

@@ -159,25 +159,28 @@ export default function StickerPanel({ conversationId, onClose, onSent }) {
       )}
 
       {/* Grid */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: 10, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, alignContent: 'start' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: 10, display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 8, alignContent: 'start' }}>
         {loading ? emptyMsg('Carregando...') : tab === 'favorites' ? (
           favorites.length === 0
             ? emptyMsg('Nenhum sticker favoritado')
             : favorites.map(fav => (
-              <StickerItem
-                key={fav.id}
-                sticker={{ id: fav.id, url: `${API_URL}/api/media/${fav.mediaUrl}`, name: fav.name || '—' }}
-                sending={sending === fav.id}
-                isAdmin={true}
-                onSend={() => handleSendFavorite(fav)}
-                onDelete={(_, e) => handleUnfavorite(fav, e)}
-              />
+              <div key={fav.id} style={{ minWidth: 0, width: '100%' }}>
+                <StickerItem
+                  sticker={{ id: fav.id, url: `${API_URL}/api/media/${fav.mediaUrl}`, name: fav.name || '—' }}
+                  sending={sending === fav.id}
+                  isAdmin={true}
+                  onSend={() => handleSendFavorite(fav)}
+                  onDelete={(_, e) => handleUnfavorite(fav, e)}
+                />
+              </div>
             ))
         ) : (
           stickers.length === 0
             ? emptyMsg('Nenhum sticker cadastrado')
             : stickers.map(s => (
-              <StickerItem key={s.id} sticker={s} sending={sending === s.id} isAdmin={isAdmin} onSend={handleSend} onDelete={handleDelete} />
+              <div key={s.id} style={{ minWidth: 0, width: '100%' }}>
+                <StickerItem sticker={s} sending={sending === s.id} isAdmin={isAdmin} onSend={handleSend} onDelete={handleDelete} />
+              </div>
             ))
         )}
       </div>

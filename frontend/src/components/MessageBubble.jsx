@@ -209,9 +209,9 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
     </div>
   );
 
-  const hasMenuItems = !!(onSaveSticker || onFavorite);
-  const showDotMenu  = !isOut && isImage && hasMenuItems && (hovered || showMenu);
-  const backdropVisible = !isOut && isImage;
+  const hasMenuItems = isImage || !!(onSaveSticker || onFavorite);
+  const showDotMenu  = isImage && (hovered || showMenu);
+  const backdropVisible = isImage;
 
   const coloredBubble = (
     <div style={{ position: 'relative' }}>
@@ -290,7 +290,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
           position: 'absolute', top: 0, right: 0,
           width: 38, height: 38,
           borderRadius: '0 12px 0 38px',
-          background: 'var(--theme-bg-bubble-in)',
+          background: isOut ? 'var(--theme-bg-bubble-out)' : 'var(--theme-bg-bubble-in)',
           pointerEvents: 'none',
           zIndex: 4,
           opacity: (hovered || showMenu) ? 1 : 0,
@@ -341,6 +341,24 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
           }}
           onClick={e => e.stopPropagation()}
         >
+          <button
+            onClick={() => { setShowMenu(false); setImgModal(true); }}
+            style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 13, color: 'var(--theme-text)', display: 'flex', alignItems: 'center', gap: 8 }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--theme-bg-hover)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+          >
+            🔍 Abrir imagem
+          </button>
+          <a
+            href={`${API_URL}/api/media/${message.mediaUrl}`}
+            download
+            onClick={() => setShowMenu(false)}
+            style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 13, color: 'var(--theme-text)', display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--theme-bg-hover)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
+          >
+            ⬇️ Baixar imagem
+          </a>
           {onSaveSticker && (
             <button
               onClick={() => { setShowMenu(false); onSaveSticker(message); }}

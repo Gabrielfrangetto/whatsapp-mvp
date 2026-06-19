@@ -260,7 +260,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
               <img
                 src={`${API_URL}/api/media/${replyingTo.mediaUrl}`}
                 alt="preview"
-                style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 4, flexShrink: 0 }}
+                style={{ width: 50, height: 50, objectFit: replyingTo.type === 'IMAGE' ? 'cover' : 'contain', borderRadius: 4, flexShrink: 0 }}
               />
             )}
             <div style={{ flex: 1, borderLeft: '3px solid var(--theme-primary)', paddingLeft: 10, paddingTop: 2, paddingBottom: 2 }}>

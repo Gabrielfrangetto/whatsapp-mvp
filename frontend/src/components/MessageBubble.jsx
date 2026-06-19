@@ -177,14 +177,33 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
   }
 
   if (isSticker) {
+    const stickerReplyBtn = hovered && (
+      <button
+        onClick={(e) => { e.stopPropagation(); onReply && onReply(message); }}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 3, borderRadius: '50%', lineHeight: 1, display: 'flex', color: 'var(--theme-text-muted)' }}
+        title="Responder"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
+        </svg>
+      </button>
+    );
     return (
-      <div style={{ display: 'flex', justifyContent: isOut ? 'flex-end' : 'flex-start', alignItems: 'flex-start', gap: 6, marginBottom: 2 }}>
+      <div
+        style={{ display: 'flex', justifyContent: isOut ? 'flex-end' : 'flex-start', alignItems: 'flex-start', gap: 6, marginBottom: 2 }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
         {!isOut && (
           <div style={{ width: 26, flexShrink: 0 }}>
             {showContactAvatar && <AgentAvatar name={contactName || '?'} color={getAvatarColor(contactName || '?')} avatarUrl={contactProfilePic} size={26} />}
           </div>
         )}
-        <StickerBubble message={message} showAgentName={showAgentName} isOut={isOut} onSaveSticker={onSaveSticker} onFavorite={onFavorite} isFavorited={isFavorited} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {isOut && stickerReplyBtn}
+          <StickerBubble message={message} showAgentName={showAgentName} isOut={isOut} onSaveSticker={onSaveSticker} onFavorite={onFavorite} isFavorited={isFavorited} />
+          {!isOut && stickerReplyBtn}
+        </div>
         {isOut && <div style={{ width: 26, flexShrink: 0 }}>{showAvatar && <AgentAvatar name={message.agentName} color={message.agentColor} avatarUrl={message.agentAvatarUrl} size={26} />}</div>}
       </div>
     );

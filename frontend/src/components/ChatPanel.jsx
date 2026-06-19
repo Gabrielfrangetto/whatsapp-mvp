@@ -28,6 +28,7 @@ function computeWindowOpen(msgs, conversation) {
 
 export default function ChatPanel({ conversationId, socketControls, onMessageSent }) {
   const { agent } = useAuth();
+  const API_URL = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app';
   const [messages, setMessages]           = useState([]);
   const [conversation, setConversation]   = useState(null);
   const [showMedia, setShowMedia]         = useState(false);
@@ -249,41 +250,51 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
         <div ref={bottomRef} />
       </div>
 
-      {/* Reply preview */}
-      {replyingTo && windowOpen && (
-        <div style={{ background: 'var(--theme-bg-tertiary)', padding: '8px 16px 0', borderTop: '1px solid var(--theme-border)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ flex: 1, borderLeft: '3px solid var(--theme-primary)', paddingLeft: 10, paddingTop: 2, paddingBottom: 2 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-primary)', marginBottom: 2 }}>
-              {replyingTo.direction === 'INBOUND'
-                ? (conversation?.contact?.name || conversation?.contact?.phone || 'Cliente')
-                : (replyingTo.agentName || 'Você')}
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--theme-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 400 }}>
-              {replyingTo.type === 'IMAGE' ? '📷 Imagem' : replyingTo.content}
-            </div>
-          </div>
-          <button
-            onClick={() => setReplyingTo(null)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--theme-text-muted)', fontSize: 20, lineHeight: 1, padding: 4, flexShrink: 0 }}
-          >×</button>
-        </div>
-      )}
+      {/* Input area */}
+      <div style={{ background: 'var(--theme-bg-tertiary)', borderTop: '1px solid var(--theme-border)' }}>
 
-      {/* Pasted image preview */}
-      {pastedImage && windowOpen && (
-        <div style={{ background: 'var(--theme-bg-tertiary)', padding: '8px 16px 0', display: 'flex', alignItems: 'flex-start', borderTop: '1px solid var(--theme-border)' }}>
-          <div style={{ position: 'relative', display: 'inline-block' }}>
-            <img src={pastedImage.preview} alt="preview" style={{ maxHeight: 100, maxWidth: 200, borderRadius: 8, display: 'block', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} />
+        {/* Reply preview */}
+        {replyingTo && windowOpen && (
+          <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--theme-border)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            {(replyingTo.type === 'IMAGE' || replyingTo.type === 'STICKER' || replyingTo.content === 'Sticker') && replyingTo.mediaUrl && (
+              <img
+                src={`${API_URL}/api/media/${replyingTo.mediaUrl}`}
+                alt="preview"
+                style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 4, flexShrink: 0 }}
+              />
+            )}
+            <div style={{ flex: 1, borderLeft: '3px solid var(--theme-primary)', paddingLeft: 10, paddingTop: 2, paddingBottom: 2 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-primary)', marginBottom: 2 }}>
+                {replyingTo.direction === 'INBOUND'
+                  ? (conversation?.contact?.name || conversation?.contact?.phone || 'Cliente')
+                  : (replyingTo.agentName || 'Você')}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--theme-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 400 }}>
+                {replyingTo.type === 'IMAGE' ? '📷 Imagem' : (replyingTo.type === 'STICKER' || replyingTo.content === 'Sticker') ? '🎭 Sticker' : replyingTo.content}
+              </div>
+            </div>
             <button
-              onClick={() => { URL.revokeObjectURL(pastedImage.preview); setPastedImage(null); }}
-              style={{ position: 'absolute', top: -8, right: -8, width: 22, height: 22, borderRadius: '50%', background: '#ff4444', border: '2px solid var(--theme-bg-tertiary)', color: '#fff', cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              onClick={() => setReplyingTo(null)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--theme-text-muted)', fontSize: 20, lineHeight: 1, padding: 4, flexShrink: 0 }}
             >×</button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Input */}
-      <div style={{ background: 'var(--theme-bg-tertiary)', padding: '10px 16px', display: 'flex', alignItems: 'flex-end', gap: 8, borderTop: '1px solid var(--theme-border)' }}>
+        {/* Pasted image preview */}
+        {pastedImage && windowOpen && (
+          <div style={{ padding: '8px 16px 0', display: 'flex', alignItems: 'flex-start' }}>
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <img src={pastedImage.preview} alt="preview" style={{ maxHeight: 100, maxWidth: 200, borderRadius: 8, display: 'block', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }} />
+              <button
+                onClick={() => { URL.revokeObjectURL(pastedImage.preview); setPastedImage(null); }}
+                style={{ position: 'absolute', top: -8, right: -8, width: 22, height: 22, borderRadius: '50%', background: '#ff4444', border: '2px solid var(--theme-bg-tertiary)', color: '#fff', cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >×</button>
+            </div>
+          </div>
+        )}
+
+        {/* Input row */}
+        <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'flex-end', gap: 8 }}>
         {windowOpen ? (
           <textarea
             value={text}
@@ -333,6 +344,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
           style={{ width: 40, height: 40, borderRadius: '50%', border: (text.trim() || pastedImage) && !sending && windowOpen ? '2px solid var(--theme-primary)' : '2px solid var(--theme-border)', background: 'none', cursor: (text.trim() || pastedImage) && !sending && windowOpen ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: (text.trim() || pastedImage) && !sending && windowOpen ? 'var(--theme-primary)' : 'var(--theme-text-muted)', flexShrink: 0, opacity: windowOpen ? 1 : 0.4, transition: 'border-color 0.2s, color 0.2s' }}>
           {sending ? <Loader2 size={16} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Send size={16} />}
         </button>
+        </div>
       </div>
 
       {showMedia && <MediaUpload conversationId={conversationId} onClose={() => setShowMedia(false)} onSent={() => { setShowMedia(false); loadMessages(conversationId); }} />}

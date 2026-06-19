@@ -209,7 +209,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
     </div>
   );
 
-  const replyBtn = !isImage && (hovered || showPicker) && (
+  const replyBtn = (hovered || showPicker || showMenu) && (
     <button
       onClick={(e) => { e.stopPropagation(); onReply && onReply(message); }}
       style={{
@@ -236,6 +236,16 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
         {showAgentName && message.agentName && (
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--theme-text)', marginBottom: 3, whiteSpace: 'nowrap', paddingLeft: isImage ? 6 : 0, paddingTop: isImage ? 4 : 0 }}>
             {message.agentName}
+          </div>
+        )}
+        {message.quotedMessage && (
+          <div style={{ borderLeft: '3px solid var(--theme-primary)', paddingLeft: 8, marginBottom: 6, borderRadius: '0 4px 4px 0', background: isOut ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.05)', padding: '4px 8px', marginLeft: isImage ? 4 : 0, marginRight: isImage ? 4 : 0, marginTop: isImage ? 4 : 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-primary)', marginBottom: 2 }}>
+              {message.quotedMessage.senderName}
+            </div>
+            <div style={{ fontSize: 12, color: isOut ? 'var(--theme-msg-text-out)' : 'var(--theme-msg-text-in)', opacity: 0.8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>
+              {message.quotedMessage.type === 'IMAGE' ? '📷 Imagem' : message.quotedMessage.content}
+            </div>
           </div>
         )}
         {isImage && (

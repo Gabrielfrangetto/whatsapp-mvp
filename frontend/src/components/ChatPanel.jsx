@@ -39,6 +39,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
   const [showResolve, setShowResolve]     = useState(false);
   const [showStickers, setShowStickers]   = useState(false);
   const [windowOpen, setWindowOpen]       = useState(true);
+  const [replyingTo, setReplyingTo]       = useState(null);
   const bottomRef    = useRef(null);
   const typingTimer  = useRef(null);
   const prevConvId   = useRef(null);
@@ -138,10 +139,16 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
     }
   }, []);
 
+  const handleReply = (message) => {
+    setReplyingTo(message);
+  };
+
   const handleSend = async () => {
     if ((!text.trim() && !pastedImage) || sending || !conversationId) return;
     const msg = text;
+    const quotedMsg = replyingTo;
     setText('');
+    setReplyingTo(null);
     setSending(true);
     socketControls.stopTyping(conversationId);
     try {
@@ -149,16 +156,17 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
         const formData = new FormData();
         formData.append('file', pastedImage.file);
         if (msg.trim()) formData.append('caption', msg.trim());
+        if (quotedMsg?.id) formData.append('quotedMessageId', quotedMsg.id);
         await api.post(`/conversations/${conversationId}/media`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
         URL.revokeObjectURL(pastedImage.preview);
         setPastedImage(null);
         onMessageSent?.(conversationId, msg.trim() || '📎 Arquivo');
       } else {
-        await api.post(`/conversations/${conversationId}/messages`, { text: msg });
+        await api.post(`/conversations/${conversationId}/messages`, { text: msg, quotedMessageId: quotedMsg?.id });
         onMessageSent?.(conversationId, msg);
       }
       loadMessages(conversationId);
-    } catch { setText(msg); }
+    } catch { setText(msg); setReplyingTo(quotedMsg); }
     finally { setSending(false); }
   };
 
@@ -229,6 +237,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
                 contactName={conversation?.contact?.name || conversation?.contact?.phone}
                 contactProfilePic={conversation?.contact?.profilePic}
                 onReact={m.waMessageId ? (emoji) => handleReact(m.id, emoji) : null}
+                onReply={handleReply}
                 onSaveSticker={m.type === 'STICKER' || m.content === 'Sticker' ? handleSaveSticker : null}
                 onFavorite={m.type === 'STICKER' || m.content === 'Sticker' ? (msg) => toggleFavorite(msg.mediaUrl, msg.content) : null}
                 isFavorited={favorites.has(m.mediaUrl)}
@@ -239,6 +248,26 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
         {typingAgent && <TypingIndicator name={typingAgent} />}
         <div ref={bottomRef} />
       </div>
+
+      {/* Reply preview */}
+      {replyingTo && windowOpen && (
+        <div style={{ background: 'var(--theme-bg-tertiary)', padding: '8px 16px 0', borderTop: '1px solid var(--theme-border)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ flex: 1, borderLeft: '3px solid var(--theme-primary)', paddingLeft: 10, paddingTop: 2, paddingBottom: 2 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-primary)', marginBottom: 2 }}>
+              {replyingTo.direction === 'INBOUND'
+                ? (conversation?.contact?.name || conversation?.contact?.phone || 'Cliente')
+                : (replyingTo.agentName || 'Você')}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--theme-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 400 }}>
+              {replyingTo.type === 'IMAGE' ? '📷 Imagem' : replyingTo.content}
+            </div>
+          </div>
+          <button
+            onClick={() => setReplyingTo(null)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--theme-text-muted)', fontSize: 20, lineHeight: 1, padding: 4, flexShrink: 0 }}
+          >×</button>
+        </div>
+      )}
 
       {/* Pasted image preview */}
       {pastedImage && windowOpen && (

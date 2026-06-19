@@ -208,7 +208,8 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
     </div>
   );
 
-  const showDotMenu  = !isOut && isImage && (hovered || showMenu);
+  const hasMenuItems = !!(onSaveSticker || onFavorite);
+  const showDotMenu  = !isOut && isImage && hasMenuItems && (hovered || showMenu);
   const backdropVisible = !isOut && isImage;
 
   const coloredBubble = (

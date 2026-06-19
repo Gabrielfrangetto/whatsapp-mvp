@@ -229,8 +229,8 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
                 contactName={conversation?.contact?.name || conversation?.contact?.phone}
                 contactProfilePic={conversation?.contact?.profilePic}
                 onReact={m.waMessageId ? (emoji) => handleReact(m.id, emoji) : null}
-                onSaveSticker={handleSaveSticker}
-                onFavorite={(msg) => toggleFavorite(msg.mediaUrl, msg.content)}
+                onSaveSticker={m.type === 'STICKER' || m.content === 'Sticker' ? handleSaveSticker : null}
+                onFavorite={m.type === 'STICKER' || m.content === 'Sticker' ? (msg) => toggleFavorite(msg.mediaUrl, msg.content) : null}
                 isFavorited={favorites.has(m.mediaUrl)}
               />
             </div>

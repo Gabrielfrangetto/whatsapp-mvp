@@ -238,7 +238,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
           const sameClientAsPrev  = m.direction === 'INBOUND' && prev?.direction === 'INBOUND' && !showSep;
           const showContactAvatar = m.direction === 'INBOUND' && !sameClientAsPrev;
           return (
-            <div key={m.id} id={`msg-${m.id}`}>
+            <div key={m.id} id={`msg-${m.id}`} className={highlightedId === m.id ? 'msg-highlight' : ''}>
               {showSep && <DateSeparator label={formatDateLabel(m.timestamp)} />}
               <MessageBubble
                 message={m}

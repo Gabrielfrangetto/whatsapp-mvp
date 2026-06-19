@@ -8,10 +8,10 @@
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body { overflow: hidden; }
       @keyframes msg-blink {
-        0%, 100% { filter: brightness(1); }
-        25%, 75% { filter: brightness(0.78); }
+        0%, 50%, 100% { background-color: transparent; }
+        25%, 75%      { background-color: rgba(255,255,255,0.55); }
       }
-      .msg-highlight { animation: msg-blink 1.2s ease-in-out; }
+      .msg-highlight { animation: msg-blink 1.2s ease-in-out; border-radius: 8px; }
       ::-webkit-scrollbar { width: 5px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }

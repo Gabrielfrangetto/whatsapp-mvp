@@ -239,15 +239,34 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
           >
-            <button
-              onClick={() => setImgModal(false)}
-              style={{
-                position: 'fixed', top: 16, right: 20,
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: '#fff', fontSize: 32, lineHeight: 1, padding: 4,
-                zIndex: 10000,
-              }}
-            >×</button>
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{ position: 'fixed', top: 12, right: 16, display: 'flex', alignItems: 'center', gap: 8, zIndex: 10000 }}
+            >
+              <a
+                href={`${API_URL}/api/media/${message.mediaUrl}`}
+                download
+                onClick={e => e.stopPropagation()}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: '#fff', display: 'flex', alignItems: 'center', padding: 4,
+                }}
+                title="Baixar imagem"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+              </a>
+              <button
+                onClick={() => setImgModal(false)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: '#fff', fontSize: 32, lineHeight: 1, padding: 4,
+                }}
+              >×</button>
+            </div>
             <img
               src={`${API_URL}/api/media/${message.mediaUrl}`}
               alt="imagem"

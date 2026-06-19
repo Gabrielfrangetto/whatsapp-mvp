@@ -270,7 +270,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
                   : (replyingTo.agentName || 'Você')}
               </div>
               <div style={{ fontSize: 12, color: 'var(--theme-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 400 }}>
-                {replyingTo.type === 'IMAGE' ? '📷 Foto' : (replyingTo.type === 'STICKER' || replyingTo.content === 'Sticker') ? '🎭 Sticker' : replyingTo.content}
+                {(() => { const isSt = replyingTo.type === 'STICKER' || replyingTo.content === 'Sticker'; return isSt ? null : replyingTo.type === 'IMAGE' ? '📷 Foto' : replyingTo.content; })()}
               </div>
             </div>
             <button

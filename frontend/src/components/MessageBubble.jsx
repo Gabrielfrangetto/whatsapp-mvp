@@ -259,8 +259,8 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
         )}
         {message.quotedMessage && (() => {
           const q = message.quotedMessage;
-          const isQImg = q.type === 'IMAGE';
           const isQSticker = q.type === 'STICKER' || q.content === 'Sticker';
+          const isQImg = q.type === 'IMAGE' && !isQSticker;
           const hasMedia = (isQImg || isQSticker) && q.mediaUrl;
           return (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderLeft: '3px solid var(--theme-primary)', borderRadius: '0 4px 4px 0', background: isOut ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.05)', padding: '4px 8px', marginLeft: isImage ? 4 : 0, marginRight: isImage ? 4 : 0, marginTop: isImage ? 4 : 0, marginBottom: 6, overflow: 'hidden' }}>
@@ -276,7 +276,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
                   {q.senderName}
                 </div>
                 <div style={{ fontSize: 12, color: isOut ? 'var(--theme-msg-text-out)' : 'var(--theme-msg-text-in)', opacity: 0.8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {isQImg ? '📷 Foto' : isQSticker ? '🎭 Sticker' : q.content}
+                  {isQSticker ? null : isQImg ? '📷 Foto' : q.content}
                 </div>
               </div>
             </div>

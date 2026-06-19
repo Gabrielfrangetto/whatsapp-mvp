@@ -256,23 +256,30 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
         {/* Reply preview */}
         {replyingTo && windowOpen && (
           <div style={{ padding: '8px 16px', borderBottom: '1px solid var(--theme-border)', display: 'flex', alignItems: 'center', gap: 10 }}>
-            {(replyingTo.type === 'IMAGE' || replyingTo.type === 'STICKER' || replyingTo.content === 'Sticker') && replyingTo.mediaUrl && (
-              <img
-                src={`${API_URL}/api/media/${replyingTo.mediaUrl}`}
-                alt="preview"
-                style={{ width: 62, height: 62, objectFit: replyingTo.type === 'IMAGE' ? 'cover' : 'contain', borderRadius: 4, flexShrink: 0 }}
-              />
-            )}
-            <div style={{ flex: 1, borderLeft: '3px solid var(--theme-primary)', paddingLeft: 10, paddingTop: 2, paddingBottom: 2 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-primary)', marginBottom: 2 }}>
-                {replyingTo.direction === 'INBOUND'
-                  ? (conversation?.contact?.name || conversation?.contact?.phone || 'Cliente')
-                  : (replyingTo.agentName || 'Você')}
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--theme-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 400 }}>
-                {(() => { const isSt = replyingTo.type === 'STICKER' || replyingTo.content === 'Sticker'; return isSt ? null : replyingTo.type === 'IMAGE' ? '📷 Foto' : replyingTo.content; })()}
-              </div>
-            </div>
+            {(() => {
+              const isSt = replyingTo.type === 'STICKER' || replyingTo.content === 'Sticker';
+              const isImg = replyingTo.type === 'IMAGE' && !isSt;
+              const hasMedia = (isImg || isSt) && replyingTo.mediaUrl;
+              const senderName = replyingTo.direction === 'INBOUND'
+                ? (conversation?.contact?.name || conversation?.contact?.phone || 'Cliente')
+                : (replyingTo.agentName || 'Você');
+              return (
+                <div style={{ flex: 1, borderLeft: '3px solid var(--theme-primary)', paddingLeft: 10, paddingTop: 2, paddingBottom: 2 }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-primary)', marginBottom: 4 }}>{senderName}</div>
+                  {hasMedia ? (
+                    <img
+                      src={`${API_URL}/api/media/${replyingTo.mediaUrl}`}
+                      alt="preview"
+                      style={{ width: 62, height: 62, objectFit: isImg ? 'cover' : 'contain', borderRadius: 4, display: 'block' }}
+                    />
+                  ) : (
+                    <div style={{ fontSize: 12, color: 'var(--theme-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 400 }}>
+                      {replyingTo.content}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
             <button
               onClick={() => setReplyingTo(null)}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--theme-text-muted)', fontSize: 20, lineHeight: 1, padding: 4, flexShrink: 0 }}

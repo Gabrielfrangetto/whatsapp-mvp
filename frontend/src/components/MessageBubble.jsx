@@ -263,22 +263,21 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
           const isQImg = q.type === 'IMAGE' && !isQSticker;
           const hasMedia = (isQImg || isQSticker) && q.mediaUrl;
           return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderLeft: '3px solid var(--theme-primary)', borderRadius: '0 4px 4px 0', background: isOut ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.05)', padding: '4px 8px', marginLeft: isImage ? 4 : 0, marginRight: isImage ? 4 : 0, marginTop: isImage ? 4 : 0, marginBottom: 6, overflow: 'hidden' }}>
-              {hasMedia && (
+            <div style={{ borderLeft: '3px solid var(--theme-primary)', borderRadius: '0 4px 4px 0', background: isOut ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.05)', padding: '4px 8px', marginLeft: isImage ? 4 : 0, marginRight: isImage ? 4 : 0, marginTop: isImage ? 4 : 0, marginBottom: 6, overflow: 'hidden' }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-primary)', marginBottom: hasMedia ? 4 : 2 }}>
+                {q.senderName}
+              </div>
+              {hasMedia ? (
                 <img
                   src={`${API_URL}/api/media/${q.mediaUrl}`}
                   alt=""
-                  style={{ width: 36, height: 36, objectFit: isQImg ? 'cover' : 'contain', borderRadius: 4, flexShrink: 0 }}
+                  style={{ width: 48, height: 48, objectFit: isQImg ? 'cover' : 'contain', borderRadius: 4, display: 'block' }}
                 />
-              )}
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-primary)', marginBottom: 2 }}>
-                  {q.senderName}
-                </div>
+              ) : (
                 <div style={{ fontSize: 12, color: isOut ? 'var(--theme-msg-text-out)' : 'var(--theme-msg-text-in)', opacity: 0.8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {isQSticker ? null : isQImg ? '📷 Foto' : q.content}
+                  {isQImg ? '📷 Foto' : q.content}
                 </div>
-              </div>
+              )}
             </div>
           );
         })()}

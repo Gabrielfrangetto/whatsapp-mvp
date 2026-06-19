@@ -151,7 +151,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
     if (!el) return;
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     setHighlightedId(id);
-    setTimeout(() => setHighlightedId(null), 1200);
+    setTimeout(() => setHighlightedId(null), 2200);
   };
 
   const handleSend = async () => {

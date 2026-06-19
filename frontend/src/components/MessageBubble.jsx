@@ -257,16 +257,31 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
             {message.agentName}
           </div>
         )}
-        {message.quotedMessage && (
-          <div style={{ borderLeft: '3px solid var(--theme-primary)', paddingLeft: 8, marginBottom: 6, borderRadius: '0 4px 4px 0', background: isOut ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.05)', padding: '4px 8px', marginLeft: isImage ? 4 : 0, marginRight: isImage ? 4 : 0, marginTop: isImage ? 4 : 0 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-primary)', marginBottom: 2 }}>
-              {message.quotedMessage.senderName}
+        {message.quotedMessage && (() => {
+          const q = message.quotedMessage;
+          const isQImg = q.type === 'IMAGE';
+          const isQSticker = q.type === 'STICKER' || q.content === 'Sticker';
+          const hasMedia = (isQImg || isQSticker) && q.mediaUrl;
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderLeft: '3px solid var(--theme-primary)', borderRadius: '0 4px 4px 0', background: isOut ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.05)', padding: '4px 8px', marginLeft: isImage ? 4 : 0, marginRight: isImage ? 4 : 0, marginTop: isImage ? 4 : 0, marginBottom: 6, overflow: 'hidden' }}>
+              {hasMedia && (
+                <img
+                  src={`${API_URL}/api/media/${q.mediaUrl}`}
+                  alt=""
+                  style={{ width: 36, height: 36, objectFit: isQImg ? 'cover' : 'contain', borderRadius: 4, flexShrink: 0 }}
+                />
+              )}
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-primary)', marginBottom: 2 }}>
+                  {q.senderName}
+                </div>
+                <div style={{ fontSize: 12, color: isOut ? 'var(--theme-msg-text-out)' : 'var(--theme-msg-text-in)', opacity: 0.8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {isQImg ? '📷 Foto' : isQSticker ? '🎭 Sticker' : q.content}
+                </div>
+              </div>
             </div>
-            <div style={{ fontSize: 12, color: isOut ? 'var(--theme-msg-text-out)' : 'var(--theme-msg-text-in)', opacity: 0.8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>
-              {message.quotedMessage.type === 'IMAGE' ? '📷 Imagem' : message.quotedMessage.content}
-            </div>
-          </div>
-        )}
+          );
+        })()}
         {isImage && (
           <img
             src={`${API_URL}/api/media/${message.mediaUrl}`}

@@ -42,11 +42,12 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
   const [windowOpen, setWindowOpen]       = useState(true);
   const [replyingTo, setReplyingTo]       = useState(null);
   const [highlightedId, setHighlightedId] = useState(null);
-  const bottomRef    = useRef(null);
+  const bottomRef      = useRef(null);
   const msgsContainerRef = useRef(null);
-  const typingTimer  = useRef(null);
-  const prevConvId   = useRef(null);
-  const stickerBtnRef = useRef(null);
+  const typingTimer    = useRef(null);
+  const prevConvId     = useRef(null);
+  const stickerBtnRef  = useRef(null);
+  const highlightTimer = useRef(null);
   const { favorites, toggleFavorite } = useStickerFavorites();
   const handleSaveSticker = useSaveSticker();
 
@@ -150,8 +151,12 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
     const el = document.getElementById(`msg-${id}`);
     if (!el) return;
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setHighlightedId(id);
-    setTimeout(() => setHighlightedId(null), 2200);
+    clearTimeout(highlightTimer.current);
+    setHighlightedId(null);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      setHighlightedId(id);
+      highlightTimer.current = setTimeout(() => setHighlightedId(null), 2200);
+    }));
   };
 
   const handleSend = async () => {

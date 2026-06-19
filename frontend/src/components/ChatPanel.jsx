@@ -267,11 +267,14 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
                 <div style={{ flex: 1, borderLeft: '3px solid var(--theme-primary)', paddingLeft: 10, paddingTop: 2, paddingBottom: 2 }}>
                   <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--theme-primary)', marginBottom: 4 }}>{senderName}</div>
                   {hasMedia ? (
-                    <img
-                      src={`${API_URL}/api/media/${replyingTo.mediaUrl}`}
-                      alt="preview"
-                      style={{ width: 62, height: 62, objectFit: isImg ? 'cover' : 'contain', borderRadius: 4, display: 'block' }}
-                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <img
+                        src={`${API_URL}/api/media/${replyingTo.mediaUrl}`}
+                        alt="preview"
+                        style={{ width: 62, height: 62, objectFit: isImg ? 'cover' : 'contain', borderRadius: 4, display: 'block' }}
+                      />
+                      {isImg && <span style={{ fontSize: 12, color: 'var(--theme-text-secondary)' }}>📷 Foto</span>}
+                    </div>
                   ) : (
                     <div style={{ fontSize: 12, color: 'var(--theme-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 400 }}>
                       {replyingTo.content}

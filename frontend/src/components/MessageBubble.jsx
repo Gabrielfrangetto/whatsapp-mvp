@@ -268,11 +268,14 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
                 {q.senderName}
               </div>
               {hasMedia ? (
-                <img
-                  src={`${API_URL}/api/media/${q.mediaUrl}`}
-                  alt=""
-                  style={{ width: 48, height: 48, objectFit: isQImg ? 'cover' : 'contain', borderRadius: 4, display: 'block' }}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <img
+                    src={`${API_URL}/api/media/${q.mediaUrl}`}
+                    alt=""
+                    style={{ width: 48, height: 48, objectFit: isQImg ? 'cover' : 'contain', borderRadius: 4, display: 'block' }}
+                  />
+                  {isQImg && <span style={{ fontSize: 12, color: isOut ? 'var(--theme-msg-text-out)' : 'var(--theme-msg-text-in)', opacity: 0.8 }}>📷 Foto</span>}
+                </div>
               ) : (
                 <div style={{ fontSize: 12, color: isOut ? 'var(--theme-msg-text-out)' : 'var(--theme-msg-text-in)', opacity: 0.8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {isQImg ? '📷 Foto' : q.content}

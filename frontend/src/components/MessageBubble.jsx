@@ -132,7 +132,7 @@ function Ticks({ status }) {
   return null;
 }
 
-export default function MessageBubble({ message, showAvatar, showAgentName, showContactAvatar, contactName, contactProfilePic, onReact, onSaveSticker, onFavorite, isFavorited }) {
+export default function MessageBubble({ message, showAvatar, showAgentName, showContactAvatar, contactName, contactProfilePic, onReact, onReply, onSaveSticker, onFavorite, isFavorited }) {
   const isOut      = message.direction === 'OUTBOUND';
   const isInternal = message.direction === 'INTERNAL' || message.type === 'INTERNAL';
   const isSticker  = (message.type === 'STICKER' || (message.type === 'IMAGE' && message.content === 'Sticker')) && !!message.mediaUrl;
@@ -207,6 +207,23 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
         title="Reagir"
       ><SmilePlus size={16} strokeWidth={1.5} /></button>
     </div>
+  );
+
+  const replyBtn = !isImage && (hovered || showPicker) && (
+    <button
+      onClick={(e) => { e.stopPropagation(); onReply && onReply(message); }}
+      style={{
+        background: 'none', border: 'none', cursor: 'pointer',
+        padding: 3, borderRadius: '50%', lineHeight: 1, display: 'flex',
+        color: 'var(--theme-text-muted)', transition: 'color 0.15s',
+      }}
+      title="Responder"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="9 17 4 12 9 7"/>
+        <path d="M20 18v-2a4 4 0 0 0-4-4H4"/>
+      </svg>
+    </button>
   );
 
   const hasMenuItems = isImage || !!(onSaveSticker || onFavorite);
@@ -342,12 +359,12 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
           onClick={e => e.stopPropagation()}
         >
           <button
-            onClick={() => { setShowMenu(false); setImgModal(true); }}
+            onClick={() => { setShowMenu(false); onReply && onReply(message); }}
             style={{ width: '100%', padding: '9px 14px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 13, color: 'var(--theme-text)', display: 'flex', alignItems: 'center', gap: 8 }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--theme-bg-hover)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
           >
-            🔍 Abrir imagem
+            ↩ Responder
           </button>
           <a
             href={`${API_URL}/api/media/${message.mediaUrl}`}
@@ -387,9 +404,11 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
   const bubble = (
     <div style={{ maxWidth: '65%', display: 'flex', flexDirection: 'column', marginBottom: hasReactions ? 8 : 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        {isOut && replyBtn}
         {isOut && reactBtn}
         {coloredBubble}
         {!isOut && reactBtn}
+        {!isOut && replyBtn}
       </div>
       <ReactionBubble reactions={message.reactions} isOut={isOut} />
     </div>

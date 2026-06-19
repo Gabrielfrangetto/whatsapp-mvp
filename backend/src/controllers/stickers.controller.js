@@ -85,7 +85,7 @@ async function sendSticker(req, res) {
         waMessageId,
         conversationId,
         direction: 'OUTBOUND',
-        type: 'IMAGE',
+        type: 'STICKER',
         content: 'Sticker',
         mediaUrl: mediaId,
         status: 'SENT',

@@ -195,7 +195,7 @@ function extractContent(msg) {
 }
 
 function mapType(type) {
-  return { text: 'TEXT', image: 'IMAGE', audio: 'AUDIO', video: 'VIDEO', document: 'DOCUMENT', sticker: 'IMAGE' }[type] || 'TEXT';
+  return { text: 'TEXT', image: 'IMAGE', audio: 'AUDIO', video: 'VIDEO', document: 'DOCUMENT', sticker: 'STICKER' }[type] || 'TEXT';
 }
 
 module.exports = { verifyWebhook, receiveWebhook };

@@ -165,6 +165,7 @@ enum Direction {
 enum MessageType {
   TEXT
   IMAGE
+  STICKER
   AUDIO
   VIDEO
   DOCUMENT

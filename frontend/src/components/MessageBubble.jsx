@@ -135,8 +135,8 @@ function Ticks({ status }) {
 export default function MessageBubble({ message, showAvatar, showAgentName, showContactAvatar, contactName, contactProfilePic, onReact, onSaveSticker, onFavorite, isFavorited }) {
   const isOut      = message.direction === 'OUTBOUND';
   const isInternal = message.direction === 'INTERNAL' || message.type === 'INTERNAL';
-  const isImage    = (message.type === 'IMAGE' && message.mediaUrl) || (message.content === '🎭 Sticker' && message.mediaUrl);
-  const isSticker  = isImage && message.content === 'Sticker';
+  const isSticker  = (message.type === 'STICKER' || (message.type === 'IMAGE' && message.content === 'Sticker')) && !!message.mediaUrl;
+  const isImage    = message.type === 'IMAGE' && !!message.mediaUrl && !isSticker;
   const API_URL    = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app';
   const [hovered, setHovered]       = useState(false);
   const [showPicker, setShowPicker] = useState(false);

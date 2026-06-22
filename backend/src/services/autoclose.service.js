@@ -44,6 +44,12 @@ async function runAutoClose(inactivityHours = 24) {
   const result = { found: 0, closed: [], skipped: [], reasonsAvailable: 0, aiError: null };
 
   try {
+    const setting = await prisma.systemSetting.findUnique({ where: { key: 'autoclose_enabled' } });
+    if (!setting || setting.value !== 'true') {
+      console.log('[AutoClose] Desativado nas configurações do sistema');
+      return result;
+    }
+
     const cutoff = new Date(Date.now() - inactivityHours * 60 * 60 * 1000);
 
     const conversations = await prisma.conversation.findMany({

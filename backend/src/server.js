@@ -18,6 +18,7 @@ const templatesRoutes = require('./routes/templates.routes');
 const resolutionRoutes = require('./routes/resolution.routes');
 const stickersRoutes = require('./routes/stickers.routes');
 const favoritesRoutes = require('./routes/favorites.routes');
+const settingsRoutes = require('./routes/settings.routes');
 const { requireAuth } = require('./middleware/auth.middleware');
 const { initSocket }  = require('./socket/socket.server');
 
@@ -102,6 +103,7 @@ app.use('/api/conversations', apiLimiter, requireAuth, conversationsRoutes);
 app.use('/api/stickers', apiLimiter, stickersRoutes);
 app.use('/api/favorites', apiLimiter, favoritesRoutes);
 app.use('/api/resolution', apiLimiter, resolutionRoutes);
+app.use('/api/settings', apiLimiter, settingsRoutes);
 
 // ─── SPA fallback ────────────────────────────────────────────────────────────
 app.get('*', (req, res) => {

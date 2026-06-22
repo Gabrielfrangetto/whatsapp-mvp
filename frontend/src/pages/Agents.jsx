@@ -6,6 +6,7 @@ import AgentForm from '../components/agents/AgentForm';
 import WorkScheduleModal from '../components/agents/WorkScheduleModal';
 import AvatarUpload from '../components/AvatarUpload';
 import ResolutionReasons from './ResolutionReasons';
+import SystemSettings from '../components/SystemSettings';
 
 function Avatar({ name = '', color = '#25D366', size = 36, avatarUrl }) {
   const initials = name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
@@ -114,6 +115,7 @@ export default function Agents() {
         </Modal>
       )}
       <ResolutionReasons />
+      <SystemSettings />
       {avatarAgent && <AvatarUpload agent={avatarAgent} onSaved={handleSaveAvatar} onClose={() => setAvatarAgent(null)} />}
       {scheduleAgent && <WorkScheduleModal agent={scheduleAgent} onClose={() => setScheduleAgent(null)} />}
     </div>

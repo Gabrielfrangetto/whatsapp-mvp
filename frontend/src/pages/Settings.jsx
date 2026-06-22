@@ -265,8 +265,8 @@ export default function Settings({ onClose }) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--theme-text-muted)', fontSize: 20, padding: 4, borderRadius: 6, lineHeight: 1 }}>×</button>
         </div>
 
-        {/* Body: sidebar + content */}
-        <div style={{ display: 'flex' }}>
+        {/* Body: sidebar + content — altura fixa para não mudar ao trocar de seção */}
+        <div style={{ display: 'flex', height: 540 }}>
 
           {/* Sidebar */}
           <div style={{ width: 148, borderRight: '0.5px solid var(--theme-border)', padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0, background: 'var(--theme-bg)' }}>

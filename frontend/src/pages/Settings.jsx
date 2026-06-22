@@ -235,19 +235,25 @@ const SECTIONS_ALL = [
 
 export default function Settings({ onClose }) {
   const { agent } = useAuth();
+  const { mode } = useTheme();
   const isAdmin = agent?.role === 'ADMIN';
 
   const sections = SECTIONS_ALL.filter(s => !s.adminOnly || isAdmin);
   const [active, setActive] = useState(sections[0]?.key);
+
+  const scrollbarCss = mode === 'dark'
+    ? `.settings-content::-webkit-scrollbar{width:6px}.settings-content::-webkit-scrollbar-track{background:#1e2227}.settings-content::-webkit-scrollbar-thumb{background:#3a3f47;border-radius:3px}.settings-content::-webkit-scrollbar-thumb:hover{background:#4a5060}`
+    : `.settings-content::-webkit-scrollbar{width:6px}.settings-content::-webkit-scrollbar-track{background:#ebebeb}.settings-content::-webkit-scrollbar-thumb{background:#b8b8b8;border-radius:3px}.settings-content::-webkit-scrollbar-thumb:hover{background:#999}`;
 
   return (
     <div
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300 }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
+      <style>{scrollbarCss}</style>
       <div style={{
         background: 'var(--theme-bg-secondary)',
-        borderRadius: 16,
+        borderRadius: 8,
         width: '100%', maxWidth: 620,
         display: 'flex', flexDirection: 'column',
         boxShadow: '0 24px 64px rgba(0,0,0,0.3)',
@@ -293,7 +299,7 @@ export default function Settings({ onClose }) {
           </div>
 
           {/* Content */}
-          <div style={{ flex: 1, minWidth: 0, padding: '20px 24px', overflowY: 'auto', overflowX: 'hidden' }}>
+          <div className="settings-content" style={{ flex: 1, minWidth: 0, padding: '20px 24px', overflowY: 'auto', overflowX: 'hidden' }}>
             {active === 'theme'       && <ThemeSection />}
             {active === 'automations' && <AutomationsSection />}
           </div>

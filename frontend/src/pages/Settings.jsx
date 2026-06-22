@@ -242,8 +242,8 @@ export default function Settings({ onClose }) {
   const [active, setActive] = useState(sections[0]?.key);
 
   const scrollbarCss = mode === 'dark'
-    ? `.settings-content::-webkit-scrollbar{width:8px}.settings-content::-webkit-scrollbar-track{background:#1e2227;border-radius:4px;margin:6px 0}.settings-content::-webkit-scrollbar-thumb{background:#3a3f47;border-radius:4px;border:2px solid #1e2227}.settings-content::-webkit-scrollbar-thumb:hover{background:#4a5060}`
-    : `.settings-content::-webkit-scrollbar{width:8px}.settings-content::-webkit-scrollbar-track{background:#ebebeb;border-radius:4px;margin:6px 0}.settings-content::-webkit-scrollbar-thumb{background:#b8b8b8;border-radius:4px;border:2px solid #ebebeb}.settings-content::-webkit-scrollbar-thumb:hover{background:#999}`;
+    ? `.settings-content::-webkit-scrollbar{width:12px}.settings-content::-webkit-scrollbar-track{background:#1e2227;border-radius:6px;margin:6px 0}.settings-content::-webkit-scrollbar-thumb{background:#3a3f47;border-radius:6px;border:2px solid #1e2227}.settings-content::-webkit-scrollbar-thumb:hover{background:#4a5060}`
+    : `.settings-content::-webkit-scrollbar{width:12px}.settings-content::-webkit-scrollbar-track{background:#ebebeb;border-radius:6px;margin:6px 0}.settings-content::-webkit-scrollbar-thumb{background:#b8b8b8;border-radius:6px;border:2px solid #ebebeb}.settings-content::-webkit-scrollbar-thumb:hover{background:#999}`;
 
   return (
     <div

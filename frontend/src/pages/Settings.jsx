@@ -266,7 +266,7 @@ export default function Settings({ onClose }) {
         </div>
 
         {/* Body: sidebar + content — altura fixa para não mudar ao trocar de seção */}
-        <div style={{ display: 'flex', height: 540 }}>
+        <div style={{ display: 'flex', height: 540, overflow: 'hidden' }}>
 
           {/* Sidebar */}
           <div style={{ width: 148, borderRight: '0.5px solid var(--theme-border)', padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0, background: 'var(--theme-bg)' }}>

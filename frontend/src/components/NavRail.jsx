@@ -69,15 +69,15 @@ export default function NavRail({ section, onSection, agent, agentStatus = 'ONLI
         <div ref={statusRef} style={{ position: 'relative' }}>
           <div
             onClick={() => setStatusOpen(v => !v)}
-            style={{ width: 40, height: 40, borderRadius: '50%', background: agent?.avatarColor || 'var(--theme-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-primary-text)', fontWeight: 700, fontSize: 13, overflow: 'hidden', position: 'relative', border: '2px solid rgba(255,255,255,0.2)', flexShrink: 0, cursor: 'pointer' }}
+            style={{ width: 40, height: 40, borderRadius: '50%', background: agent?.avatarColor || 'var(--theme-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-primary-text)', fontWeight: 700, fontSize: 13, overflow: 'hidden', border: '2px solid rgba(255,255,255,0.2)', flexShrink: 0, cursor: 'pointer' }}
             title={`${agent?.name} • ${STATUS_META[agentStatus]?.label}`}
           >
             {agent?.avatarUrl
               ? <img src={agent.avatarUrl} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : getInitials(agent?.name || '')
             }
-            <div style={{ position: 'absolute', bottom: 1, right: 1, width: 10, height: 10, borderRadius: '50%', background: STATUS_META[agentStatus]?.color, border: `2px solid ${navBg}` }} />
           </div>
+          <div style={{ position: 'absolute', bottom: 0, right: 0, width: 12, height: 12, borderRadius: '50%', background: STATUS_META[agentStatus]?.color, border: `2px solid ${navBg}`, pointerEvents: 'none' }} />
 
           {statusOpen && (
             <div style={{ position: 'absolute', bottom: 0, left: 48, background: 'var(--theme-bg-secondary)', border: '1px solid var(--theme-border-strong)', borderRadius: 10, boxShadow: '0 4px 16px rgba(0,0,0,0.2)', zIndex: 100, minWidth: 140, overflow: 'hidden' }}>

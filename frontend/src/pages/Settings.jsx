@@ -146,16 +146,9 @@ function ThemeSection() {
 
 // ─── Seção: Automações ────────────────────────────────────────────────────────
 
-function AutomationsSection() {
-  const [settings, setSettings] = useState(null);
+function AutomationsSection({ settings, setSettings }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    api.get('/settings')
-      .then(({ data }) => setSettings(data))
-      .catch(e => setError(e.response?.data?.error || 'Erro ao carregar configurações'));
-  }, []);
 
   async function toggleAutoclose() {
     if (!settings || saving) return;
@@ -239,6 +232,15 @@ export default function Settings({ onClose }) {
 
   const sections = SECTIONS_ALL.filter(s => !s.adminOnly || isAdmin);
   const [active, setActive] = useState(sections[0]?.key);
+  const [systemSettings, setSystemSettings] = useState(null);
+
+  useEffect(() => {
+    if (isAdmin) {
+      api.get('/settings')
+        .then(({ data }) => setSystemSettings(data))
+        .catch(() => {});
+    }
+  }, [isAdmin]);
 
   return (
     <div
@@ -295,7 +297,7 @@ export default function Settings({ onClose }) {
           {/* Content */}
           <div style={{ flex: 1, minWidth: 0, padding: '20px 24px', overflowY: 'auto', overflowX: 'hidden' }}>
             {active === 'theme'       && <ThemeSection />}
-            {active === 'automations' && <AutomationsSection />}
+            {active === 'automations' && <AutomationsSection settings={systemSettings} setSettings={setSystemSettings} />}
           </div>
         </div>
       </div>

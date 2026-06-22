@@ -35,6 +35,9 @@ function buildThemeVars(color, mode) {
 
   if (isDark) {
     return {
+      '--scrollbar-track':        '#1e2227',
+      '--scrollbar-thumb':        '#3a3f47',
+      '--scrollbar-thumb-hover':  '#4a5060',
       '--theme-primary':        color,
       '--theme-primary-light':  lighten(40),
       '--theme-primary-dark':   darken(20),
@@ -61,6 +64,9 @@ function buildThemeVars(color, mode) {
     };
   } else {
     return {
+      '--scrollbar-track':        '#e8e8e8',
+      '--scrollbar-thumb':        '#b8b8b8',
+      '--scrollbar-thumb-hover':  '#999999',
       '--theme-primary':        color,
       '--theme-primary-light':  lighten(40),
       '--theme-primary-dark':   darken(20),

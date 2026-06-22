@@ -219,11 +219,50 @@ function AutomationsSection({ settings, setSettings }) {
   );
 }
 
+// ─── Seção: Avançado ──────────────────────────────────────────────────────────
+
+const ADVANCED_SUBSECTIONS = [
+  { key: 'automations', label: 'Automações', icon: <Zap size={14} /> },
+];
+
+function AdvancedSection({ systemSettings, setSystemSettings }) {
+  const [sub, setSub] = useState('automations');
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0, height: '100%' }}>
+      {/* Sub-nav */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid var(--theme-border)', paddingBottom: 12 }}>
+        {ADVANCED_SUBSECTIONS.map(s => (
+          <button
+            key={s.key}
+            onClick={() => setSub(s.key)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '5px 12px', borderRadius: 6,
+              border: sub === s.key ? '1px solid var(--theme-primary)' : '1px solid var(--theme-border)',
+              background: sub === s.key ? 'var(--theme-primary-subtle)' : 'none',
+              color: sub === s.key ? 'var(--theme-primary)' : 'var(--theme-text-secondary)',
+              fontWeight: sub === s.key ? 600 : 400,
+              fontSize: 12, fontFamily: 'inherit', cursor: 'pointer',
+              transition: 'all 0.12s',
+            }}
+          >
+            {s.icon}{s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Sub-content */}
+      {sub === 'automations' && <AutomationsSection settings={systemSettings} setSettings={setSystemSettings} />}
+    </div>
+  );
+}
+
 // ─── Modal principal ──────────────────────────────────────────────────────────
 
 const SECTIONS_ALL = [
-  { key: 'theme',       label: 'Tema',       icon: <Palette size={16} /> },
-  { key: 'automations', label: 'Automações', icon: <Zap size={16} />, adminOnly: true },
+  { key: 'theme',    label: 'Tema',     icon: <Palette size={16} /> },
+  { key: 'advanced', label: 'Avançado', icon: <Zap size={16} />, adminOnly: true },
 ];
 
 export default function Settings({ onClose }) {
@@ -267,37 +306,63 @@ export default function Settings({ onClose }) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--theme-text-muted)', fontSize: 20, padding: 4, borderRadius: 6, lineHeight: 1 }}>×</button>
         </div>
 
-        {/* Body: sidebar + content — altura fixa para não mudar ao trocar de seção */}
+        {/* Body: sidebar + content */}
         <div style={{ display: 'flex', height: 540, overflow: 'hidden' }}>
 
           {/* Sidebar */}
-          <div style={{ width: 148, borderRight: '0.5px solid var(--theme-border)', padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0, background: 'var(--theme-bg)' }}>
-            {sections.map(s => (
-              <button
-                key={s.key}
-                onClick={() => setActive(s.key)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 9,
-                  padding: '9px 12px', borderRadius: 8,
-                  border: 'none', cursor: 'pointer',
-                  background: active === s.key ? 'var(--theme-primary-subtle)' : 'none',
-                  color: active === s.key ? 'var(--theme-primary)' : 'var(--theme-text-secondary)',
-                  fontWeight: active === s.key ? 600 : 400,
-                  fontSize: 13, fontFamily: 'inherit',
-                  textAlign: 'left', width: '100%',
-                  transition: 'all 0.12s',
-                }}
-              >
-                {s.icon}
-                {s.label}
-              </button>
-            ))}
+          <div style={{ width: 148, borderRight: '0.5px solid var(--theme-border)', padding: '12px 8px', display: 'flex', flexDirection: 'column', flexShrink: 0, background: 'var(--theme-bg)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
+              {sections.filter(s => !s.adminOnly).map(s => (
+                <button
+                  key={s.key}
+                  onClick={() => setActive(s.key)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 9,
+                    padding: '9px 12px', borderRadius: 8,
+                    border: 'none', cursor: 'pointer',
+                    background: active === s.key ? 'var(--theme-primary-subtle)' : 'none',
+                    color: active === s.key ? 'var(--theme-primary)' : 'var(--theme-text-secondary)',
+                    fontWeight: active === s.key ? 600 : 400,
+                    fontSize: 13, fontFamily: 'inherit',
+                    textAlign: 'left', width: '100%',
+                    transition: 'all 0.12s',
+                  }}
+                >
+                  {s.icon}{s.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Avançado sempre no fim */}
+            {isAdmin && (
+              <div style={{ borderTop: '0.5px solid var(--theme-border)', paddingTop: 8, marginTop: 8 }}>
+                {sections.filter(s => s.adminOnly).map(s => (
+                  <button
+                    key={s.key}
+                    onClick={() => setActive(s.key)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 9,
+                      padding: '9px 12px', borderRadius: 8,
+                      border: 'none', cursor: 'pointer',
+                      background: active === s.key ? 'var(--theme-primary-subtle)' : 'none',
+                      color: active === s.key ? 'var(--theme-primary)' : 'var(--theme-text-muted)',
+                      fontWeight: active === s.key ? 600 : 400,
+                      fontSize: 13, fontFamily: 'inherit',
+                      textAlign: 'left', width: '100%',
+                      transition: 'all 0.12s',
+                    }}
+                  >
+                    {s.icon}{s.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Content */}
           <div style={{ flex: 1, minWidth: 0, padding: '20px 24px', overflowY: 'auto', overflowX: 'hidden' }}>
-            {active === 'theme'       && <ThemeSection />}
-            {active === 'automations' && <AutomationsSection settings={systemSettings} setSettings={setSystemSettings} />}
+            {active === 'theme'    && <ThemeSection />}
+            {active === 'advanced' && <AdvancedSection systemSettings={systemSettings} setSystemSettings={setSystemSettings} />}
           </div>
         </div>
       </div>

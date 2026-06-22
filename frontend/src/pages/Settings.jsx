@@ -248,8 +248,7 @@ export default function Settings({ onClose }) {
       <div style={{
         background: 'var(--theme-bg-secondary)',
         borderRadius: 16,
-        width: '100%', maxWidth: 560,
-        maxHeight: '88vh',
+        width: '100%', maxWidth: 620,
         display: 'flex', flexDirection: 'column',
         boxShadow: '0 24px 64px rgba(0,0,0,0.3)',
         border: '0.5px solid var(--theme-border)',
@@ -267,7 +266,7 @@ export default function Settings({ onClose }) {
         </div>
 
         {/* Body: sidebar + content */}
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <div style={{ display: 'flex' }}>
 
           {/* Sidebar */}
           <div style={{ width: 148, borderRight: '0.5px solid var(--theme-border)', padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0, background: 'var(--theme-bg)' }}>
@@ -294,7 +293,7 @@ export default function Settings({ onClose }) {
           </div>
 
           {/* Content */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+          <div style={{ flex: 1, minWidth: 0, padding: '20px 24px' }}>
             {active === 'theme'       && <ThemeSection />}
             {active === 'automations' && <AutomationsSection />}
           </div>

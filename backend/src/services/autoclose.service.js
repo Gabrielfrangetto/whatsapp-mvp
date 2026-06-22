@@ -50,7 +50,7 @@ async function runAutoClose(inactivityHours = 24) {
       where: {
         status: { in: ['OPEN', 'PENDING'] },
         lastMessageAt: { lt: cutoff },
-        pinned: false,
+        pins: { none: {} },
       },
       include: { contact: true },
     });

@@ -293,7 +293,7 @@ export default function Settings({ onClose }) {
           </div>
 
           {/* Content */}
-          <div style={{ flex: 1, minWidth: 0, padding: '20px 24px' }}>
+          <div style={{ flex: 1, minWidth: 0, padding: '20px 24px', overflowY: 'auto', overflowX: 'hidden' }}>
             {active === 'theme'       && <ThemeSection />}
             {active === 'automations' && <AutomationsSection />}
           </div>

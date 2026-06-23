@@ -9,6 +9,7 @@ import MediaUpload from './MediaUpload';
 import TemplateModal from './TemplateModal';
 import ResolveModal from './ResolveModal';
 import StickerPanel from './StickerPanel';
+import TransferDropdown from './TransferDropdown';
 import { getInitials, getAvatarColor, getDateKey, formatDateLabel } from '../utils/format';
 import { useStickerFavorites } from '../hooks/useStickerFavorites';
 import { useSaveSticker } from '../hooks/useSaveSticker';
@@ -40,6 +41,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
   const [showResolve, setShowResolve]     = useState(false);
   const [showStickers, setShowStickers]   = useState(false);
   const [windowOpen, setWindowOpen]       = useState(true);
+  const [transferAgents, setTransferAgents] = useState([]);
   const [replyingTo, setReplyingTo]       = useState(null);
   const [highlightedId, setHighlightedId] = useState(null);
   const bottomRef      = useRef(null);
@@ -200,6 +202,17 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
     } catch {}
   };
 
+  useEffect(() => {
+    api.get('/conversations/agents-for-transfer')
+      .then(r => setTransferAgents(r.data))
+      .catch(() => {});
+  }, []);
+
+  const handleTransfer = async (agentId) => {
+    const { data } = await api.patch(`/conversations/${conversationId}/status`, { assignedToId: agentId });
+    setConversation(prev => prev ? { ...prev, assignedAgent: data.assignedAgent } : prev);
+  };
+
   if (!conversationId) return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--theme-bg-chat)', gap: 16 }}>
       <MessageSquare size={64} style={{ opacity: .3, color: 'var(--theme-text)' }} />
@@ -224,6 +237,14 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
           </div>
         </div>
         {conversation && <StatusBadge status={conversation.status} />}
+        {conversation?.status !== 'RESOLVED' && (
+          <TransferDropdown
+            agents={transferAgents}
+            currentAgentId={conversation?.assignedAgent?.id ?? null}
+            onTransfer={handleTransfer}
+            disabled={agent?.role !== 'ADMIN' && conversation?.assignedAgent?.id !== agent?.id}
+          />
+        )}
         {conversation?.status !== 'RESOLVED'
           ? <button onClick={() => setShowResolve(true)} style={{ background: 'transparent', color: 'var(--theme-primary)', border: '1px solid var(--theme-primary)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}><Check size={13} /> Resolver</button>
           : <button onClick={() => handleStatus('OPEN')} style={{ background: 'transparent', color: 'var(--theme-text)', border: '1px solid var(--theme-border-strong)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Reabrir</button>

@@ -166,16 +166,36 @@ async function updateConversationStatus(req, res) {
     const valid = ['OPEN', 'PENDING', 'RESOLVED'];
     if (status && !valid.includes(status)) return res.status(400).json({ error: 'Status inválido' });
 
+    if (assignedToId !== undefined && req.agent.role !== 'ADMIN') {
+      const current = await prisma.conversation.findUnique({ where: { id }, select: { assignedToId: true } });
+      if (!current || current.assignedToId !== req.agent.sub) {
+        return res.status(403).json({ error: 'Você só pode transferir atendimentos sob sua responsabilidade' });
+      }
+    }
+
     const conversation = await prisma.conversation.update({
       where: { id },
       data: { ...(status && { status }), ...(assignedToId !== undefined && { assignedToId }) },
-      include: { contact: true, assignedAgent: { select: { id: true, name: true } } },
+      include: { contact: true, assignedAgent: { select: { id: true, name: true, avatarColor: true, avatarUrl: true } } },
     });
 
     emitConversationUpdate(conversation);
     res.json(conversation);
   } catch (e) {
     res.status(500).json({ error: 'Erro ao atualizar conversa' });
+  }
+}
+
+async function listAgentsForTransfer(req, res) {
+  try {
+    const agents = await prisma.agent.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, avatarColor: true, avatarUrl: true },
+      orderBy: { name: 'asc' },
+    });
+    res.json(agents);
+  } catch {
+    res.status(500).json({ error: 'Erro interno' });
   }
 }
 
@@ -252,4 +272,4 @@ async function reactToMessage(req, res) {
   }
 }
 
-module.exports = { listConversations, getMessages, sendMessage, updateConversationStatus, getStats, togglePin, reactToMessage };
+module.exports = { listConversations, getMessages, sendMessage, updateConversationStatus, getStats, togglePin, reactToMessage, listAgentsForTransfer };

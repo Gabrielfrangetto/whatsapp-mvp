@@ -50,6 +50,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
   const prevConvId     = useRef(null);
   const stickerBtnRef  = useRef(null);
   const highlightTimer = useRef(null);
+  const isInitialLoad  = useRef(false);
   const { favorites, toggleFavorite } = useStickerFavorites();
   const handleSaveSticker = useSaveSticker();
 
@@ -77,8 +78,10 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
     if (!conversationId) { setMessages([]); setConversation(null); setWindowOpen(true); return; }
     if (prevConvId.current && prevConvId.current !== conversationId) {
       socketControls.leaveConversation(prevConvId.current);
+      setMessages([]);
     }
     prevConvId.current = conversationId;
+    isInitialLoad.current = true;
     socketControls.joinConversation(conversationId);
     loadMessages(conversationId);
     setTypingAgent(null);
@@ -118,7 +121,15 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
     return () => { clearTimeout(typingTimer.current); socketControls._registerChatHandlers(null); };
   }, [conversationId]);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, typingAgent]);
+  useEffect(() => {
+    if (!messages.length && !typingAgent) return;
+    if (isInitialLoad.current) {
+      bottomRef.current?.scrollIntoView({ behavior: 'instant' });
+      isInitialLoad.current = false;
+    } else {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, typingAgent]);
 
   const handleTextChange = (e) => {
     setText(e.target.value);

@@ -44,7 +44,8 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
   const [transferAgents, setTransferAgents] = useState([]);
   const [replyingTo, setReplyingTo]       = useState(null);
   const [highlightedId, setHighlightedId] = useState(null);
-  const [loadingChat, setLoadingChat]     = useState(false);
+  const [loadedConvId, setLoadedConvId]   = useState(null);
+  const loadingChat = !!conversationId && conversationId !== loadedConvId;
   const bottomRef      = useRef(null);
   const msgsContainerRef = useRef(null);
   const typingTimer    = useRef(null);
@@ -55,9 +56,8 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
   const { favorites, toggleFavorite } = useStickerFavorites();
   const handleSaveSticker = useSaveSticker();
 
-  const loadMessages = useCallback(async (id, showLoader = false) => {
+  const loadMessages = useCallback(async (id, markLoaded = false) => {
     if (!id) return;
-    if (showLoader) setLoadingChat(true);
     try {
       const { data } = await api.get(`/conversations/${id}/messages`);
       const msgs = data.messages || [];
@@ -74,11 +74,11 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
       setConversation(data.conversation || null);
       setWindowOpen(computeWindowOpen(msgs, data.conversation));
     } catch {}
-    finally { if (showLoader) setLoadingChat(false); }
+    finally { if (markLoaded) setLoadedConvId(id); }
   }, []);
 
   useEffect(() => {
-    if (!conversationId) { setMessages([]); setConversation(null); setWindowOpen(true); return; }
+    if (!conversationId) { setMessages([]); setConversation(null); setWindowOpen(true); setLoadedConvId(null); return; }
     if (prevConvId.current && prevConvId.current !== conversationId) {
       socketControls.leaveConversation(prevConvId.current);
       setMessages([]);

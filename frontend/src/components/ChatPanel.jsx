@@ -44,6 +44,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
   const [transferAgents, setTransferAgents] = useState([]);
   const [replyingTo, setReplyingTo]       = useState(null);
   const [highlightedId, setHighlightedId] = useState(null);
+  const [loadingChat, setLoadingChat]     = useState(false);
   const bottomRef      = useRef(null);
   const msgsContainerRef = useRef(null);
   const typingTimer    = useRef(null);
@@ -54,8 +55,9 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
   const { favorites, toggleFavorite } = useStickerFavorites();
   const handleSaveSticker = useSaveSticker();
 
-  const loadMessages = useCallback(async (id) => {
+  const loadMessages = useCallback(async (id, showLoader = false) => {
     if (!id) return;
+    if (showLoader) setLoadingChat(true);
     try {
       const { data } = await api.get(`/conversations/${id}/messages`);
       const msgs = data.messages || [];
@@ -72,6 +74,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
       setConversation(data.conversation || null);
       setWindowOpen(computeWindowOpen(msgs, data.conversation));
     } catch {}
+    finally { if (showLoader) setLoadingChat(false); }
   }, []);
 
   useEffect(() => {
@@ -83,7 +86,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
     prevConvId.current = conversationId;
     isInitialLoad.current = true;
     socketControls.joinConversation(conversationId);
-    loadMessages(conversationId);
+    loadMessages(conversationId, true);
     setTypingAgent(null);
   }, [conversationId]);
 
@@ -263,7 +266,12 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
       </div>
 
       {/* Messages */}
-      <div ref={msgsContainerRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 1.5%', display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div ref={msgsContainerRef} style={{ flex: 1, overflowY: loadingChat ? 'hidden' : 'auto', padding: '16px 1.5%', display: 'flex', flexDirection: 'column', gap: 2, position: 'relative' }}>
+        {loadingChat && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--theme-bg-chat)', zIndex: 10 }}>
+            <Loader2 size={28} style={{ animation: 'spin 0.8s linear infinite', color: 'var(--theme-text-secondary)' }} />
+          </div>
+        )}
         {messages.map((m, i) => {
           const prev = messages[i - 1];
           const next = messages[i + 1];

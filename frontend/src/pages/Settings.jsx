@@ -289,7 +289,7 @@ export default function Settings({ onClose }) {
       <div style={{
         background: 'var(--theme-bg-secondary)',
         borderRadius: 8,
-        width: '100%', maxWidth: 620,
+        width: '100%', maxWidth: 682,
         display: 'flex', flexDirection: 'column',
         boxShadow: '0 24px 64px rgba(0,0,0,0.3)',
         border: '0.5px solid var(--theme-border)',

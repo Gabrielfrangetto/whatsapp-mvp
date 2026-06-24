@@ -11,10 +11,14 @@ function AgentInitials({ name, color, avatarUrl, size = 24 }) {
 export default function TransferDropdown({ agents, currentAgentId, onTransfer, disabled }) {
   const [open, setOpen] = useState(false);
   const [transferring, setTransferring] = useState(false);
+  const [search, setSearch] = useState('');
   const ref = useRef(null);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     if (!open) return;
+    setSearch('');
+    setTimeout(() => searchRef.current?.focus(), 50);
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -28,6 +32,7 @@ export default function TransferDropdown({ agents, currentAgentId, onTransfer, d
   };
 
   const current = agents.find(a => a.id === currentAgentId);
+  const filteredAgents = agents.filter(a => a.name?.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
@@ -57,12 +62,23 @@ export default function TransferDropdown({ agents, currentAgentId, onTransfer, d
           position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 400,
           background: 'var(--theme-bg-secondary)', border: '1px solid var(--theme-border)',
           borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
-          minWidth: 200, maxHeight: 280, overflowY: 'auto', padding: '4px 0',
+          minWidth: 200,
         }}>
-          {agents.length === 0 && (
-            <div style={{ padding: '10px 14px', fontSize: 12, color: 'var(--theme-text-secondary)' }}>Nenhum agente disponível</div>
+          <div style={{ padding: '8px 10px', borderBottom: '1px solid var(--theme-border)' }}>
+            <input
+              ref={searchRef}
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Pesquisar atendente..."
+              style={{ width: '100%', padding: '6px 10px', borderRadius: 6, border: '1px solid var(--theme-border)', outline: 'none', fontSize: 12, background: 'var(--theme-bg-input)', color: 'var(--theme-text)', boxSizing: 'border-box', fontFamily: 'inherit' }}
+            />
+          </div>
+          <div style={{ maxHeight: 240, overflowY: 'auto', padding: '4px 0' }}>
+          {filteredAgents.length === 0 && (
+            <div style={{ padding: '10px 14px', fontSize: 12, color: 'var(--theme-text-secondary)' }}>Nenhum agente encontrado</div>
           )}
-          {agents.map(a => (
+          {filteredAgents.map(a => (
             <button
               key={a.id}
               onClick={() => handleSelect(a.id)}
@@ -81,6 +97,7 @@ export default function TransferDropdown({ agents, currentAgentId, onTransfer, d
               {a.id === currentAgentId && <Check size={13} style={{ color: 'var(--theme-primary)', flexShrink: 0 }} />}
             </button>
           ))}
+          </div>
         </div>
       )}
     </div>

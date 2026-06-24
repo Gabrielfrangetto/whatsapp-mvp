@@ -305,7 +305,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
       </div>
 
       {/* Messages */}
-      <div ref={msgsContainerRef} style={{ flex: 1, overflowY: loadingChat ? 'hidden' : 'auto', padding: '16px 1.5%', display: 'flex', flexDirection: 'column', gap: 2, position: 'relative' }}>
+      <div ref={msgsContainerRef} style={{ flex: 1, overflowY: loadingChat ? 'hidden' : 'auto', padding: '16px 1.5%', display: 'flex', flexDirection: 'column', gap: 3, position: 'relative' }}>
         {loadingChat && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--theme-bg-chat)', zIndex: 10 }}>
             <Loader2 size={28} style={{ animation: 'spin 0.8s linear infinite', color: 'var(--theme-text-secondary)' }} />

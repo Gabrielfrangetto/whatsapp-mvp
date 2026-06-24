@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { MessageSquare, Paperclip, Send, Loader2, Check, Sticker } from 'lucide-react';
+import { MessageSquare, Paperclip, Send, Loader2, Check, Sticker, Search, X } from 'lucide-react';
 import { useAuth, api } from '../context/AuthContext';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 import DateSeparator from './DateSeparator';
-import StatusBadge from './StatusBadge';
 import MediaUpload from './MediaUpload';
 import TemplateModal from './TemplateModal';
 import ResolveModal from './ResolveModal';
@@ -45,6 +44,8 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
   const [replyingTo, setReplyingTo]       = useState(null);
   const [highlightedId, setHighlightedId] = useState(null);
   const [loadedConvId, setLoadedConvId]   = useState(null);
+  const [showSearch, setShowSearch]       = useState(false);
+  const [searchQuery, setSearchQuery]     = useState('');
   const loadingChat = !!conversationId && conversationId !== loadedConvId;
   const bottomRef      = useRef(null);
   const msgsContainerRef = useRef(null);
@@ -53,6 +54,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
   const stickerBtnRef  = useRef(null);
   const highlightTimer = useRef(null);
   const isInitialLoad  = useRef(false);
+  const searchInputRef = useRef(null);
   const { favorites, toggleFavorite } = useStickerFavorites();
   const handleSaveSticker = useSaveSticker();
 
@@ -76,6 +78,15 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
     } catch {}
     finally { if (markLoaded) setLoadedConvId(id); }
   }, []);
+
+  useEffect(() => {
+    if (showSearch) setTimeout(() => searchInputRef.current?.focus(), 50);
+  }, [showSearch]);
+
+  useEffect(() => {
+    setShowSearch(false);
+    setSearchQuery('');
+  }, [conversationId]);
 
   useEffect(() => {
     if (!conversationId) { setMessages([]); setConversation(null); setWindowOpen(true); setLoadedConvId(null); return; }
@@ -250,7 +261,15 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
             {typingAgent ? `${typingAgent} está digitando...` : conversation?.contact?.phone}
           </div>
         </div>
-        {conversation && <StatusBadge status={conversation.status} />}
+        {conversation && (
+          <button
+            onClick={() => setShowSearch(v => !v)}
+            title="Pesquisar mensagens"
+            style={{ width: 34, height: 34, borderRadius: '50%', border: 'none', background: showSearch ? 'var(--theme-primary-subtle)' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: showSearch ? 'var(--theme-primary)' : 'var(--theme-text-muted)', transition: 'background 0.15s, color 0.15s', flexShrink: 0 }}
+          >
+            <Search size={17} />
+          </button>
+        )}
         {conversation?.status !== 'RESOLVED' && (
           <TransferDropdown
             agents={transferAgents}
@@ -265,6 +284,32 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
         }
       </div>
 
+      {/* Search bar */}
+      {showSearch && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'var(--theme-bg-secondary)', borderBottom: '1px solid var(--theme-border)' }}>
+          <Search size={14} style={{ color: 'var(--theme-text-muted)', flexShrink: 0 }} />
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Pesquisar nas mensagens..."
+            style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 13, color: 'var(--theme-text)', fontFamily: 'inherit' }}
+          />
+          {searchQuery && (
+            <span style={{ fontSize: 11, color: 'var(--theme-text-muted)', flexShrink: 0 }}>
+              {messages.filter(m => m.content?.toLowerCase().includes(searchQuery.toLowerCase())).length} resultado(s)
+            </span>
+          )}
+          <button
+            onClick={() => { setShowSearch(false); setSearchQuery(''); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--theme-text-muted)', display: 'flex', alignItems: 'center', padding: 2, flexShrink: 0 }}
+          >
+            <X size={15} />
+          </button>
+        </div>
+      )}
+
       {/* Messages */}
       <div ref={msgsContainerRef} style={{ flex: 1, overflowY: loadingChat ? 'hidden' : 'auto', padding: '16px 1.5%', display: 'flex', flexDirection: 'column', gap: 2, position: 'relative' }}>
         {loadingChat && (
@@ -272,9 +317,9 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
             <Loader2 size={28} style={{ animation: 'spin 0.8s linear infinite', color: 'var(--theme-text-secondary)' }} />
           </div>
         )}
-        {messages.map((m, i) => {
-          const prev = messages[i - 1];
-          const next = messages[i + 1];
+        {(searchQuery.trim() ? messages.filter(m => m.content?.toLowerCase().includes(searchQuery.toLowerCase())) : messages).map((m, i, arr) => {
+          const prev = arr[i - 1];
+          const next = arr[i + 1];
           const showSep = i === 0 || getDateKey(m.timestamp) !== getDateKey(prev.timestamp);
           const sameAgentAsPrev = m.direction === 'OUTBOUND' && prev?.direction === 'OUTBOUND' && prev?.sentByAgentId === m.sentByAgentId && !showSep;
           const sameAgentAsNext = m.direction === 'OUTBOUND' && next?.direction === 'OUTBOUND' && next?.sentByAgentId === m.sentByAgentId;

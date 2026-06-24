@@ -65,8 +65,13 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
         <span style={{ position: 'absolute', top: 4, left: 6, width: 15, height: 15, borderRadius: '50%', background: 'var(--theme-text-muted)', display: 'block', fontSize: 8, fontWeight: 700, color: '#fff', lineHeight: '15px', textAlign: 'center', zIndex: 5 }}>{conv.pinCount}</span>
       ) : null}
 
-      <div style={{ width: 44, height: 44, borderRadius: '50%', background: getAvatarColor(name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 15, flexShrink: 0, opacity: pinAnim ? 0 : 1, transition: 'opacity 0.15s' }}>
-        {getInitials(name)}
+      <div style={{ position: 'relative', flexShrink: 0, opacity: pinAnim ? 0 : 1, transition: 'opacity 0.15s' }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', background: getAvatarColor(name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 15 }}>
+          {getInitials(name)}
+        </div>
+        {hasNew && (
+          <span style={{ position: 'absolute', bottom: -2, right: -4, background: 'var(--theme-primary)', color: 'var(--theme-primary-text)', borderRadius: 20, padding: '1px 5px', fontSize: 10, fontWeight: 700, border: '2px solid var(--theme-bg)', lineHeight: '14px', minWidth: 16, textAlign: 'center' }}>{conv.unreadCount}</span>
+        )}
       </div>
 
       <div style={{ flex: 1, minWidth: 0, opacity: pinAnim ? 0 : 1, transition: 'opacity 0.15s' }}>
@@ -86,8 +91,8 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
             )}
           </div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
-          <span style={{ fontSize: 13, color: hasNew ? 'var(--theme-text)' : 'var(--theme-text-secondary)', fontWeight: hasNew ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%', display: 'flex', alignItems: 'center', gap: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginTop: 2 }}>
+          <span style={{ fontSize: 13, color: hasNew ? 'var(--theme-text)' : 'var(--theme-text-secondary)', fontWeight: hasNew ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
             {conv.lastMessageDirection === 'OUTBOUND'
               ? <ArrowUp size={12} strokeWidth={2.5} style={{ flexShrink: 0, color: 'var(--theme-primary)' }} />
               : <ArrowDown size={12} strokeWidth={2.5} style={{ flexShrink: 0, color: '#F59E0B' }} />
@@ -97,9 +102,6 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
               : (conv.lastMessage || '—')
             }
           </span>
-          {hasNew && (
-            <span style={{ background: 'var(--theme-primary)', color: 'var(--theme-primary-text)', borderRadius: 20, padding: '1px 7px', fontSize: 11, fontWeight: 700 }}>{conv.unreadCount}</span>
-          )}
         </div>
       </div>
 

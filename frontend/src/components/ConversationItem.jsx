@@ -33,7 +33,7 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setMenuOpen(false); }}
-      style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer', background: bg, borderLeft: `3px solid ${border}`, borderBottom: '1px solid var(--theme-border)', transition: 'background 0.1s', boxShadow: 'none' }}
+      style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer', background: bg, borderBottom: '1px solid var(--theme-border)', transition: 'background 0.1s' }}
     >
       <style>{`
         @keyframes pinOverlay {
@@ -49,6 +49,10 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
           100% { opacity: 0; transform: scale(0.85); }
         }
       `}</style>
+
+      {(selected || hasNew || conv.pinned) && (
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, background: 'var(--theme-primary)', clipPath: 'polygon(0 0, 55% 0, 100% 50%, 55% 100%, 0 100%)', pointerEvents: 'none' }} />
+      )}
 
       {pinAnim && (
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 20 }}>

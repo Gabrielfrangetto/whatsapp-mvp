@@ -94,7 +94,7 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
             </span>
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'flex-end', flexShrink: 0, gap: 3 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'flex-end', flexShrink: 0, gap: 8 }}>
           <span style={{ fontSize: 11, color: hasNew ? 'var(--theme-primary)' : 'var(--theme-text-muted)', fontWeight: hasNew ? 700 : 400, opacity: hovered ? 0 : 1, transition: 'opacity 0.15s' }}>
             {formatTime(conv.lastMessageAt)}
           </span>

@@ -105,7 +105,8 @@ export default function Inbox() {
 
   const loadConvs = async (f = filter) => {
     try {
-      const { data } = await api.get('/conversations', { params: f ? { status: f } : {}, headers: { Authorization: `Bearer ${accessToken}` } });
+      const params = (f && f !== 'MINE') ? { status: f } : {};
+      const { data } = await api.get('/conversations', { params, headers: { Authorization: `Bearer ${accessToken}` } });
       setConversations(data.data || []);
     } catch {}
   };
@@ -146,7 +147,11 @@ export default function Inbox() {
   };
 
   const filtered = conversations.filter(c => {
-    if (filter && c.status !== filter) return false;
+    if (filter === 'MINE') {
+      if (c.assignedAgent?.id !== agent?.id) return false;
+    } else if (filter && c.status !== filter) {
+      return false;
+    }
     const name = c.contact?.name || c.contact?.phone || '';
     return name.toLowerCase().includes(search.toLowerCase());
   });
@@ -155,6 +160,7 @@ export default function Inbox() {
 
   const filterOptions = [
     { label: 'Todas',      value: '' },
+    { label: 'Meus',       value: 'MINE' },
     { label: 'Abertas',    value: 'OPEN' },
     { label: 'Pendentes',  value: 'PENDING' },
     { label: 'Resolvidas', value: 'RESOLVED' },

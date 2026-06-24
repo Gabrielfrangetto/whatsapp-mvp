@@ -50,7 +50,7 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
         }
       `}</style>
 
-      {(selected || hasNew || conv.pinned) && (
+      {selected && (
         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 5, background: 'var(--theme-primary)', clipPath: 'polygon(0 0, 55% 0, 100% 50%, 55% 100%, 0 100%)', pointerEvents: 'none' }} />
       )}
 

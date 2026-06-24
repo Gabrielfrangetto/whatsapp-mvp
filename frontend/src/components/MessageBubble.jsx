@@ -457,13 +457,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
 
   const bubble = (
     <div style={{ maxWidth: '65%', display: 'flex', flexDirection: 'column', marginBottom: hasReactions ? 8 : 0 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        {isOut && replyBtn}
-        {isOut && reactBtn}
-        {coloredBubble}
-        {!isOut && reactBtn}
-        {!isOut && replyBtn}
-      </div>
+      {coloredBubble}
       <ReactionBubble reactions={message.reactions} isOut={isOut} />
     </div>
   );
@@ -475,6 +469,8 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => { setHovered(false); setShowPicker(false); }}
       >
+        {replyBtn}
+        {reactBtn}
         {bubble}
         <div style={{ width: 26, flexShrink: 0 }}>
           {showAvatar && (
@@ -498,6 +494,8 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
         )}
       </div>
       {bubble}
+      {reactBtn}
+      {replyBtn}
     </div>
   );
 }

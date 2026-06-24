@@ -80,7 +80,7 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'stretch', gap: 4, opacity: pinAnim ? 0 : 1, transition: 'opacity 0.15s' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <span style={{ fontWeight: hasNew ? 700 : 600, fontSize: 14, color: 'var(--theme-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{name}</span>
+          <span style={{ fontWeight: (selected || hasNew) ? 700 : 500, fontSize: 14, color: (selected || hasNew) ? 'var(--theme-text)' : 'var(--theme-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{name}</span>
           <div style={{ display: 'flex', alignItems: 'center', marginTop: 2 }}>
             <span style={{ fontSize: 13, color: hasNew ? 'var(--theme-text)' : 'var(--theme-text-secondary)', fontWeight: hasNew ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
               {conv.lastMessageDirection === 'OUTBOUND'

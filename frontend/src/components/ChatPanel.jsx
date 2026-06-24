@@ -329,6 +329,7 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
                 showAvatar={showAvatar}
                 showAgentName={showAgentName}
                 showContactAvatar={showContactAvatar}
+                isChained={sameAgentAsPrev || sameClientAsPrev}
                 contactName={conversation?.contact?.name || conversation?.contact?.phone}
                 contactProfilePic={conversation?.contact?.profilePic}
                 onReact={m.waMessageId ? (emoji) => handleReact(m.id, emoji) : null}

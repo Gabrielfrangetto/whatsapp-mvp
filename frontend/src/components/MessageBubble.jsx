@@ -132,7 +132,7 @@ function Ticks({ status }) {
   return null;
 }
 
-export default function MessageBubble({ message, showAvatar, showAgentName, showContactAvatar, contactName, contactProfilePic, onReact, onReply, onScrollToMessage, isHighlighted, onSaveSticker, onFavorite, isFavorited }) {
+export default function MessageBubble({ message, showAvatar, showAgentName, showContactAvatar, contactName, contactProfilePic, onReact, onReply, onScrollToMessage, isHighlighted, onSaveSticker, onFavorite, isFavorited, isChained }) {
   const isOut      = message.direction === 'OUTBOUND';
   const isInternal = message.direction === 'INTERNAL' || message.type === 'INTERNAL';
   const isSticker  = (message.type === 'STICKER' || (message.type === 'IMAGE' && message.content === 'Sticker')) && !!message.mediaUrl;
@@ -244,7 +244,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
 
   const coloredBubble = (
     <div style={{ position: 'relative' }}>
-      <div style={{ background: isOut ? 'var(--theme-bg-bubble-out)' : 'var(--theme-bg-bubble-in)', borderRadius: isOut ? '12px 0 12px 12px' : '0 12px 12px 12px', padding: isImage ? '4px 4px 5px' : '8px 12px 5px', boxShadow: '0 1px 2px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
+      <div style={{ background: isOut ? 'var(--theme-bg-bubble-out)' : 'var(--theme-bg-bubble-in)', borderRadius: isChained ? 12 : isOut ? '12px 0 12px 12px' : '0 12px 12px 12px', padding: isImage ? '4px 4px 5px' : '8px 12px 5px', boxShadow: '0 1px 2px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
         {showAgentName && message.agentName && (
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--theme-text)', marginBottom: 3, whiteSpace: 'nowrap', paddingLeft: isImage ? 6 : 0, paddingTop: isImage ? 4 : 0 }}>
             {message.agentName}

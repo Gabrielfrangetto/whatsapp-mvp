@@ -33,7 +33,7 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setMenuOpen(false); }}
-      style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer', background: bg, borderLeft: `3px solid ${border}`, borderBottom: '1px solid var(--theme-border)', transition: 'background 0.1s', boxShadow: hasNew && !selected ? 'inset 3px 0 20px -2px color-mix(in srgb, var(--theme-primary) 75%, transparent)' : 'none' }}
+      style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer', background: bg, borderLeft: `3px solid ${border}`, borderBottom: '1px solid var(--theme-border)', transition: 'background 0.1s', boxShadow: 'none' }}
     >
       <style>{`
         @keyframes pinOverlay {

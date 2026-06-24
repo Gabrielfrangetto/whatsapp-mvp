@@ -37,7 +37,7 @@ export default function TransferDropdown({ agents, currentAgentId, onTransfer, d
         title={disabled ? 'Sem permissão para transferir' : 'Transferir atendimento'}
         style={{
           display: 'flex', alignItems: 'center', gap: 6,
-          background: 'transparent', border: '1px solid var(--theme-border-strong)',
+          background: 'transparent', border: 'none',
           borderRadius: 8, padding: '6px 10px', cursor: disabled ? 'not-allowed' : 'pointer',
           fontSize: 12, fontWeight: 600, color: 'var(--theme-text-secondary)',
           opacity: disabled || transferring ? 0.5 : 1, transition: 'opacity 0.15s',

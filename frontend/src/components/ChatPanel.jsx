@@ -251,11 +251,11 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--theme-bg-chat)', minWidth: 0 }}>
       {/* Header */}
-      <div style={{ background: 'var(--theme-bg-secondary)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 14, borderBottom: '1px solid var(--theme-border)' }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', background: getAvatarColor(name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 14 }}>
+      <div style={{ background: 'var(--theme-bg-secondary)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 14, borderBottom: '1px solid var(--theme-border)', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', background: getAvatarColor(name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 14, flexShrink: 0 }}>
           {getInitials(name)}
         </div>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontWeight: 700, color: 'var(--theme-text)', fontSize: 15 }}>{name}</div>
           <div style={{ fontSize: 12, color: 'var(--theme-text-secondary)', fontStyle: typingAgent ? 'italic' : 'normal' }}>
             {typingAgent ? `${typingAgent} está digitando...` : conversation?.contact?.phone}
@@ -263,9 +263,9 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
         </div>
         {conversation && (
           <button
-            onClick={() => setShowSearch(v => !v)}
+            onClick={() => { setShowSearch(v => !v); if (showSearch) setSearchQuery(''); }}
             title="Pesquisar mensagens"
-            style={{ width: 34, height: 34, borderRadius: '50%', border: 'none', background: showSearch ? 'var(--theme-primary-subtle)' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: showSearch ? 'var(--theme-primary)' : 'var(--theme-text-muted)', transition: 'background 0.15s, color 0.15s', flexShrink: 0 }}
+            style={{ width: 34, height: 34, borderRadius: '50%', border: 'none', background: showSearch ? 'var(--theme-primary-subtle)' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: showSearch ? 'var(--theme-primary)' : 'var(--theme-text-muted)', transition: 'background 0.15s, color 0.15s', flexShrink: 0, position: 'relative', zIndex: 2 }}
           >
             <Search size={17} />
           </button>
@@ -279,36 +279,38 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
           />
         )}
         {conversation?.status !== 'RESOLVED'
-          ? <button onClick={() => setShowResolve(true)} style={{ background: 'transparent', color: 'var(--theme-primary)', border: '1px solid var(--theme-primary)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}><Check size={13} /> Resolver</button>
-          : <button onClick={() => handleStatus('OPEN')} style={{ background: 'transparent', color: 'var(--theme-text)', border: '1px solid var(--theme-border-strong)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Reabrir</button>
+          ? <button onClick={() => setShowResolve(true)} style={{ background: 'transparent', color: 'var(--theme-primary)', border: '1px solid var(--theme-primary)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}><Check size={13} /> Resolver</button>
+          : <button onClick={() => handleStatus('OPEN')} style={{ background: 'transparent', color: 'var(--theme-text)', border: '1px solid var(--theme-border-strong)', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>Reabrir</button>
         }
-      </div>
 
-      {/* Search bar */}
-      {showSearch && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', background: 'var(--theme-bg-secondary)', borderBottom: '1px solid var(--theme-border)' }}>
-          <Search size={14} style={{ color: 'var(--theme-text-muted)', flexShrink: 0 }} />
-          <input
-            ref={searchInputRef}
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Pesquisar nas mensagens..."
-            style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 13, color: 'var(--theme-text)', fontFamily: 'inherit' }}
-          />
-          {searchQuery && (
-            <span style={{ fontSize: 11, color: 'var(--theme-text-muted)', flexShrink: 0 }}>
-              {messages.filter(m => m.content?.toLowerCase().includes(searchQuery.toLowerCase())).length} resultado(s)
-            </span>
-          )}
-          <button
-            onClick={() => { setShowSearch(false); setSearchQuery(''); }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--theme-text-muted)', display: 'flex', alignItems: 'center', padding: 2, flexShrink: 0 }}
-          >
-            <X size={15} />
-          </button>
+        {/* Sliding search overlay — expands leftward from the search icon */}
+        <div style={{
+          position: 'absolute', top: 0, bottom: 0, right: 50,
+          width: showSearch ? 'calc(100% - 112px)' : 0,
+          overflow: 'hidden',
+          transition: 'width 0.26s cubic-bezier(0.4, 0, 0.2, 1)',
+          background: 'var(--theme-bg-secondary)',
+          display: 'flex', alignItems: 'center',
+          zIndex: 1,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 16, paddingRight: 12, width: '100%' }}>
+            <Search size={14} style={{ color: 'var(--theme-text-muted)', flexShrink: 0 }} />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Pesquisar nas mensagens..."
+              style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 13, color: 'var(--theme-text)', fontFamily: 'inherit', minWidth: 0 }}
+            />
+            {searchQuery && (
+              <span style={{ fontSize: 11, color: 'var(--theme-text-muted)', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                {messages.filter(m => m.content?.toLowerCase().includes(searchQuery.toLowerCase())).length} resultado(s)
+              </span>
+            )}
+          </div>
         </div>
-      )}
+      </div>
 
       {/* Messages */}
       <div ref={msgsContainerRef} style={{ flex: 1, overflowY: loadingChat ? 'hidden' : 'auto', padding: '16px 1.5%', display: 'flex', flexDirection: 'column', gap: 2, position: 'relative' }}>

@@ -212,7 +212,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
   const hasReactions = message.reactions && Object.keys(message.reactions).length > 0;
 
   const reactBtn = onReact && (hovered || showPicker) && (
-    <div ref={pickerRef} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+    <div ref={pickerRef} style={{ position: 'relative', display: 'flex', alignItems: 'center', alignSelf: 'center' }}>
       {showPicker && (
         <QuickReactBar isOut={isOut} onReact={(emoji) => { onReact(emoji); setShowPicker(false); setHovered(false); }} />
       )}
@@ -234,7 +234,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
       style={{
         background: 'none', border: 'none', cursor: 'pointer',
         padding: 3, borderRadius: '50%', lineHeight: 1, display: 'flex',
-        color: 'var(--theme-text-muted)', transition: 'color 0.15s',
+        color: 'var(--theme-text-muted)', transition: 'color 0.15s', alignSelf: 'center',
       }}
       title="Responder"
     >

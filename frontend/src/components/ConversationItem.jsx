@@ -74,34 +74,34 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
         )}
       </div>
 
-      <div style={{ flex: 1, minWidth: 0, opacity: pinAnim ? 0 : 1, transition: 'opacity 0.15s' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <span style={{ fontWeight: hasNew ? 700 : 600, fontSize: 14, color: 'var(--theme-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0, marginLeft: 4, gap: 3 }}>
-            <span style={{ fontSize: 11, color: hasNew ? 'var(--theme-primary)' : 'var(--theme-text-muted)', fontWeight: hasNew ? 700 : 400, opacity: hovered ? 0 : 1, transition: 'opacity 0.15s' }}>
-              {formatTime(conv.lastMessageAt)}
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'stretch', gap: 4, opacity: pinAnim ? 0 : 1, transition: 'opacity 0.15s' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ fontWeight: hasNew ? 700 : 600, fontSize: 14, color: 'var(--theme-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{name}</span>
+          <div style={{ display: 'flex', alignItems: 'center', marginTop: 2 }}>
+            <span style={{ fontSize: 13, color: hasNew ? 'var(--theme-text)' : 'var(--theme-text-secondary)', fontWeight: hasNew ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
+              {conv.lastMessageDirection === 'OUTBOUND'
+                ? <ArrowUp size={12} strokeWidth={2.5} style={{ flexShrink: 0, color: 'var(--theme-primary)' }} />
+                : <ArrowDown size={12} strokeWidth={2.5} style={{ flexShrink: 0, color: '#F59E0B' }} />
+              }
+              {conv.lastMessage === 'Sticker'
+                ? <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Sticker size={12} strokeWidth={1.8} style={{ flexShrink: 0 }} />Sticker</span>
+                : (conv.lastMessage || '—')
+              }
             </span>
-            {conv.assignedAgent && (
-              <div title={conv.assignedAgent.name} style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', border: '1.5px solid var(--theme-border)', background: conv.assignedAgent.avatarColor || getAvatarColor(conv.assignedAgent.name) }}>
-                {conv.assignedAgent.avatarUrl
-                  ? <img src={conv.assignedAgent.avatarUrl} alt={conv.assignedAgent.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', fontSize: 8, fontWeight: 700, color: '#fff' }}>{getInitials(conv.assignedAgent.name)}</span>
-                }
-              </div>
-            )}
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', marginTop: 2 }}>
-          <span style={{ fontSize: 13, color: hasNew ? 'var(--theme-text)' : 'var(--theme-text-secondary)', fontWeight: hasNew ? 600 : 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
-            {conv.lastMessageDirection === 'OUTBOUND'
-              ? <ArrowUp size={12} strokeWidth={2.5} style={{ flexShrink: 0, color: 'var(--theme-primary)' }} />
-              : <ArrowDown size={12} strokeWidth={2.5} style={{ flexShrink: 0, color: '#F59E0B' }} />
-            }
-            {conv.lastMessage === 'Sticker'
-              ? <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Sticker size={12} strokeWidth={1.8} style={{ flexShrink: 0 }} />Sticker</span>
-              : (conv.lastMessage || '—')
-            }
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'flex-end', flexShrink: 0, gap: 3 }}>
+          <span style={{ fontSize: 11, color: hasNew ? 'var(--theme-primary)' : 'var(--theme-text-muted)', fontWeight: hasNew ? 700 : 400, opacity: hovered ? 0 : 1, transition: 'opacity 0.15s' }}>
+            {formatTime(conv.lastMessageAt)}
           </span>
+          {conv.assignedAgent && (
+            <div title={conv.assignedAgent.name} style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', border: '1.5px solid var(--theme-border)', background: conv.assignedAgent.avatarColor || getAvatarColor(conv.assignedAgent.name) }}>
+              {conv.assignedAgent.avatarUrl
+                ? <img src={conv.assignedAgent.avatarUrl} alt={conv.assignedAgent.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', fontSize: 8, fontWeight: 700, color: '#fff' }}>{getInitials(conv.assignedAgent.name)}</span>
+              }
+            </div>
+          )}
         </div>
       </div>
 

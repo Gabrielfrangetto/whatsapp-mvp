@@ -14,13 +14,21 @@ export default function Inbox() {
   const { agent, accessToken, logout } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [selected, setSelected]           = useState(null);
-  const [filter, setFilter]               = useState(() => localStorage.getItem('conversationFilter') || '');
+  const [inboxFilter, setInboxFilter]     = useState(() => {
+    const saved = localStorage.getItem('inboxFilter') || localStorage.getItem('conversationFilter') || '';
+    return ['OPEN', 'PENDING', 'RESOLVED'].includes(saved) ? saved : '';
+  });
+  const [mineFilter, setMineFilter]       = useState(() => {
+    const saved = localStorage.getItem('mineFilter') || '';
+    return ['OPEN', 'RESOLVED'].includes(saved) ? saved : '';
+  });
   const [search, setSearch]               = useState('');
   const [stats, setStats]                 = useState({ open: 0, pending: 0, resolved: 0, totalToday: 0 });
   const [section, setSection]             = useState('inbox');
   const [showSettings, setShowSettings]   = useState(false);
   const [agentStatus, setAgentStatusState] = useState('ONLINE');
   const { loadPreferences }               = useTheme();
+  const activeFilter = section === 'mine' ? mineFilter : inboxFilter;
   const chatHandlersRef    = useRef(null);
   const selectedRef        = useRef(null);
   const filterDropdownRef  = useRef(null);
@@ -103,9 +111,9 @@ export default function Inbox() {
 
   socketControls._registerChatHandlers = (handlers) => { chatHandlersRef.current = handlers; };
 
-  const loadConvs = async (f = filter) => {
+  const loadConvs = async (f = activeFilter) => {
     try {
-      const params = (f && f !== 'MINE') ? { status: f } : {};
+      const params = f ? { status: f } : {};
       const { data } = await api.get('/conversations', { params, headers: { Authorization: `Bearer ${accessToken}` } });
       setConversations(data.data || []);
     } catch {}
@@ -120,9 +128,9 @@ export default function Inbox() {
 
   useEffect(() => {
     if (!accessToken) return;
-    const timer = setTimeout(() => { loadConvs(filter); loadStats(); }, 300);
+    const timer = setTimeout(() => { loadConvs(activeFilter); loadStats(); }, 300);
     return () => clearTimeout(timer);
-  }, [filter, accessToken]);
+  }, [activeFilter, accessToken]);
 
   const handleLogout = async () => { disconnectSocket(); await logout(); };
 
@@ -147,28 +155,26 @@ export default function Inbox() {
   };
 
   const filtered = conversations.filter(c => {
-    if (filter === 'MINE') {
-      if (c.assignedAgent?.id !== agent?.id) return false;
-    } else if (filter && c.status !== filter) {
-      return false;
-    }
+    if (section === 'mine' && c.assignedAgent?.id !== agent?.id) return false;
+    if (activeFilter && c.status !== activeFilter) return false;
     const name = c.contact?.name || c.contact?.phone || '';
     return name.toLowerCase().includes(search.toLowerCase());
   });
 
   const selectedConv = conversations.find(c => c.id === selected) || null;
 
-  const filterOptions = [
-    { label: 'Todas',      value: '' },
-    { label: 'Meus',       value: 'MINE' },
-    { label: 'Abertas',    value: 'OPEN' },
-    { label: 'Pendentes',  value: 'PENDING' },
-    { label: 'Resolvidas', value: 'RESOLVED' },
-  ];
+  const filterOptions = section === 'mine'
+    ? [{ label: 'Todas', value: '' }, { label: 'Abertas', value: 'OPEN' }, { label: 'Resolvidas', value: 'RESOLVED' }]
+    : [{ label: 'Todas', value: '' }, { label: 'Abertas', value: 'OPEN' }, { label: 'Pendentes', value: 'PENDING' }, { label: 'Resolvidas', value: 'RESOLVED' }];
 
   const handleFilterChange = (value) => {
-    setFilter(value);
-    localStorage.setItem('conversationFilter', value);
+    if (section === 'mine') {
+      setMineFilter(value);
+      localStorage.setItem('mineFilter', value);
+    } else {
+      setInboxFilter(value);
+      localStorage.setItem('inboxFilter', value);
+    }
   };
 
   return (
@@ -184,13 +190,13 @@ export default function Inbox() {
         onLogout={handleLogout}
       />
 
-      {section === 'inbox' && (
+      {(section === 'inbox' || section === 'mine') && (
         <>
           {/* Conversation List */}
           <div style={{ width: 300, minWidth: 240, display: 'flex', flexDirection: 'column', background: 'var(--theme-bg-sidebar)', borderRight: '1px solid var(--theme-border)', flexShrink: 0 }}>
 
             <div style={{ padding: '14px 20px 12px', borderBottom: '1px solid var(--theme-border)' }}>
-              <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--theme-text)' }}>Inbox</div>
+              <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--theme-text)' }}>{section === 'mine' ? 'Meus' : 'Inbox'}</div>
             </div>
 
             <div style={{ display: 'flex', borderBottom: '1px solid var(--theme-border)' }}>
@@ -212,11 +218,11 @@ export default function Inbox() {
             <div ref={filterDropdownRef} style={{ position: 'relative', padding: '6px 12px', borderBottom: '1px solid var(--theme-border)' }}>
               <button
                 onClick={() => setFilterOpen(v => !v)}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 10px', borderRadius: 8, border: 'none', background: 'none', color: 'var(--theme-text-secondary)', fontSize: 13, fontWeight: filter ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 10px', borderRadius: 8, border: 'none', background: 'none', color: 'var(--theme-text-secondary)', fontSize: 13, fontWeight: activeFilter ? 600 : 400, cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--theme-bg-hover)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
               >
-                <span>{filterOptions.find(o => o.value === filter)?.label}</span>
+                <span>{filterOptions.find(o => o.value === activeFilter)?.label}</span>
                 <ChevronDown size={14} strokeWidth={2} style={{ transition: 'transform 0.15s', transform: filterOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
               </button>
               {filterOpen && (
@@ -225,9 +231,9 @@ export default function Inbox() {
                     <button
                       key={o.value}
                       onClick={() => { handleFilterChange(o.value); setFilterOpen(false); }}
-                      style={{ width: '100%', display: 'block', padding: '9px 14px', border: 'none', background: o.value === filter ? 'var(--theme-bg-hover)' : 'none', color: 'var(--theme-text)', fontSize: 13, fontWeight: o.value === filter ? 600 : 400, cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', transition: 'background 0.12s' }}
-                      onMouseEnter={e => { if (o.value !== filter) e.currentTarget.style.background = 'var(--theme-bg-hover)'; }}
-                      onMouseLeave={e => { if (o.value !== filter) e.currentTarget.style.background = 'none'; }}
+                      style={{ width: '100%', display: 'block', padding: '9px 14px', border: 'none', background: o.value === activeFilter ? 'var(--theme-bg-hover)' : 'none', color: 'var(--theme-text)', fontSize: 13, fontWeight: o.value === activeFilter ? 600 : 400, cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', transition: 'background 0.12s' }}
+                      onMouseEnter={e => { if (o.value !== activeFilter) e.currentTarget.style.background = 'var(--theme-bg-hover)'; }}
+                      onMouseLeave={e => { if (o.value !== activeFilter) e.currentTarget.style.background = 'none'; }}
                     >
                       {o.label}
                     </button>

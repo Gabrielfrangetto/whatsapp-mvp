@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageSquare, Users, Settings as SettingsIcon, LogOut } from 'lucide-react';
+import { MessageSquare, Inbox as InboxIcon, User, Users, Settings as SettingsIcon, LogOut } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { getInitials } from '../utils/format';
 
@@ -56,7 +56,8 @@ export default function NavRail({ section, onSection, agent, agentStatus = 'ONLI
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-        <NavRailButton icon={<MessageSquare size={20} />} label="Inbox" active={section === 'inbox'} onClick={() => onSection('inbox')} />
+        <NavRailButton icon={<InboxIcon size={20} />} label="Inbox" active={section === 'inbox'} onClick={() => onSection('inbox')} />
+        <NavRailButton icon={<User size={20} />} label="Meus" active={section === 'mine'} onClick={() => onSection('mine')} />
         {agent?.role === 'ADMIN' && (
           <NavRailButton icon={<Users size={20} />} label="Agentes" active={section === 'agents'} onClick={() => onSection('agents')} />
         )}

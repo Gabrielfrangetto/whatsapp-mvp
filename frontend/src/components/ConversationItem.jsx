@@ -64,15 +64,15 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
       )}
 
       <div style={{ position: 'relative', flexShrink: 0, opacity: pinAnim ? 0 : 1, transition: 'opacity 0.15s' }}>
-        <div style={{ width: 44, height: 44, borderRadius: '50%', background: getAvatarColor(name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 15, boxShadow: showPin ? '0 0 0 2px var(--theme-primary)' : 'none', transition: 'box-shadow 0.2s' }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', background: getAvatarColor(name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 15, boxShadow: showPin ? '0 0 0 2px var(--pin-bg)' : 'none', transition: 'box-shadow 0.2s' }}>
           {getInitials(name)}
         </div>
 
         {showPin && (
-          <div style={{ position: 'absolute', top: -4, left: -4, width: 17, height: 17, borderRadius: '50%', background: 'var(--theme-primary)', border: '2px solid var(--theme-bg-sidebar)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5 }}>
+          <div style={{ position: 'absolute', top: -4, left: -4, width: 17, height: 17, borderRadius: '50%', background: 'var(--pin-bg)', border: '2px solid var(--pin-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5 }}>
             {conv.pinned
-              ? <Pin size={8} strokeWidth={2.5} style={{ color: 'var(--theme-primary-text)' }} />
-              : <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--theme-primary-text)', lineHeight: 1 }}>{conv.pinCount}</span>
+              ? <Pin size={8} strokeWidth={2.5} style={{ color: 'var(--pin-text)' }} />
+              : <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--pin-text)', lineHeight: 1 }}>{conv.pinCount}</span>
             }
           </div>
         )}

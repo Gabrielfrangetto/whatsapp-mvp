@@ -61,6 +61,9 @@ function buildThemeVars(color, mode) {
       '--theme-msg-text-in':    '#e8edf3',
       '--theme-header-text':    primaryText,
       '--theme-header-sub':     primaryText === '#ffffff' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.55)',
+      '--pin-bg':               '#FBBF24',
+      '--pin-border':           '#78350F',
+      '--pin-text':             'rgba(0,0,0,0.82)',
     };
   } else {
     return {
@@ -90,6 +93,9 @@ function buildThemeVars(color, mode) {
       '--theme-msg-text-in':    '#1a1d21',
       '--theme-header-text':    primaryText,
       '--theme-header-sub':     primaryText === '#ffffff' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.55)',
+      '--pin-bg':               '#D97706',
+      '--pin-border':           '#FEF3C7',
+      '--pin-text':             'rgba(0,0,0,0.82)',
     };
   }
 }

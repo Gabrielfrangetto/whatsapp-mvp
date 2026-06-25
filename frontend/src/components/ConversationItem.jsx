@@ -25,8 +25,8 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
     onPin(conv.id);
   };
 
-  const bg     = selected ? 'var(--theme-primary-subtle)' : hasNew ? 'var(--theme-primary-subtle)' : 'transparent';
-  const border = selected || hasNew ? 'var(--theme-primary)' : conv.pinned ? 'var(--theme-primary)' : 'transparent';
+  const bg      = selected ? 'var(--theme-primary-subtle)' : hasNew ? 'var(--theme-primary-subtle)' : 'transparent';
+  const showPin = conv.pinned || conv.pinCount > 0;
 
   return (
     <div
@@ -63,18 +63,22 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
         </div>
       )}
 
-      {conv.pinned ? (
-        <Pin size={10} style={{ position: 'absolute', top: 5, left: 8, color: 'var(--theme-primary)', zIndex: 5 }} />
-      ) : conv.pinCount > 0 ? (
-        <span style={{ position: 'absolute', top: 4, left: 6, width: 15, height: 15, borderRadius: '50%', background: 'var(--theme-text-muted)', display: 'block', fontSize: 8, fontWeight: 700, color: '#fff', lineHeight: '15px', textAlign: 'center', zIndex: 5 }}>{conv.pinCount}</span>
-      ) : null}
-
       <div style={{ position: 'relative', flexShrink: 0, opacity: pinAnim ? 0 : 1, transition: 'opacity 0.15s' }}>
-        <div style={{ width: 44, height: 44, borderRadius: '50%', background: getAvatarColor(name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 15 }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', background: getAvatarColor(name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, color: '#fff', fontSize: 15, boxShadow: showPin ? '0 0 0 2px var(--theme-primary)' : 'none', transition: 'box-shadow 0.2s' }}>
           {getInitials(name)}
         </div>
+
+        {showPin && (
+          <div style={{ position: 'absolute', top: -4, left: -4, width: 17, height: 17, borderRadius: '50%', background: 'var(--theme-primary)', border: '2px solid var(--theme-bg-sidebar)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5 }}>
+            {conv.pinned
+              ? <Pin size={8} strokeWidth={2.5} style={{ color: 'var(--theme-primary-text)' }} />
+              : <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--theme-primary-text)', lineHeight: 1 }}>{conv.pinCount}</span>
+            }
+          </div>
+        )}
+
         {hasNew && (
-          <span style={{ position: 'absolute', bottom: -2, right: -4, background: 'var(--theme-primary)', color: 'var(--theme-primary-text)', borderRadius: 20, padding: '1px 5px', fontSize: 10, fontWeight: 700, border: '2px solid var(--theme-bg)', lineHeight: '14px', minWidth: 16, textAlign: 'center' }}>{conv.unreadCount}</span>
+          <span style={{ position: 'absolute', bottom: -2, right: -4, background: 'var(--theme-primary)', color: 'var(--theme-primary-text)', borderRadius: 20, padding: '1px 5px', fontSize: 10, fontWeight: 700, border: '2px solid var(--theme-bg-sidebar)', lineHeight: '14px', minWidth: 16, textAlign: 'center' }}>{conv.unreadCount}</span>
         )}
       </div>
 

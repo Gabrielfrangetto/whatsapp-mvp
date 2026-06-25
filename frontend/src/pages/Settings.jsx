@@ -66,7 +66,7 @@ function ThemeSection({ draft, onDraft }) {
           <div style={{ flex: 1 }}>
             <input value={hexInput} onChange={e => handleHexChange(e.target.value)} placeholder="#075E54" maxLength={7}
               style={{ width: '100%', padding: '10px 12px', borderRadius: 8, fontFamily: 'var(--font-mono, monospace)', border: hexError ? '1.5px solid #ef4444' : '1.5px solid var(--theme-border)', background: 'var(--theme-bg)', color: 'var(--theme-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box', letterSpacing: 1 }} />
-            {hexError && <p style={{ fontSize: 11, color: '#ef4444', margin: '4px 0 0' }}>{hexError}</p>}
+            <p style={{ fontSize: 11, color: '#ef4444', margin: '4px 0 0', visibility: hexError ? 'visible' : 'hidden', minHeight: 16 }}>{hexError || ' '}</p>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '8px 10px', borderRadius: 8, visibility: (!hexError && contrastWarn) ? 'visible' : 'hidden', background: draftMode === 'dark' ? 'rgba(234,179,8,0.1)' : '#fefce8', border: `1px solid ${draftMode === 'dark' ? 'rgba(234,179,8,0.25)' : '#fde68a'}` }}>
@@ -240,7 +240,7 @@ export default function Settings({ onClose }) {
               </div>
             )}
           </div>
-          <div style={{ flex: 1, minWidth: 0, padding: '20px 24px', overflowY: 'auto', overflowX: 'hidden' }}>
+          <div style={{ flex: 1, minWidth: 0, padding: '20px 24px', overflowY: 'scroll', overflowX: 'hidden' }}>
             {active === 'theme'    && <ThemeSection draft={draftTheme} onDraft={setDraftTheme} />}
             {active === 'advanced' && <AdvancedSection draftAutoclose={draftAutoclose} onToggle={() => setDraftAutoclose(v => !v)} />}
           </div>

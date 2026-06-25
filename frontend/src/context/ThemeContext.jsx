@@ -6,9 +6,9 @@ const ThemeContext = createContext(null);
 
 export const PRESETS = [
   { name: 'Padrão',    color: '#075E54', mode: 'light', desc: 'Verde WhatsApp clássico' },
-  { name: 'Oceano',    color: '#0F4C75', mode: 'dark',  desc: 'Azul profundo escuro' },
+  { name: 'Safira',    color: '#3B82F6', mode: 'dark',  desc: 'Azul elétrico escuro' },
   { name: 'Lavanda',   color: '#6C63FF', mode: 'light', desc: 'Roxo suave claro' },
-  { name: 'Grafite',   color: '#3D4A5C', mode: 'dark',  desc: 'Cinza azulado escuro' },
+  { name: 'Violeta',   color: '#7C3AED', mode: 'dark',  desc: 'Roxo profundo escuro' },
   { name: 'Coral',     color: '#E84393', mode: 'light', desc: 'Rosa vibrante claro' },
   { name: 'Floresta',  color: '#2D6A4F', mode: 'dark',  desc: 'Verde floresta escuro' },
   { name: 'Âmbar',     color: '#D97706', mode: 'light', desc: 'Laranja quente claro' },

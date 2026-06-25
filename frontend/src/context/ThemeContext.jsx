@@ -142,6 +142,11 @@ export function ThemeProvider({ children }) {
     }
   }, []);
 
+  const previewOnly = useCallback((c, m) => {
+    setColor(c);
+    setMode(m);
+  }, []);
+
   const updateColor = useCallback((newColor) => {
     setColor(newColor);
     savePreferences(newColor, mode);
@@ -159,7 +164,7 @@ export function ThemeProvider({ children }) {
   }, [savePreferences]);
 
   return (
-    <ThemeContext.Provider value={{ color, mode, saving, loadPreferences, updateColor, updateMode, applyPreset }}>
+    <ThemeContext.Provider value={{ color, mode, saving, loadPreferences, updateColor, updateMode, applyPreset, previewOnly, savePreferences }}>
       {children}
     </ThemeContext.Provider>
   );

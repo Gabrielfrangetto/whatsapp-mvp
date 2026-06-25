@@ -69,7 +69,7 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
         </div>
 
         {showPin && (
-          <div style={{ position: 'absolute', top: -4, left: -4, width: 17, height: 17, borderRadius: '50%', background: 'var(--pin-bg)', border: '2px solid var(--pin-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5 }}>
+          <div style={{ position: 'absolute', top: -4, left: -4, width: 17, height: 17, borderRadius: '50%', background: 'var(--pin-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5 }}>
             {conv.pinned
               ? <Pin size={8} strokeWidth={2.5} style={{ color: 'var(--pin-text)' }} />
               : <span style={{ fontSize: 8, fontWeight: 700, color: 'var(--pin-text)', lineHeight: 1 }}>{conv.pinCount}</span>

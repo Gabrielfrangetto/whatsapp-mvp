@@ -51,9 +51,11 @@ export default function NavRail({ section, onSection, agent, agentStatus = 'ONLI
   return (
     <div style={{ width: 64, background: navBg, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 12, paddingBottom: 12, gap: 2, flexShrink: 0, borderRight: '1px solid rgba(0,0,0,0.3)', zIndex: 10 }}>
 
-      <div style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--theme-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-primary-text)', marginBottom: 12, flexShrink: 0 }}>
+      <div style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--theme-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-primary-text)', marginBottom: 8, flexShrink: 0 }}>
         <MessageSquare size={20} />
       </div>
+
+      <div style={{ width: 36, height: 1, background: 'rgba(255,255,255,0.15)', borderRadius: 1, marginBottom: 8, flexShrink: 0 }} />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
         <NavRailButton icon={<InboxIcon size={20} />} label="Inbox" active={section === 'inbox'} onClick={() => onSection('inbox')} />

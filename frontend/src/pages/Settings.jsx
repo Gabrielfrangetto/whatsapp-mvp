@@ -51,7 +51,7 @@ function ThemeSection({ draft, onDraft }) {
         <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--theme-text)', margin: '0 0 12px' }}>Modo</p>
         <div style={{ display: 'flex', gap: 10 }}>
           {[{ value: 'light', label: 'Claro', icon: <Sun size={14} />, desc: 'Fundo branco' }, { value: 'dark', label: 'Escuro', icon: <Moon size={14} />, desc: 'Cinza suave' }].map(m => (
-            <div key={m.value} onClick={() => handleMode(m.value)} style={{ flex: 1, padding: '12px 14px', borderRadius: 10, cursor: 'pointer', border: draftMode === m.value ? `2px solid var(--theme-primary)` : '1.5px solid var(--theme-border)', background: draftMode === m.value ? 'var(--theme-primary-subtle)' : 'var(--theme-bg)', transition: 'all 0.15s' }}>
+            <div key={m.value} onClick={() => handleMode(m.value)} style={{ flex: 1, padding: '12px 14px', borderRadius: 10, cursor: 'pointer', border: draftMode === m.value ? `2px solid var(--theme-primary)` : '2px solid var(--theme-border)', background: draftMode === m.value ? 'var(--theme-primary-subtle)' : 'var(--theme-bg)', transition: 'background-color 0.15s, border-color 0.15s' }}>
               <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--theme-text)', display: 'flex', alignItems: 'center', gap: 6 }}>{m.icon}{m.label}</div>
               <div style={{ fontSize: 12, color: 'var(--theme-text-secondary)', marginTop: 3 }}>{m.desc}</div>
             </div>
@@ -83,20 +83,18 @@ function ThemeSection({ draft, onDraft }) {
           {PRESETS.map(preset => {
             const active = draftColor === preset.color && draftMode === preset.mode;
             return (
-              <div key={preset.name} onClick={() => handlePreset(preset)} style={{ padding: '10px 12px', borderRadius: 10, cursor: 'pointer', border: active ? `2px solid ${preset.color}` : '1.5px solid var(--theme-border)', background: active ? `${preset.color}15` : 'var(--theme-bg)', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s' }}>
+              <div key={preset.name} onClick={() => handlePreset(preset)} style={{ padding: '10px 12px', borderRadius: 10, cursor: 'pointer', border: active ? `2px solid ${preset.color}` : '2px solid var(--theme-border)', background: active ? `${preset.color}15` : 'var(--theme-bg)', display: 'flex', alignItems: 'center', gap: 10, transition: 'background-color 0.15s, border-color 0.15s' }}>
                 <div style={{ width: 28, height: 28, borderRadius: 8, background: preset.color, flexShrink: 0 }} />
-                <div style={{ minWidth: 0 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--theme-text)', display: 'flex', alignItems: 'center', gap: 6 }}>
                     {preset.name}
                     {preset.mode === 'dark' ? <Moon size={10} style={{ opacity: .6 }} /> : <Sun size={10} style={{ opacity: .6 }} />}
                   </div>
                   <div style={{ fontSize: 11, color: 'var(--theme-text-secondary)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{preset.desc}</div>
                 </div>
-                {active && (
-                  <div style={{ marginLeft: 'auto', width: 18, height: 18, borderRadius: '50%', background: preset.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: getContrastText(parseInt(preset.color.slice(1,3),16), parseInt(preset.color.slice(3,5),16), parseInt(preset.color.slice(5,7),16)), flexShrink: 0 }}>
-                    <Check size={11} strokeWidth={3} />
-                  </div>
-                )}
+                <div style={{ marginLeft: 'auto', width: 18, height: 18, borderRadius: '50%', background: preset.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: getContrastText(parseInt(preset.color.slice(1,3),16), parseInt(preset.color.slice(3,5),16), parseInt(preset.color.slice(5,7),16)), flexShrink: 0, opacity: active ? 1 : 0, transition: 'opacity 0.15s' }}>
+                  <Check size={11} strokeWidth={3} />
+                </div>
               </div>
             );
           })}

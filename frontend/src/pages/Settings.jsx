@@ -248,30 +248,29 @@ export default function Settings({ onClose }) {
           </div>
         </div>
 
-        {/* Save/Cancel bar */}
-        {isDirty && (
-          <div style={{ padding: '12px 24px', borderTop: '1px solid var(--theme-border)', background: 'var(--theme-bg)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-            <span style={{
-              flex: 1,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              fontSize: 12,
-              fontWeight: 600,
-              padding: '5px 10px',
-              borderRadius: 6,
-              background: draftTheme.mode === 'dark' ? 'rgba(234,179,8,0.12)' : 'rgba(161,98,7,0.08)',
-              color: draftTheme.mode === 'dark' ? '#fbbf24' : '#92400e',
-              border: `1px solid ${draftTheme.mode === 'dark' ? 'rgba(234,179,8,0.25)' : 'rgba(161,98,7,0.2)'}`,
-              animation: 'unsaved-pulse 2s ease-in-out infinite',
-            }}>
-              <AlertTriangle size={13} strokeWidth={2.5} style={{ flexShrink: 0 }} />
-              Você tem alterações não salvas
-            </span>
-            <button onClick={handleCancel} style={{ padding: '7px 16px', borderRadius: 7, border: '1px solid var(--theme-border)', background: 'none', color: 'var(--theme-text-secondary)', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
-            <button onClick={() => setShowConfirm(true)} style={{ padding: '7px 16px', borderRadius: 7, border: 'none', background: 'var(--theme-primary)', color: 'var(--theme-primary-text)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Salvar</button>
-          </div>
-        )}
+        {/* Save/Cancel bar — always visible to prevent layout shift */}
+        <div style={{ padding: '12px 24px', borderTop: '1px solid var(--theme-border)', background: 'var(--theme-bg)', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <span style={{
+            flex: 1,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: 12,
+            fontWeight: 600,
+            padding: '5px 10px',
+            borderRadius: 6,
+            visibility: isDirty ? 'visible' : 'hidden',
+            background: draftTheme.mode === 'dark' ? 'rgba(234,179,8,0.12)' : 'rgba(161,98,7,0.08)',
+            color: draftTheme.mode === 'dark' ? '#fbbf24' : '#92400e',
+            border: `1px solid ${draftTheme.mode === 'dark' ? 'rgba(234,179,8,0.25)' : 'rgba(161,98,7,0.2)'}`,
+            animation: isDirty ? 'unsaved-pulse 2s ease-in-out infinite' : 'none',
+          }}>
+            <AlertTriangle size={13} strokeWidth={2.5} style={{ flexShrink: 0 }} />
+            Você tem alterações não salvas
+          </span>
+          <button onClick={handleCancel} style={{ padding: '7px 16px', borderRadius: 7, border: '1px solid var(--theme-border)', background: 'none', color: 'var(--theme-text-secondary)', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
+          <button onClick={() => setShowConfirm(true)} style={{ padding: '7px 16px', borderRadius: 7, border: 'none', background: 'var(--theme-primary)', color: 'var(--theme-primary-text)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Salvar</button>
+        </div>
       </div>
 
       {/* Confirm modal */}

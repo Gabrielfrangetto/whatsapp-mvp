@@ -1,5 +1,5 @@
 // src/context/ThemeContext.jsx
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import { api } from './AuthContext';
 
 const ThemeContext = createContext(null);
@@ -107,13 +107,13 @@ export function ThemeProvider({ children }) {
   const [mode, setMode]   = useState(() => localStorage.getItem('themeMode')  || 'light');
   const [saving, setSaving] = useState(false);
 
-  // Aplica tema sempre que mudar
-  useEffect(() => {
+  // useLayoutEffect garante que as CSS vars são aplicadas antes do browser pintar,
+  // evitando frames intermediários com estado inconsistente (React novo + vars antigas)
+  useLayoutEffect(() => {
     applyTheme(color, mode);
   }, [color, mode]);
 
-  // Aplica imediatamente na montagem (evita flash)
-  useEffect(() => {
+  useLayoutEffect(() => {
     applyTheme(color, mode);
   }, []);
 

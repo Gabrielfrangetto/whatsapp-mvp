@@ -67,15 +67,13 @@ function ThemeSection({ draft, onDraft }) {
             <input value={hexInput} onChange={e => handleHexChange(e.target.value)} placeholder="#075E54" maxLength={7}
               style={{ width: '100%', padding: '10px 12px', borderRadius: 8, fontFamily: 'var(--font-mono, monospace)', border: hexError ? '1.5px solid #ef4444' : '1.5px solid var(--theme-border)', background: 'var(--theme-bg)', color: 'var(--theme-text)', fontSize: 14, outline: 'none', boxSizing: 'border-box', letterSpacing: 1 }} />
             {hexError && <p style={{ fontSize: 11, color: '#ef4444', margin: '4px 0 0' }}>{hexError}</p>}
-            {!hexError && contrastWarn && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '8px 10px', borderRadius: 8, background: draftMode === 'dark' ? 'rgba(234,179,8,0.1)' : '#fefce8', border: `1px solid ${draftMode === 'dark' ? 'rgba(234,179,8,0.25)' : '#fde68a'}` }}>
-                <AlertTriangle size={13} strokeWidth={2.5} style={{ color: draftMode === 'dark' ? '#fbbf24' : '#d97706', flexShrink: 0 }} />
-                <p style={{ fontSize: 11, color: draftMode === 'dark' ? '#fde68a' : '#92400e', margin: 0 }}>
-                  Baixo contraste no modo {draftMode === 'dark' ? 'escuro' : 'claro'} — botões e bordas podem ficar pouco visíveis
-                </p>
-              </div>
-            )}
           </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, padding: '8px 10px', borderRadius: 8, visibility: (!hexError && contrastWarn) ? 'visible' : 'hidden', background: draftMode === 'dark' ? 'rgba(234,179,8,0.1)' : '#fefce8', border: `1px solid ${draftMode === 'dark' ? 'rgba(234,179,8,0.25)' : '#fde68a'}` }}>
+          <AlertTriangle size={13} strokeWidth={2.5} style={{ color: draftMode === 'dark' ? '#fbbf24' : '#d97706', flexShrink: 0 }} />
+          <p style={{ fontSize: 11, color: draftMode === 'dark' ? '#fde68a' : '#92400e', margin: 0 }}>
+            Baixo contraste no modo {draftMode === 'dark' ? 'escuro' : 'claro'} — botões e bordas podem ficar pouco visíveis
+          </p>
         </div>
       </div>
 

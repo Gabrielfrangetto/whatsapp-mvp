@@ -9,6 +9,7 @@ import ContactDetailsPanel from '../components/ContactDetailsPanel';
 import ChatPanel from '../components/ChatPanel';
 import Agents from './Agents';
 import Settings from './Settings';
+import Reports from './Reports';
 
 export default function Inbox() {
   const { agent, accessToken, logout } = useAuth();
@@ -265,6 +266,8 @@ export default function Inbox() {
           <Agents />
         </div>
       )}
+
+      {section === 'reports' && <Reports />}
 
       {showSettings && <Settings onClose={() => setShowSettings(false)} />}
     </div>

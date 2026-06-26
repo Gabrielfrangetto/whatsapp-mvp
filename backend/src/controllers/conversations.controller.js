@@ -173,9 +173,13 @@ async function updateConversationStatus(req, res) {
       }
     }
 
+    const isTransfer = assignedToId !== undefined;
     const conversation = await prisma.conversation.update({
       where: { id },
-      data: { ...(status && { status }), ...(assignedToId !== undefined && { assignedToId }) },
+      data: {
+        ...(status && { status }),
+        ...(isTransfer && { assignedToId, assignmentSource: 'MANUAL' }),
+      },
       include: { contact: true, assignedAgent: { select: { id: true, name: true, avatarColor: true, avatarUrl: true } } },
     });
 

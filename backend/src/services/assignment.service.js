@@ -75,7 +75,7 @@ async function assignConversation(conversationId, excludeAgentId = null) {
 
   const conv = await prisma.conversation.update({
     where: { id: conversationId },
-    data: { assignedToId: agent.id },
+    data: { assignedToId: agent.id, assignmentSource: 'AUTO', status: 'OPEN' },
     include: { contact: true },
   });
 
@@ -100,7 +100,7 @@ async function pickupPendingConversations() {
 
     const updated = await prisma.conversation.update({
       where: { id: conv.id },
-      data: { status: 'OPEN', assignedToId: agent.id },
+      data: { status: 'OPEN', assignedToId: agent.id, assignmentSource: 'AUTO' },
       include: { contact: true },
     });
 

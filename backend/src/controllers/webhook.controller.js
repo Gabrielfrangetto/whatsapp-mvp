@@ -98,11 +98,11 @@ async function processInbound(msg, contactInfo) {
       if (resolved) {
         conv = await prisma.conversation.update({
           where: { id: resolved.id },
-          data: { status: 'OPEN', assignedToId: null, unreadCount: 1, lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND' },
+          data: { status: 'OPEN', assignedToId: null, unreadCount: 1, lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND', openedAt: timestamp, resolvedAt: null, resolvedByAgentId: null, assignmentSource: null },
         });
       } else {
         conv = await prisma.conversation.create({
-          data: { contactId: contact.id, status: 'OPEN', lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND', unreadCount: 1 },
+          data: { contactId: contact.id, status: 'OPEN', lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND', unreadCount: 1, openedAt: timestamp },
         });
       }
 
@@ -129,7 +129,7 @@ async function processInbound(msg, contactInfo) {
         if (agent) {
           conv = await prisma.conversation.update({
             where: { id: conv.id },
-            data: { ...msgUpdates, status: 'OPEN', assignedToId: agent.id },
+            data: { ...msgUpdates, status: 'OPEN', assignedToId: agent.id, assignmentSource: 'AUTO' },
           });
           console.log(`[Assignment] 📋 Pendente ${conv.id} promovido → ${agent.name}`);
         } else {

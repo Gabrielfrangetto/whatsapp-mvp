@@ -60,7 +60,11 @@ model Conversation {
   lastMessage          String?
   lastMessageAt        DateTime?
   lastMessageDirection String?
-  unreadCount   Int        @default(0)
+  unreadCount          Int        @default(0)
+  openedAt             DateTime?
+  resolvedAt           DateTime?
+  resolvedByAgentId    String?
+  assignmentSource     String?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 

@@ -33,7 +33,7 @@ function Avatar({ name, color, avatarUrl }) {
   );
 }
 
-export default function ReportsTable({ agents, slaTargetSeconds }) {
+export default function ReportsTable({ agents, slaTargetSeconds, bests = {} }) {
   const [hoveredRow, setHoveredRow] = useState(null);
 
   const COLS = [
@@ -50,12 +50,6 @@ export default function ReportsTable({ agents, slaTargetSeconds }) {
     { key: 'reopenRate',            label: 'Reabertura',       fmt: pct,                                       highIsGood: false },
     { key: 'onlineMinutes',         label: 'Online',           fmt: fmtMin,                                    highIsGood: true  },
   ];
-
-  const bests = {};
-  for (const col of COLS) {
-    const vals = agents.map(a => a[col.key]).filter(v => v !== null && v !== undefined);
-    if (vals.length) bests[col.key] = col.highIsGood ? Math.max(...vals) : Math.min(...vals);
-  }
 
   const TH = {
     padding: '10px 14px',
@@ -114,7 +108,7 @@ export default function ReportsTable({ agents, slaTargetSeconds }) {
                 {COLS.map(col => {
                   const val = row[col.key];
                   const displayed = col.fmt ? col.fmt(val) : (val !== null && val !== undefined ? String(val) : '—');
-                  const isBestVal = bests[col.key] !== undefined && val !== null && val !== undefined && val === bests[col.key];
+                  const isBestVal = bests[col.key] === row.agent.id;
                   return (
                     <td key={col.key} style={{ padding: '10px 14px', textAlign: 'right', fontSize: 13, fontWeight: isBestVal ? 800 : 600, color: isBestVal ? 'var(--theme-primary)' : 'var(--theme-text)', borderBottom: '1px solid var(--theme-border)', borderRight: '1px solid var(--theme-border)', whiteSpace: 'nowrap' }}>
                       {displayed}

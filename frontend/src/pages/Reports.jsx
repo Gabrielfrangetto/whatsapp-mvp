@@ -221,18 +221,49 @@ function StatusBar({ dist }) {
 }
 
 function computeBests(agents) {
-  const best = {};
-  const highest = ['chatsReceived', 'messagesSent', 'fcrRate', 'slaComplianceRate', 'chatsPerHour', 'onlineMinutes'];
-  const lowest  = ['firstResponseTimeAvg', 'avgResponseTime', 'resolutionTimeAvg', 'reopenRate', 'transferOutRate', 'transfersOut'];
-  for (const k of highest) {
-    const vals = agents.map(a => a[k]).filter(v => v !== null && v !== undefined);
-    if (vals.length) best[k] = Math.max(...vals);
+  const METRICS = [
+    { key: 'chatsReceived',        high: true  },
+    { key: 'messagesSent',         high: true  },
+    { key: 'fcrRate',              high: true  },
+    { key: 'slaComplianceRate',    high: true  },
+    { key: 'chatsPerHour',         high: true  },
+    { key: 'onlineMinutes',        high: true  },
+    { key: 'firstResponseTimeAvg', high: false },
+    { key: 'avgResponseTime',      high: false },
+    { key: 'resolutionTimeAvg',    high: false },
+    { key: 'reopenRate',           high: false },
+    { key: 'transferOutRate',      high: false },
+    { key: 'transfersOut',         high: false },
+  ];
+
+  // which agents share the best value per metric
+  const tied = {};
+  for (const { key, high } of METRICS) {
+    const vals = agents.map(a => ({ id: a.agent.id, v: a[key] })).filter(x => x.v !== null && x.v !== undefined);
+    if (!vals.length) continue;
+    const best = high ? Math.max(...vals.map(x => x.v)) : Math.min(...vals.map(x => x.v));
+    tied[key] = vals.filter(x => x.v === best).map(x => x.id);
   }
-  for (const k of lowest) {
-    const vals = agents.map(a => a[k]).filter(v => v !== null && v !== undefined);
-    if (vals.length) best[k] = Math.min(...vals);
+
+  // strict wins = metrics where only that agent has the best value
+  const wins = Object.fromEntries(agents.map(a => [a.agent.id, 0]));
+  for (const ids of Object.values(tied)) {
+    if (ids.length === 1) wins[ids[0]]++;
   }
-  return best;
+
+  // resolve: clear winner, or tiebreak by strict-win count, or no highlight
+  const bests = {}; // metricKey → winning agentId
+  for (const [key, ids] of Object.entries(tied)) {
+    if (ids.length === 1) { bests[key] = ids[0]; continue; }
+    let maxW = -1, winner = null;
+    for (const id of ids) {
+      if (wins[id] > maxW) { maxW = wins[id]; winner = id; }
+      else if (wins[id] === maxW) { winner = null; }
+    }
+    if (winner) bests[key] = winner;
+  }
+
+  return bests; // { metricKey → agentId }
 }
 
 function AgentCard({ data, bests = {} }) {
@@ -245,7 +276,7 @@ function AgentCard({ data, bests = {} }) {
     statusDistributionMinutes, onlineMinutes, peakHours,
   } = data;
 
-  const isBest = (key, val) => bests[key] !== undefined && val !== null && val !== undefined && val === bests[key];
+  const isBest = (key) => bests[key] === agent.id;
 
   return (
     <div style={{ background: 'var(--theme-bg-secondary)', borderRadius: 16, border: '1px solid var(--theme-border)', overflow: 'hidden' }}>
@@ -269,9 +300,9 @@ function AgentCard({ data, bests = {} }) {
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Volume</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <Stat icon={<Users size={12} />} label="Chats recebidos" value={chatsReceived} sub="fluxo automático" color="var(--theme-primary)" highlight={isBest('chatsReceived', chatsReceived)} />
-            <Stat icon={<MessageSquare size={12} />} label="Msgs enviadas" value={messagesSent} color="#6366f1" highlight={isBest('messagesSent', messagesSent)} />
-            <Stat icon={<ArrowRightLeft size={12} />} label="Transferências" value={transfersOut} sub={pct(transferOutRate) !== '—' ? `${pct(transferOutRate)} dos recebidos` : undefined} color="#f59e0b" highlight={isBest('transfersOut', transfersOut)} />
+            <Stat icon={<Users size={12} />} label="Chats recebidos" value={chatsReceived} sub="fluxo automático" color="var(--theme-primary)" highlight={isBest('chatsReceived')} />
+            <Stat icon={<MessageSquare size={12} />} label="Msgs enviadas" value={messagesSent} color="#6366f1" highlight={isBest('messagesSent')} />
+            <Stat icon={<ArrowRightLeft size={12} />} label="Transferências" value={transfersOut} sub={pct(transferOutRate) !== '—' ? `${pct(transferOutRate)} dos recebidos` : undefined} color="#f59e0b" highlight={isBest('transfersOut')} />
           </div>
         </div>
 
@@ -279,9 +310,9 @@ function AgentCard({ data, bests = {} }) {
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Tempos</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <Stat icon={<Zap size={12} />} label="1ª resposta" value={formatDuration(firstResponseTimeAvg)} color="#f59e0b" highlight={isBest('firstResponseTimeAvg', firstResponseTimeAvg)} />
-            <Stat icon={<Clock size={12} />} label="Resp. geral" value={formatDuration(avgResponseTime)} color="#3b82f6" highlight={isBest('avgResponseTime', avgResponseTime)} />
-            <Stat icon={<CheckCircle size={12} />} label="Resolução" value={formatDuration(resolutionTimeAvg)} color="#10b981" highlight={isBest('resolutionTimeAvg', resolutionTimeAvg)} />
+            <Stat icon={<Zap size={12} />} label="1ª resposta" value={formatDuration(firstResponseTimeAvg)} color="#f59e0b" highlight={isBest('firstResponseTimeAvg')} />
+            <Stat icon={<Clock size={12} />} label="Resp. geral" value={formatDuration(avgResponseTime)} color="#3b82f6" highlight={isBest('avgResponseTime')} />
+            <Stat icon={<CheckCircle size={12} />} label="Resolução" value={formatDuration(resolutionTimeAvg)} color="#10b981" highlight={isBest('resolutionTimeAvg')} />
           </div>
         </div>
 
@@ -289,7 +320,7 @@ function AgentCard({ data, bests = {} }) {
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Qualidade</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', borderRadius: 10, background: isBest('fcrRate', fcrRate) ? 'var(--theme-primary-subtle)' : 'var(--theme-bg-tertiary)', border: isBest('fcrRate', fcrRate) ? '1px solid var(--theme-primary)' : '1px solid transparent' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', borderRadius: 10, background: isBest('fcrRate') ? 'var(--theme-primary-subtle)' : 'var(--theme-bg-tertiary)', border: isBest('fcrRate') ? '1px solid var(--theme-primary)' : '1px solid transparent' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <ShieldCheck size={12} style={{ color: '#10b981' }} />
                 <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>FCR</span>
@@ -298,7 +329,7 @@ function AgentCard({ data, bests = {} }) {
               <RateBar value={fcrRate} color="#10b981" />
               <div style={{ fontSize: 10, color: 'var(--theme-text-muted)' }}>Resolução no 1º contato</div>
             </div>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', borderRadius: 10, background: isBest('slaComplianceRate', slaComplianceRate) ? 'var(--theme-primary-subtle)' : 'var(--theme-bg-tertiary)', border: isBest('slaComplianceRate', slaComplianceRate) ? '1px solid var(--theme-primary)' : '1px solid transparent' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', borderRadius: 10, background: isBest('slaComplianceRate') ? 'var(--theme-primary-subtle)' : 'var(--theme-bg-tertiary)', border: isBest('slaComplianceRate') ? '1px solid var(--theme-primary)' : '1px solid transparent' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <TrendingUp size={12} style={{ color: '#3b82f6' }} />
                 <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>SLA</span>
@@ -307,7 +338,7 @@ function AgentCard({ data, bests = {} }) {
               <RateBar value={slaComplianceRate} color="#3b82f6" />
               <div style={{ fontSize: 10, color: 'var(--theme-text-muted)' }}>1ª resp. em {Math.round(slaTargetSeconds / 60)}min</div>
             </div>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', borderRadius: 10, background: isBest('reopenRate', reopenRate) ? 'var(--theme-primary-subtle)' : 'var(--theme-bg-tertiary)', border: isBest('reopenRate', reopenRate) ? '1px solid var(--theme-primary)' : '1px solid transparent' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', borderRadius: 10, background: isBest('reopenRate') ? 'var(--theme-primary-subtle)' : 'var(--theme-bg-tertiary)', border: isBest('reopenRate') ? '1px solid var(--theme-primary)' : '1px solid transparent' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <RotateCcw size={12} style={{ color: '#f59e0b' }} />
                 <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Reabertura</span>
@@ -352,6 +383,7 @@ export default function Reports() {
   const [viewMode, setViewMode]   = useState(() => localStorage.getItem(storageKey) || 'cards');
 
   const setView = (mode) => { setViewMode(mode); localStorage.setItem(storageKey, mode); };
+  const bests = data?.agents?.length > 0 ? computeBests(data.agents) : {};
 
   const load = useCallback(async (idx) => {
     setLoading(true);
@@ -434,11 +466,11 @@ export default function Reports() {
         )}
         {!error && data?.agents?.length > 0 && viewMode === 'cards' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))', gap: 20 }}>
-            {(() => { const bests = computeBests(data.agents); return data.agents.map(row => <AgentCard key={row.agent.id} data={{ ...row, slaTargetSeconds: data.slaTargetSeconds }} bests={bests} />); })()}
+            {data.agents.map(row => <AgentCard key={row.agent.id} data={{ ...row, slaTargetSeconds: data.slaTargetSeconds }} bests={bests} />)}
           </div>
         )}
         {!error && data?.agents?.length > 0 && viewMode === 'table' && (
-          <ReportsTable agents={data.agents} slaTargetSeconds={data.slaTargetSeconds} />
+          <ReportsTable agents={data.agents} slaTargetSeconds={data.slaTargetSeconds} bests={bests} />
         )}
       </div>
     </div>

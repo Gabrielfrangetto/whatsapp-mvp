@@ -3,8 +3,6 @@ const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
-const SLA_TARGET_SECONDS = 300; // 5 min — configurável futuramente via SystemSettings
-
 function msToSeconds(ms) {
   return ms > 0 ? Math.round(ms / 1000) : null;
 }
@@ -13,7 +11,7 @@ function clampToRange(ts, from, to) {
   return Math.min(Math.max(ts, from.getTime()), to.getTime());
 }
 
-async function computeAgentMetrics(agentId, from, to) {
+async function computeAgentMetrics(agentId, from, to, slaTarget = 300) {
   const [
     chatsReceived,
     messagesSent,
@@ -91,7 +89,7 @@ async function computeAgentMetrics(agentId, from, to) {
   const convsWithFirstResponse = assignedConvs.filter(c => c.firstResponseAt && c.openedAt);
   const slaOk = convsWithFirstResponse.filter(c => {
     const secs = (new Date(c.firstResponseAt) - new Date(c.openedAt)) / 1000;
-    return secs <= SLA_TARGET_SECONDS;
+    return secs <= slaTarget;
   }).length;
   const slaComplianceRate = convsWithFirstResponse.length > 0
     ? Math.round((slaOk / convsWithFirstResponse.length) * 100) : null;
@@ -167,7 +165,7 @@ async function computeAgentMetrics(agentId, from, to) {
     fcrRate,
     reopenRate,
     slaComplianceRate,
-    slaTargetSeconds: SLA_TARGET_SECONDS,
+    slaTargetSeconds: slaTarget,
     transfersOut,
     transferOutRate,
     chatsPerHour,
@@ -189,6 +187,9 @@ async function getReports(req, res) {
     const dateFrom = from ? new Date(from) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     dateTo.setHours(23, 59, 59, 999);
 
+    const slaSetting = await prisma.systemSetting.findUnique({ where: { key: 'sla_target_seconds' } });
+    const slaTarget  = slaSetting ? (parseInt(slaSetting.value) || 300) : 300;
+
     const isAdmin = req.agent.role === 'ADMIN';
 
     const agents = isAdmin
@@ -204,12 +205,12 @@ async function getReports(req, res) {
 
     const results = await Promise.all(
       agents.filter(Boolean).map(async (agent) => {
-        const metrics = await computeAgentMetrics(agent.id, dateFrom, dateTo);
+        const metrics = await computeAgentMetrics(agent.id, dateFrom, dateTo, slaTarget);
         return { agent, ...metrics };
       })
     );
 
-    res.json({ from: dateFrom, to: dateTo, slaTargetSeconds: SLA_TARGET_SECONDS, agents: results });
+    res.json({ from: dateFrom, to: dateTo, slaTargetSeconds: slaTarget, agents: results });
   } catch (e) {
     console.error('[Reports] Error:', e.message);
     res.status(500).json({ error: 'Erro ao gerar relatório' });

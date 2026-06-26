@@ -4,7 +4,8 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const DEFAULTS = {
-  autoclose_enabled: 'false',
+  autoclose_enabled:   'false',
+  sla_target_seconds:  '300',
 };
 
 async function getSettings(req, res) {

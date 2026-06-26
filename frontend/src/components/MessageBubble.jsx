@@ -120,15 +120,18 @@ function ReactionBubble({ reactions, isOut }) {
 }
 
 function Ticks({ status }) {
-  const color = status === 'READ' ? '#53bdeb' : 'var(--theme-text-muted)';
   if (status === 'FAILED') return <span style={{ fontSize: 12, color: '#ef4444' }}>✗</span>;
-  if (status === 'DELIVERED' || status === 'READ') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', color }}>
-      <span style={{ fontSize: 12 }}>✓</span>
-      <span style={{ fontSize: 12, marginLeft: -5 }}>✓</span>
-    </span>
-  );
-  if (status === 'SENT') return <span style={{ fontSize: 12, color }}>✓</span>;
+  if (status === 'DELIVERED' || status === 'READ') {
+    const color = status === 'READ' ? '#53bdeb' : 'var(--theme-msg-text-out)';
+    const opacity = status === 'READ' ? 1 : 0.6;
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', color, opacity }}>
+        <span style={{ fontSize: 12 }}>✓</span>
+        <span style={{ fontSize: 12, marginLeft: -5 }}>✓</span>
+      </span>
+    );
+  }
+  if (status === 'SENT') return <span style={{ fontSize: 12, color: 'var(--theme-msg-text-out)', opacity: 0.6 }}>✓</span>;
   return null;
 }
 
@@ -343,7 +346,7 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
           {message.content}
         </p>
         <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 3, marginTop: 2, padding: isImage ? '0 8px' : 0 }}>
-          <span style={{ fontSize: 11, color: 'var(--theme-text-muted)' }}>{formatMsgTime(message.timestamp)}</span>
+          <span style={{ fontSize: 11, color: isOut ? 'var(--theme-msg-text-out)' : 'var(--theme-msg-text-in)', opacity: 0.6 }}>{formatMsgTime(message.timestamp)}</span>
           {isOut && <Ticks status={message.status} />}
         </div>
       </div>

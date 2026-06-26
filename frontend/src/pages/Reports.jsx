@@ -73,7 +73,7 @@ function RateBar({ value, color = 'var(--theme-primary)' }) {
 }
 
 const Y_TICKS = [10, 20, 30, 40, 50];
-const CHART_HEIGHT = 100; // px da área de barras
+const CHART_HEIGHT = 250; // px da área de barras — garante ≥5px para barra de valor 1 (yMax=50)
 
 function PeakChart({ peakHours }) {
   if (!peakHours || peakHours.every(v => v === 0)) return <div style={{ fontSize: 12, color: 'var(--theme-text-muted)', textAlign: 'center', padding: '16px 0' }}>Sem dados</div>;

@@ -53,7 +53,7 @@ function AgentAvatar({ name, color, avatarUrl, size = 42 }) {
 
 function Stat({ icon, label, value, sub, color, highlight }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: '10px 12px', borderRadius: 10, background: highlight ? `${color}18` : 'var(--theme-bg-tertiary)', border: highlight ? `1px solid ${color}40` : '1px solid transparent', flex: 1, minWidth: 0 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: '10px 12px', borderRadius: 10, background: highlight ? 'var(--theme-primary-subtle)' : 'var(--theme-bg-tertiary)', border: highlight ? '1px solid var(--theme-primary)' : '1px solid transparent', flex: 1, minWidth: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: color || 'var(--theme-text-muted)' }}>
         {icon}
         <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
@@ -220,7 +220,22 @@ function StatusBar({ dist }) {
   );
 }
 
-function AgentCard({ data }) {
+function computeBests(agents) {
+  const best = {};
+  const highest = ['chatsReceived', 'messagesSent', 'fcrRate', 'slaComplianceRate', 'chatsPerHour', 'onlineMinutes'];
+  const lowest  = ['firstResponseTimeAvg', 'avgResponseTime', 'resolutionTimeAvg', 'reopenRate', 'transferOutRate', 'transfersOut'];
+  for (const k of highest) {
+    const vals = agents.map(a => a[k]).filter(v => v !== null && v !== undefined);
+    if (vals.length) best[k] = Math.max(...vals);
+  }
+  for (const k of lowest) {
+    const vals = agents.map(a => a[k]).filter(v => v !== null && v !== undefined);
+    if (vals.length) best[k] = Math.min(...vals);
+  }
+  return best;
+}
+
+function AgentCard({ data, bests = {} }) {
   const {
     agent,
     chatsReceived, messagesSent,
@@ -229,6 +244,8 @@ function AgentCard({ data }) {
     transfersOut, transferOutRate, chatsPerHour,
     statusDistributionMinutes, onlineMinutes, peakHours,
   } = data;
+
+  const isBest = (key, val) => bests[key] !== undefined && val !== null && val !== undefined && val === bests[key];
 
   return (
     <div style={{ background: 'var(--theme-bg-secondary)', borderRadius: 16, border: '1px solid var(--theme-border)', overflow: 'hidden' }}>
@@ -252,9 +269,9 @@ function AgentCard({ data }) {
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Volume</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <Stat icon={<Users size={12} />} label="Chats recebidos" value={chatsReceived} sub="fluxo automático" color="var(--theme-primary)" />
-            <Stat icon={<MessageSquare size={12} />} label="Msgs enviadas" value={messagesSent} color="#6366f1" />
-            <Stat icon={<ArrowRightLeft size={12} />} label="Transferências" value={transfersOut} sub={pct(transferOutRate) !== '—' ? `${pct(transferOutRate)} dos recebidos` : undefined} color="#f59e0b" />
+            <Stat icon={<Users size={12} />} label="Chats recebidos" value={chatsReceived} sub="fluxo automático" color="var(--theme-primary)" highlight={isBest('chatsReceived', chatsReceived)} />
+            <Stat icon={<MessageSquare size={12} />} label="Msgs enviadas" value={messagesSent} color="#6366f1" highlight={isBest('messagesSent', messagesSent)} />
+            <Stat icon={<ArrowRightLeft size={12} />} label="Transferências" value={transfersOut} sub={pct(transferOutRate) !== '—' ? `${pct(transferOutRate)} dos recebidos` : undefined} color="#f59e0b" highlight={isBest('transfersOut', transfersOut)} />
           </div>
         </div>
 
@@ -262,9 +279,9 @@ function AgentCard({ data }) {
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Tempos</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <Stat icon={<Zap size={12} />} label="1ª resposta" value={formatDuration(firstResponseTimeAvg)} color="#f59e0b" />
-            <Stat icon={<Clock size={12} />} label="Resp. geral" value={formatDuration(avgResponseTime)} color="#3b82f6" />
-            <Stat icon={<CheckCircle size={12} />} label="Resolução" value={formatDuration(resolutionTimeAvg)} color="#10b981" />
+            <Stat icon={<Zap size={12} />} label="1ª resposta" value={formatDuration(firstResponseTimeAvg)} color="#f59e0b" highlight={isBest('firstResponseTimeAvg', firstResponseTimeAvg)} />
+            <Stat icon={<Clock size={12} />} label="Resp. geral" value={formatDuration(avgResponseTime)} color="#3b82f6" highlight={isBest('avgResponseTime', avgResponseTime)} />
+            <Stat icon={<CheckCircle size={12} />} label="Resolução" value={formatDuration(resolutionTimeAvg)} color="#10b981" highlight={isBest('resolutionTimeAvg', resolutionTimeAvg)} />
           </div>
         </div>
 
@@ -272,7 +289,7 @@ function AgentCard({ data }) {
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Qualidade</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', borderRadius: 10, background: fcrRate >= 80 ? '#10b98118' : fcrRate >= 60 ? '#f59e0b18' : fcrRate !== null ? '#ef444418' : 'var(--theme-bg-tertiary)', border: fcrRate !== null ? `1px solid ${fcrRate >= 80 ? '#10b98140' : fcrRate >= 60 ? '#f59e0b40' : '#ef444440'}` : '1px solid transparent' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', borderRadius: 10, background: isBest('fcrRate', fcrRate) ? 'var(--theme-primary-subtle)' : 'var(--theme-bg-tertiary)', border: isBest('fcrRate', fcrRate) ? '1px solid var(--theme-primary)' : '1px solid transparent' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <ShieldCheck size={12} style={{ color: '#10b981' }} />
                 <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>FCR</span>
@@ -281,7 +298,7 @@ function AgentCard({ data }) {
               <RateBar value={fcrRate} color="#10b981" />
               <div style={{ fontSize: 10, color: 'var(--theme-text-muted)' }}>Resolução no 1º contato</div>
             </div>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', borderRadius: 10, background: slaComplianceRate >= 90 ? '#10b98118' : slaComplianceRate >= 70 ? '#f59e0b18' : slaComplianceRate !== null ? '#ef444418' : 'var(--theme-bg-tertiary)', border: slaComplianceRate !== null ? `1px solid ${slaComplianceRate >= 90 ? '#10b98140' : slaComplianceRate >= 70 ? '#f59e0b40' : '#ef444440'}` : '1px solid transparent' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', borderRadius: 10, background: isBest('slaComplianceRate', slaComplianceRate) ? 'var(--theme-primary-subtle)' : 'var(--theme-bg-tertiary)', border: isBest('slaComplianceRate', slaComplianceRate) ? '1px solid var(--theme-primary)' : '1px solid transparent' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <TrendingUp size={12} style={{ color: '#3b82f6' }} />
                 <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>SLA</span>
@@ -290,7 +307,7 @@ function AgentCard({ data }) {
               <RateBar value={slaComplianceRate} color="#3b82f6" />
               <div style={{ fontSize: 10, color: 'var(--theme-text-muted)' }}>1ª resp. em {Math.round(slaTargetSeconds / 60)}min</div>
             </div>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', borderRadius: 10, background: 'var(--theme-bg-tertiary)' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', borderRadius: 10, background: isBest('reopenRate', reopenRate) ? 'var(--theme-primary-subtle)' : 'var(--theme-bg-tertiary)', border: isBest('reopenRate', reopenRate) ? '1px solid var(--theme-primary)' : '1px solid transparent' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                 <RotateCcw size={12} style={{ color: '#f59e0b' }} />
                 <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Reabertura</span>
@@ -417,7 +434,7 @@ export default function Reports() {
         )}
         {!error && data?.agents?.length > 0 && viewMode === 'cards' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))', gap: 20 }}>
-            {data.agents.map(row => <AgentCard key={row.agent.id} data={{ ...row, slaTargetSeconds: data.slaTargetSeconds }} />)}
+            {(() => { const bests = computeBests(data.agents); return data.agents.map(row => <AgentCard key={row.agent.id} data={{ ...row, slaTargetSeconds: data.slaTargetSeconds }} bests={bests} />); })()}
           </div>
         )}
         {!error && data?.agents?.length > 0 && viewMode === 'table' && (

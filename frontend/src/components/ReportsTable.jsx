@@ -33,29 +33,29 @@ function Avatar({ name, color, avatarUrl }) {
   );
 }
 
-function valueColor(col, val) {
-  if (val === null || val === undefined || col.good === undefined) return 'var(--theme-text)';
-  if (col.highIsGood) return val >= col.good ? '#10b981' : val >= col.warn ? '#f59e0b' : '#ef4444';
-  return val <= col.good ? '#10b981' : val <= col.warn ? '#f59e0b' : '#ef4444';
-}
-
 export default function ReportsTable({ agents, slaTargetSeconds }) {
   const [hoveredRow, setHoveredRow] = useState(null);
 
   const COLS = [
-    { key: 'chatsReceived',         label: 'Chats Recebidos',  sub: 'fluxo auto' },
-    { key: 'messagesSent',          label: 'Msgs Enviadas' },
-    { key: 'transfersOut',          label: 'Transferências' },
-    { key: 'transferOutRate',       label: '% Transf.',        fmt: pct },
-    { key: 'chatsPerHour',          label: 'Chats/hora' },
-    { key: 'firstResponseTimeAvg',  label: '1ª Resposta',      fmt: fmtDuration },
-    { key: 'avgResponseTime',       label: 'Resp. Geral',      fmt: fmtDuration },
-    { key: 'resolutionTimeAvg',     label: 'Resolução',        fmt: fmtDuration },
-    { key: 'fcrRate',               label: 'FCR',              fmt: pct, good: 80, warn: 60, highIsGood: true },
-    { key: 'slaComplianceRate',     label: 'SLA', sub: `≤ ${Math.round((slaTargetSeconds || 300) / 60)}min`, fmt: pct, good: 90, warn: 70, highIsGood: true },
-    { key: 'reopenRate',            label: 'Reabertura',       fmt: pct, good: 20, warn: 40, highIsGood: false },
-    { key: 'onlineMinutes',         label: 'Online',           fmt: fmtMin },
+    { key: 'chatsReceived',         label: 'Chats Recebidos',  sub: 'fluxo auto',                              highIsGood: true  },
+    { key: 'messagesSent',          label: 'Msgs Enviadas',                                                     highIsGood: true  },
+    { key: 'transfersOut',          label: 'Transferências',                                                    highIsGood: false },
+    { key: 'transferOutRate',       label: '% Transf.',        fmt: pct,                                       highIsGood: false },
+    { key: 'chatsPerHour',          label: 'Chats/hora',                                                       highIsGood: true  },
+    { key: 'firstResponseTimeAvg',  label: '1ª Resposta',      fmt: fmtDuration,                               highIsGood: false },
+    { key: 'avgResponseTime',       label: 'Resp. Geral',      fmt: fmtDuration,                               highIsGood: false },
+    { key: 'resolutionTimeAvg',     label: 'Resolução',        fmt: fmtDuration,                               highIsGood: false },
+    { key: 'fcrRate',               label: 'FCR',              fmt: pct,                                       highIsGood: true  },
+    { key: 'slaComplianceRate',     label: 'SLA', sub: `≤ ${Math.round((slaTargetSeconds || 300) / 60)}min`, fmt: pct, highIsGood: true  },
+    { key: 'reopenRate',            label: 'Reabertura',       fmt: pct,                                       highIsGood: false },
+    { key: 'onlineMinutes',         label: 'Online',           fmt: fmtMin,                                    highIsGood: true  },
   ];
+
+  const bests = {};
+  for (const col of COLS) {
+    const vals = agents.map(a => a[col.key]).filter(v => v !== null && v !== undefined);
+    if (vals.length) bests[col.key] = col.highIsGood ? Math.max(...vals) : Math.min(...vals);
+  }
 
   const TH = {
     padding: '10px 14px',
@@ -114,9 +114,9 @@ export default function ReportsTable({ agents, slaTargetSeconds }) {
                 {COLS.map(col => {
                   const val = row[col.key];
                   const displayed = col.fmt ? col.fmt(val) : (val !== null && val !== undefined ? String(val) : '—');
-                  const color = valueColor(col, val);
+                  const isBestVal = bests[col.key] !== undefined && val !== null && val !== undefined && val === bests[col.key];
                   return (
-                    <td key={col.key} style={{ padding: '10px 14px', textAlign: 'right', fontSize: 13, fontWeight: 600, color, borderBottom: '1px solid var(--theme-border)', borderRight: '1px solid var(--theme-border)', whiteSpace: 'nowrap' }}>
+                    <td key={col.key} style={{ padding: '10px 14px', textAlign: 'right', fontSize: 13, fontWeight: isBestVal ? 800 : 600, color: isBestVal ? 'var(--theme-primary)' : 'var(--theme-text)', borderBottom: '1px solid var(--theme-border)', borderRight: '1px solid var(--theme-border)', whiteSpace: 'nowrap' }}>
                       {displayed}
                     </td>
                   );

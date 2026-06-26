@@ -5,6 +5,13 @@ import StickerBubble from './StickerBubble';
 
 const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '👍', '🙏'];
 
+function emojiToTwemojiUrl(emoji) {
+  const codePoints = [...emoji]
+    .map(c => c.codePointAt(0).toString(16).toLowerCase())
+    .filter(cp => cp !== 'fe0f');
+  return `https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/${codePoints.join('-')}.svg`;
+}
+
 function QuickReactBar({ onReact, isOut }) {
   return (
     <div style={{
@@ -25,13 +32,14 @@ function QuickReactBar({ onReact, isOut }) {
           onClick={(e) => { e.stopPropagation(); onReact(emoji); }}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 22, padding: '2px 3px', borderRadius: '50%',
+            padding: '2px 3px', borderRadius: '50%',
             lineHeight: 1, transition: 'transform 0.1s',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
           onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.3)'; }}
           onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
         >
-          {emoji}
+          <img src={emojiToTwemojiUrl(emoji)} alt={emoji} style={{ width: 22, height: 22 }} draggable={false} />
         </button>
       ))}
     </div>
@@ -62,13 +70,6 @@ function AgentAvatar({ name, color, avatarUrl, size = 26 }) {
       {getInitials(name || 'A')}
     </div>
   );
-}
-
-function emojiToTwemojiUrl(emoji) {
-  const codePoints = [...emoji]
-    .map(c => c.codePointAt(0).toString(16).toLowerCase())
-    .filter(cp => cp !== 'fe0f');
-  return `https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/svg/${codePoints.join('-')}.svg`;
 }
 
 function ReactionBubble({ reactions, isOut }) {

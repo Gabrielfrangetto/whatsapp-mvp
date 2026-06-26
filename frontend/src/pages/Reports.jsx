@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BarChart2, RefreshCw, Clock, MessageSquare, CheckCircle, Zap, Users, ArrowRightLeft, RotateCcw, ShieldCheck, TrendingUp } from 'lucide-react';
+import { BarChart2, RefreshCw, Clock, MessageSquare, CheckCircle, Zap, Users, ArrowRightLeft, RotateCcw, ShieldCheck, TrendingUp, LayoutGrid, Table2 } from 'lucide-react';
 import { api } from '../context/AuthContext';
 import { getInitials } from '../utils/format';
+import ReportsTable from '../components/ReportsTable';
 
 const PERIODS = [
   { label: 'Hoje',    days: 0 },
@@ -328,6 +329,7 @@ export default function Reports() {
   const [loading, setLoading]     = useState(false);
   const [data, setData]           = useState(null);
   const [error, setError]         = useState(null);
+  const [viewMode, setViewMode]   = useState('cards');
 
   const load = useCallback(async (idx) => {
     setLoading(true);
@@ -362,6 +364,22 @@ export default function Reports() {
           <div style={{ fontWeight: 700, fontSize: 17, color: 'var(--theme-text)' }}>Relatórios</div>
           <div style={{ fontSize: 12, color: 'var(--theme-text-muted)', marginTop: 1 }}>Desempenho por agente</div>
         </div>
+        {/* View toggle */}
+        <div style={{ display: 'flex', gap: 2, background: 'var(--theme-bg-tertiary)', borderRadius: 8, padding: 3 }}>
+          {[
+            { mode: 'cards', icon: <LayoutGrid size={15} />, title: 'Cards' },
+            { mode: 'table', icon: <Table2 size={15} />,     title: 'Tabela' },
+          ].map(({ mode, icon, title }) => (
+            <button key={mode} onClick={() => setViewMode(mode)} title={title} style={{
+              width: 30, height: 30, borderRadius: 6, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: viewMode === mode ? 'var(--theme-bg-secondary)' : 'transparent',
+              color: viewMode === mode ? 'var(--theme-text)' : 'var(--theme-text-muted)',
+              boxShadow: viewMode === mode ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
+              transition: 'background 0.15s, color 0.15s',
+            }}>{icon}</button>
+          ))}
+        </div>
+
         <button onClick={() => load(periodIdx)} disabled={loading}
           style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'transparent', cursor: loading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-text-muted)' }}
           title="Atualizar">
@@ -392,10 +410,13 @@ export default function Reports() {
         {!error && !loading && data?.agents?.length === 0 && (
           <div style={{ color: 'var(--theme-text-muted)', fontSize: 14, padding: '60px 0', textAlign: 'center' }}>Nenhum dado para o período selecionado.</div>
         )}
-        {!error && data?.agents?.length > 0 && (
+        {!error && data?.agents?.length > 0 && viewMode === 'cards' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))', gap: 20 }}>
             {data.agents.map(row => <AgentCard key={row.agent.id} data={{ ...row, slaTargetSeconds: data.slaTargetSeconds }} />)}
           </div>
+        )}
+        {!error && data?.agents?.length > 0 && viewMode === 'table' && (
+          <ReportsTable agents={data.agents} slaTargetSeconds={data.slaTargetSeconds} />
         )}
       </div>
     </div>

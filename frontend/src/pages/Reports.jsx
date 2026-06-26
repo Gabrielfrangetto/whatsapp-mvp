@@ -79,14 +79,14 @@ function PeakChart({ peakHours }) {
   if (!peakHours || peakHours.every(v => v === 0)) return <div style={{ fontSize: 12, color: 'var(--theme-text-muted)', textAlign: 'center', padding: '16px 0' }}>Sem dados</div>;
 
   const max = Math.max(...peakHours, 1);
-  // Escolhe o teto do eixo Y: menor tick que >= max, ou max se ultrapassar todos
-  const yMax = Y_TICKS.find(t => t >= max) ?? max;
+  // yMax é sempre 50 para manter os 4 labels fixos; expande se os dados ultrapassarem
+  const yMax = Math.max(Y_TICKS[Y_TICKS.length - 1], max);
 
   return (
     <div style={{ display: 'flex', gap: 8 }}>
-      {/* Eixo Y */}
+      {/* Eixo Y — sempre mostra todos os ticks */}
       <div style={{ position: 'relative', width: 22, flexShrink: 0, height: CHART_HEIGHT + 4 }}>
-        {Y_TICKS.filter(t => t <= yMax).map(t => (
+        {Y_TICKS.map(t => (
           <div key={t} style={{
             position: 'absolute',
             bottom: `${(t / yMax) * CHART_HEIGHT}px`,
@@ -102,8 +102,8 @@ function PeakChart({ peakHours }) {
 
       {/* Área do gráfico */}
       <div style={{ flex: 1, position: 'relative' }}>
-        {/* Linhas de grade horizontais */}
-        {Y_TICKS.filter(t => t <= yMax).map(t => (
+        {/* Linhas de grade horizontais — sempre para todos os ticks */}
+        {Y_TICKS.map(t => (
           <div key={t} style={{
             position: 'absolute',
             bottom: `${(t / yMax) * CHART_HEIGHT}px`,

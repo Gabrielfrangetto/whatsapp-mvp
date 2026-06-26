@@ -116,7 +116,7 @@ function PeakChart({ peakHours }) {
         ))}
 
         {/* Barras */}
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: CHART_HEIGHT, position: 'relative', zIndex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 0, height: CHART_HEIGHT, position: 'relative', zIndex: 1 }}>
           {peakHours.map((v, h) => {
             const isHovered = hovered === h;
             const barH = Math.round((Math.min(v, yMax) / yMax) * CHART_HEIGHT);
@@ -384,7 +384,7 @@ export default function Reports() {
           <div style={{ color: 'var(--theme-text-muted)', fontSize: 14, padding: '60px 0', textAlign: 'center' }}>Nenhum dado para o período selecionado.</div>
         )}
         {!error && data?.agents?.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))', gap: 20 }}>
             {data.agents.map(row => <AgentCard key={row.agent.id} data={{ ...row, slaTargetSeconds: data.slaTargetSeconds }} />)}
           </div>
         )}

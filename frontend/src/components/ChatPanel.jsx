@@ -432,31 +432,36 @@ export default function ChatPanel({ conversationId, socketControls, onMessageSen
             </button>
           </div>
         )}
-        <button onClick={() => setShowMedia(true)} disabled={!windowOpen} title="Enviar arquivo"
-          style={{ width: 40, height: 40, borderRadius: '50%', border: '1px solid var(--theme-border)', background: 'var(--theme-bg-input)', cursor: windowOpen ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: windowOpen ? 'var(--theme-text-secondary)' : 'var(--theme-text-muted)', opacity: windowOpen ? 1 : 0.4 }}>
-          <Paperclip size={18} />
-        </button>
-        <div ref={stickerBtnRef} style={{ position: 'relative', flexShrink: 0 }}>
-          <button
-            onClick={() => windowOpen && setShowStickers(v => !v)}
-            disabled={!windowOpen}
-            title="Stickers"
-            style={{ width: 40, height: 40, borderRadius: '50%', border: `1px solid ${showStickers ? 'var(--theme-primary)' : 'var(--theme-border)'}`, background: showStickers ? 'var(--theme-primary-subtle)' : 'var(--theme-bg-input)', cursor: windowOpen ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: windowOpen ? (showStickers ? 'var(--theme-primary)' : 'var(--theme-text-secondary)') : 'var(--theme-text-muted)', opacity: windowOpen ? 1 : 0.4, transition: 'background 0.15s, border-color 0.15s, color 0.15s' }}
-          >
-            <Sticker size={19} strokeWidth={1.8} />
+        {windowOpen && (
+          <button onClick={() => setShowMedia(true)} title="Enviar arquivo"
+            style={{ width: 40, height: 40, borderRadius: '50%', border: '1px solid var(--theme-border)', background: 'var(--theme-bg-input)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--theme-text-secondary)' }}>
+            <Paperclip size={18} />
           </button>
-          {showStickers && (
-            <StickerPanel
-              conversationId={conversationId}
-              onClose={() => setShowStickers(false)}
-              onSent={() => { setShowStickers(false); loadMessages(conversationId); }}
-            />
-          )}
-        </div>
-        <button onClick={handleSend} disabled={(!text.trim() && !pastedImage) || sending || !windowOpen}
-          style={{ width: 40, height: 40, borderRadius: '50%', border: (text.trim() || pastedImage) && !sending && windowOpen ? '2px solid var(--theme-primary)' : '2px solid var(--theme-border)', background: 'none', cursor: (text.trim() || pastedImage) && !sending && windowOpen ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: (text.trim() || pastedImage) && !sending && windowOpen ? 'var(--theme-primary)' : 'var(--theme-text-muted)', flexShrink: 0, opacity: windowOpen ? 1 : 0.4, transition: 'border-color 0.2s, color 0.2s' }}>
-          {sending ? <Loader2 size={16} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Send size={16} />}
-        </button>
+        )}
+        {windowOpen && (
+          <div ref={stickerBtnRef} style={{ position: 'relative', flexShrink: 0 }}>
+            <button
+              onClick={() => setShowStickers(v => !v)}
+              title="Stickers"
+              style={{ width: 40, height: 40, borderRadius: '50%', border: `1px solid ${showStickers ? 'var(--theme-primary)' : 'var(--theme-border)'}`, background: showStickers ? 'var(--theme-primary-subtle)' : 'var(--theme-bg-input)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: showStickers ? 'var(--theme-primary)' : 'var(--theme-text-secondary)', transition: 'background 0.15s, border-color 0.15s, color 0.15s' }}
+            >
+              <Sticker size={19} strokeWidth={1.8} />
+            </button>
+            {showStickers && (
+              <StickerPanel
+                conversationId={conversationId}
+                onClose={() => setShowStickers(false)}
+                onSent={() => { setShowStickers(false); loadMessages(conversationId); }}
+              />
+            )}
+          </div>
+        )}
+        {windowOpen && (
+          <button onClick={handleSend} disabled={(!text.trim() && !pastedImage) || sending}
+            style={{ width: 40, height: 40, borderRadius: '50%', border: (text.trim() || pastedImage) && !sending ? '2px solid var(--theme-primary)' : '2px solid var(--theme-border)', background: 'none', cursor: (text.trim() || pastedImage) && !sending ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: (text.trim() || pastedImage) && !sending ? 'var(--theme-primary)' : 'var(--theme-text-muted)', flexShrink: 0, transition: 'border-color 0.2s, color 0.2s' }}>
+            {sending ? <Loader2 size={16} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Send size={16} />}
+          </button>
+        )}
         </div>
       </div>
 

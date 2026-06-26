@@ -72,18 +72,65 @@ function RateBar({ value, color = 'var(--theme-primary)' }) {
   );
 }
 
+const Y_TICKS = [5, 10, 25, 50];
+const CHART_HEIGHT = 100; // px da área de barras
+
 function PeakChart({ peakHours }) {
-  if (!peakHours || peakHours.every(v => v === 0)) return <div style={{ fontSize: 12, color: 'var(--theme-text-muted)', textAlign: 'center', padding: '8px 0' }}>Sem dados</div>;
+  if (!peakHours || peakHours.every(v => v === 0)) return <div style={{ fontSize: 12, color: 'var(--theme-text-muted)', textAlign: 'center', padding: '16px 0' }}>Sem dados</div>;
+
   const max = Math.max(...peakHours, 1);
-  const businessHours = peakHours.slice(7, 21);
-  const maxB = Math.max(...businessHours, 1);
+  // Escolhe o teto do eixo Y: menor tick que >= max, ou max se ultrapassar todos
+  const yMax = Y_TICKS.find(t => t >= max) ?? max;
+
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 36, paddingTop: 4 }}>
-      {peakHours.map((v, h) => (
-        <div key={h} title={`${h}h: ${v} chats`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-          <div style={{ width: '100%', background: v > 0 ? 'var(--theme-primary)' : 'var(--theme-bg-tertiary)', borderRadius: 2, height: `${Math.round((v / max) * 28) + 4}px`, opacity: v > 0 ? Math.max(0.3, v / max) : 0.2, transition: 'height 0.3s ease' }} />
+    <div style={{ display: 'flex', gap: 8 }}>
+      {/* Eixo Y */}
+      <div style={{ position: 'relative', width: 22, flexShrink: 0, height: CHART_HEIGHT + 4 }}>
+        {Y_TICKS.filter(t => t <= yMax).map(t => (
+          <div key={t} style={{
+            position: 'absolute',
+            bottom: `${(t / yMax) * CHART_HEIGHT}px`,
+            right: 0,
+            fontSize: 9,
+            color: 'var(--theme-text-muted)',
+            lineHeight: 1,
+            transform: 'translateY(50%)',
+            textAlign: 'right',
+          }}>{t}</div>
+        ))}
+      </div>
+
+      {/* Área do gráfico */}
+      <div style={{ flex: 1, position: 'relative' }}>
+        {/* Linhas de grade horizontais */}
+        {Y_TICKS.filter(t => t <= yMax).map(t => (
+          <div key={t} style={{
+            position: 'absolute',
+            bottom: `${(t / yMax) * CHART_HEIGHT}px`,
+            left: 0, right: 0,
+            borderTop: '1px dashed var(--theme-border)',
+            opacity: 0.6,
+          }} />
+        ))}
+
+        {/* Barras */}
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: CHART_HEIGHT, position: 'relative', zIndex: 1 }}>
+          {peakHours.map((v, h) => (
+            <div key={h} title={`${h}h: ${v} chat${v !== 1 ? 's' : ''}`}
+              style={{ flex: 1, display: 'flex', alignItems: 'flex-end', height: '100%' }}>
+              <div style={{
+                width: '100%',
+                background: v > 0 ? 'var(--theme-primary)' : 'var(--theme-bg-tertiary)',
+                borderRadius: '2px 2px 0 0',
+                height: `${Math.round((Math.min(v, yMax) / yMax) * CHART_HEIGHT)}px`,
+                minHeight: v > 0 ? 2 : 0,
+                opacity: v > 0 ? Math.max(0.35, v / yMax) : 0.15,
+                transition: 'height 0.3s ease',
+              }} />
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }

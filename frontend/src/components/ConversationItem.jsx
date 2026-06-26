@@ -103,7 +103,7 @@ export default function ConversationItem({ conv, selected, onClick, onPin }) {
             {formatTime(conv.lastMessageAt)}
           </span>
           {conv.assignedAgent && (
-            <div title={conv.assignedAgent.name} style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', border: '1.5px solid var(--theme-border)', background: conv.assignedAgent.avatarColor || getAvatarColor(conv.assignedAgent.name) }}>
+            <div title={conv.assignedAgent.name} style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: conv.assignedAgent.avatarColor || getAvatarColor(conv.assignedAgent.name) }}>
               {conv.assignedAgent.avatarUrl
                 ? <img src={conv.assignedAgent.avatarUrl} alt={conv.assignedAgent.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', fontSize: 8, fontWeight: 700, color: '#fff' }}>{getInitials(conv.assignedAgent.name)}</span>

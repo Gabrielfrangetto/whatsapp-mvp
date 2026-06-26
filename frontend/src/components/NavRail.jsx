@@ -72,7 +72,7 @@ export default function NavRail({ section, onSection, agent, agentStatus = 'ONLI
         <div ref={statusRef} style={{ position: 'relative' }}>
           <div
             onClick={() => setStatusOpen(v => !v)}
-            style={{ width: 40, height: 40, borderRadius: '50%', background: agent?.avatarColor || 'var(--theme-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-primary-text)', fontWeight: 700, fontSize: 13, overflow: 'hidden', border: '2px solid rgba(255,255,255,0.2)', flexShrink: 0, cursor: 'pointer' }}
+            style={{ width: 40, height: 40, borderRadius: '50%', background: agent?.avatarColor || 'var(--theme-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-primary-text)', fontWeight: 700, fontSize: 13, overflow: 'hidden', flexShrink: 0, cursor: 'pointer' }}
             title={`${agent?.name} • ${STATUS_META[agentStatus]?.label}`}
           >
             {agent?.avatarUrl

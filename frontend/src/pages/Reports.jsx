@@ -72,7 +72,7 @@ function RateBar({ value, color = 'var(--theme-primary)' }) {
   );
 }
 
-const Y_TICKS = [5, 10, 25, 50];
+const Y_TICKS = [10, 20, 30, 40, 50];
 const CHART_HEIGHT = 100; // px da área de barras
 
 function PeakChart({ peakHours }) {

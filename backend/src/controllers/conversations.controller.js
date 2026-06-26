@@ -138,7 +138,13 @@ async function sendMessage(req, res) {
 
     await prisma.conversation.update({
       where: { id },
-      data: { lastMessage: text, lastMessageAt: new Date(), lastMessageDirection: 'OUTBOUND', status: 'OPEN' },
+      data: {
+        lastMessage: text,
+        lastMessageAt: new Date(),
+        lastMessageDirection: 'OUTBOUND',
+        status: 'OPEN',
+        ...(!conversation.firstResponseAt && { firstResponseAt: new Date() }),
+      },
     });
 
     const agentInfo = req.agent?.sub ? await prisma.agent.findUnique({
@@ -174,11 +180,16 @@ async function updateConversationStatus(req, res) {
     }
 
     const isTransfer = assignedToId !== undefined;
+    let transferredFromId;
+    if (isTransfer) {
+      const current = await prisma.conversation.findUnique({ where: { id }, select: { assignedToId: true } });
+      transferredFromId = current?.assignedToId ?? null;
+    }
     const conversation = await prisma.conversation.update({
       where: { id },
       data: {
         ...(status && { status }),
-        ...(isTransfer && { assignedToId, assignmentSource: 'MANUAL' }),
+        ...(isTransfer && { assignedToId, assignmentSource: 'MANUAL', transferredFromId }),
       },
       include: { contact: true, assignedAgent: { select: { id: true, name: true, avatarColor: true, avatarUrl: true } } },
     });

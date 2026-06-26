@@ -3,49 +3,48 @@ const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
+const SLA_TARGET_SECONDS = 300; // 5 min — configurável futuramente via SystemSettings
+
 function msToSeconds(ms) {
   return ms > 0 ? Math.round(ms / 1000) : null;
 }
 
+function clampToRange(ts, from, to) {
+  return Math.min(Math.max(ts, from.getTime()), to.getTime());
+}
+
 async function computeAgentMetrics(agentId, from, to) {
-  const [chatsReceived, messagesSent, resolvedConvs, assignedConvs] = await Promise.all([
-    // Chats recebidos via fluxo automático no período
+  const [
+    chatsReceived,
+    messagesSent,
+    resolvedConvs,
+    assignedConvs,
+    transfersOut,
+    statusLogs,
+  ] = await Promise.all([
+    // Chats recebidos via fluxo automático
     prisma.conversation.count({
-      where: {
-        assignedToId: agentId,
-        assignmentSource: 'AUTO',
-        openedAt: { gte: from, lte: to },
-      },
+      where: { assignedToId: agentId, assignmentSource: 'AUTO', openedAt: { gte: from, lte: to } },
     }),
 
-    // Mensagens enviadas pelo agente no período
+    // Mensagens enviadas no período
     prisma.message.count({
-      where: {
-        sentByAgentId: agentId,
-        direction: 'OUTBOUND',
-        timestamp: { gte: from, lte: to },
-      },
+      where: { sentByAgentId: agentId, direction: 'OUTBOUND', timestamp: { gte: from, lte: to } },
     }),
 
-    // Conversas finalizadas pelo agente no período (para tempo de resolução)
+    // Conversas finalizadas pelo agente no período
     prisma.conversation.findMany({
-      where: {
-        resolvedByAgentId: agentId,
-        resolvedAt: { gte: from, lte: to },
-        openedAt: { not: null },
-      },
-      select: { openedAt: true, resolvedAt: true },
+      where: { resolvedByAgentId: agentId, resolvedAt: { gte: from, lte: to }, openedAt: { not: null } },
+      select: { openedAt: true, resolvedAt: true, firstResponseAt: true, reopenCount: true },
     }),
 
-    // Conversas atribuídas ao agente no período (para tempos de resposta)
+    // Conversas atribuídas no período (para tempos de resposta)
     prisma.conversation.findMany({
-      where: {
-        assignedToId: agentId,
-        openedAt: { gte: from, lte: to },
-      },
+      where: { assignedToId: agentId, openedAt: { gte: from, lte: to } },
       select: {
         id: true,
         openedAt: true,
+        firstResponseAt: true,
         messages: {
           where: { direction: { in: ['INBOUND', 'OUTBOUND'] } },
           orderBy: { timestamp: 'asc' },
@@ -53,19 +52,51 @@ async function computeAgentMetrics(agentId, from, to) {
         },
       },
     }),
+
+    // Transferências saídas: conversas onde este agente era o dono e foi transferido para outro
+    prisma.conversation.count({
+      where: { transferredFromId: agentId, openedAt: { gte: from, lte: to } },
+    }),
+
+    // Logs de status do agente no período
+    prisma.agentStatusLog.findMany({
+      where: {
+        agentId,
+        startedAt: { lte: to },
+        OR: [{ endedAt: null }, { endedAt: { gte: from } }],
+      },
+      orderBy: { startedAt: 'asc' },
+    }),
   ]);
 
-  // Tempo médio de resolução (resolvedAt - openedAt)
-  let resolutionTimeAvg = null;
-  if (resolvedConvs.length > 0) {
-    const totalMs = resolvedConvs.reduce((sum, c) => {
-      const diff = new Date(c.resolvedAt) - new Date(c.openedAt);
-      return sum + (diff > 0 ? diff : 0);
-    }, 0);
-    resolutionTimeAvg = msToSeconds(totalMs / resolvedConvs.length);
+  // ─── Tempos de resolução e FCR ───────────────────────────────────────────────
+  let resolutionTimeTotal = 0;
+  let resolutionTimeCount = 0;
+  let fcrCount = 0; // resolved without reopens
+
+  for (const c of resolvedConvs) {
+    const diff = new Date(c.resolvedAt) - new Date(c.openedAt);
+    if (diff > 0) { resolutionTimeTotal += diff; resolutionTimeCount++; }
+    if (c.reopenCount === 0) fcrCount++;
   }
 
-  // Tempo médio de primeira resposta e tempo médio de resposta geral
+  const resolutionTimeAvg = resolutionTimeCount > 0
+    ? msToSeconds(resolutionTimeTotal / resolutionTimeCount) : null;
+  const fcrRate = resolvedConvs.length > 0
+    ? Math.round((fcrCount / resolvedConvs.length) * 100) : null;
+  const reopenRate = resolvedConvs.length > 0
+    ? Math.round(((resolvedConvs.length - fcrCount) / resolvedConvs.length) * 100) : null;
+
+  // ─── SLA compliance (firstResponseAt - openedAt < SLA_TARGET) ───────────────
+  const convsWithFirstResponse = assignedConvs.filter(c => c.firstResponseAt && c.openedAt);
+  const slaOk = convsWithFirstResponse.filter(c => {
+    const secs = (new Date(c.firstResponseAt) - new Date(c.openedAt)) / 1000;
+    return secs <= SLA_TARGET_SECONDS;
+  }).length;
+  const slaComplianceRate = convsWithFirstResponse.length > 0
+    ? Math.round((slaOk / convsWithFirstResponse.length) * 100) : null;
+
+  // ─── Tempos de resposta (primeira e geral) ───────────────────────────────────
   let firstResponseTotal = 0;
   let firstResponseCount = 0;
   let avgResponseTotal = 0;
@@ -73,48 +104,80 @@ async function computeAgentMetrics(agentId, from, to) {
 
   for (const conv of assignedConvs) {
     if (!conv.openedAt) continue;
-
-    let firstInboundTime = null;
+    let lastInboundTime = null;
     let firstResponseDone = false;
 
     for (const msg of conv.messages) {
       const ts = new Date(msg.timestamp).getTime();
-
       if (msg.direction === 'INBOUND') {
-        firstInboundTime = ts;
-      } else if (msg.direction === 'OUTBOUND' && msg.sentByAgentId === agentId && firstInboundTime !== null) {
-        const diff = ts - firstInboundTime;
+        lastInboundTime = ts;
+      } else if (msg.direction === 'OUTBOUND' && msg.sentByAgentId === agentId && lastInboundTime !== null) {
+        const diff = ts - lastInboundTime;
         if (diff >= 0) {
-          // Resposta geral: toda vez que o agente responde após uma mensagem do cliente
           avgResponseTotal += diff;
           avgResponseCount++;
-
-          // Primeira resposta: apenas a primeira vez na conversa
           if (!firstResponseDone) {
             firstResponseTotal += diff;
             firstResponseCount++;
             firstResponseDone = true;
           }
         }
-        firstInboundTime = null; // reset: aguarda próxima mensagem do cliente
+        lastInboundTime = null;
       }
     }
   }
 
   const firstResponseTimeAvg = firstResponseCount > 0
-    ? msToSeconds(firstResponseTotal / firstResponseCount)
-    : null;
-
+    ? msToSeconds(firstResponseTotal / firstResponseCount) : null;
   const avgResponseTime = avgResponseCount > 0
-    ? msToSeconds(avgResponseTotal / avgResponseCount)
-    : null;
+    ? msToSeconds(avgResponseTotal / avgResponseCount) : null;
+
+  // ─── Distribuição de status e disponibilidade ────────────────────────────────
+  const statusDist = { ONLINE: 0, BUSY: 0, OFFLINE: 0 };
+
+  for (const log of statusLogs) {
+    const start = clampToRange(new Date(log.startedAt).getTime(), from, to);
+    const end   = clampToRange(log.endedAt ? new Date(log.endedAt).getTime() : to.getTime(), from, to);
+    const ms    = Math.max(0, end - start);
+    if (statusDist[log.status] !== undefined) statusDist[log.status] += ms;
+  }
+
+  const onlineMs   = statusDist.ONLINE + statusDist.BUSY;
+  const onlineHours = onlineMs / 3600000;
+  const chatsPerHour = onlineHours > 0.1 ? Math.round((chatsReceived / onlineHours) * 10) / 10 : null;
+
+  // Taxa de transferência saída (sobre os chats automáticos recebidos)
+  const transferOutRate = chatsReceived > 0
+    ? Math.round((transfersOut / chatsReceived) * 100) : null;
+
+  // ─── Horário de pico (distribuição por hora) ─────────────────────────────────
+  const peakHours = Array(24).fill(0);
+  for (const conv of assignedConvs) {
+    if (conv.openedAt) {
+      peakHours[new Date(conv.openedAt).getHours()]++;
+    }
+  }
 
   return {
     chatsReceived,
     messagesSent,
-    resolutionTimeAvg,
     firstResponseTimeAvg,
+    resolutionTimeAvg,
     avgResponseTime,
+    fcrRate,
+    reopenRate,
+    slaComplianceRate,
+    slaTargetSeconds: SLA_TARGET_SECONDS,
+    transfersOut,
+    transferOutRate,
+    chatsPerHour,
+    statusDistributionMinutes: {
+      ONLINE:  Math.round(statusDist.ONLINE  / 60000),
+      BUSY:    Math.round(statusDist.BUSY    / 60000),
+      OFFLINE: Math.round(statusDist.OFFLINE / 60000),
+    },
+    onlineMinutes: Math.round(onlineMs / 60000),
+    peakHours,
   };
 }
 
@@ -122,14 +185,12 @@ async function getReports(req, res) {
   try {
     const { from, to } = req.query;
 
-    // Padrão: últimos 30 dias
     const dateTo   = to   ? new Date(to)   : new Date();
     const dateFrom = from ? new Date(from) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     dateTo.setHours(23, 59, 59, 999);
 
     const isAdmin = req.agent.role === 'ADMIN';
 
-    // Admin vê todos os agentes; outros veem só a si mesmos
     const agents = isAdmin
       ? await prisma.agent.findMany({
           where: { isActive: true },
@@ -148,7 +209,7 @@ async function getReports(req, res) {
       })
     );
 
-    res.json({ from: dateFrom, to: dateTo, agents: results });
+    res.json({ from: dateFrom, to: dateTo, slaTargetSeconds: SLA_TARGET_SECONDS, agents: results });
   } catch (e) {
     console.error('[Reports] Error:', e.message);
     res.status(500).json({ error: 'Erro ao gerar relatório' });

@@ -98,7 +98,7 @@ async function processInbound(msg, contactInfo) {
       if (resolved) {
         conv = await prisma.conversation.update({
           where: { id: resolved.id },
-          data: { status: 'OPEN', assignedToId: null, unreadCount: 1, lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND', openedAt: timestamp, resolvedAt: null, resolvedByAgentId: null, assignmentSource: null },
+          data: { status: 'OPEN', assignedToId: null, unreadCount: 1, lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND', openedAt: timestamp, resolvedAt: null, resolvedByAgentId: null, assignmentSource: null, firstResponseAt: null, reopenCount: { increment: 1 }, transferredFromId: null },
         });
       } else {
         conv = await prisma.conversation.create({

@@ -28,6 +28,7 @@ model Agent {
   refreshTokens    RefreshToken[]
   conversationPins ConversationPin[]
   stickerFavorites StickerFavorite[]
+  statusLogs       AgentStatusLog[]
 }
 
 model RefreshToken {
@@ -65,6 +66,9 @@ model Conversation {
   resolvedAt           DateTime?
   resolvedByAgentId    String?
   assignmentSource     String?
+  firstResponseAt      DateTime?
+  reopenCount          Int       @default(0)
+  transferredFromId    String?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
@@ -145,6 +149,17 @@ model ResolutionReason {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model AgentStatusLog {
+  id        String            @id @default(uuid())
+  agentId   String
+  agent     Agent             @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  status    AgentOnlineStatus
+  startedAt DateTime          @default(now())
+  endedAt   DateTime?
+
+  @@index([agentId, startedAt])
 }
 
 model SystemSetting {

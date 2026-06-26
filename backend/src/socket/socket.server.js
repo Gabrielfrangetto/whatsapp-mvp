@@ -44,6 +44,13 @@ function initSocket(httpServer) {
     }
   });
 
+  // ─── Helper: log de status ────────────────────────────────────────────────────
+  async function logStatusChange(agentId, newStatus) {
+    const now = new Date();
+    await prisma.agentStatusLog.updateMany({ where: { agentId, endedAt: null }, data: { endedAt: now } });
+    await prisma.agentStatusLog.create({ data: { agentId, status: newStatus, startedAt: now } });
+  }
+
   // ─── Conexão ─────────────────────────────────────────────────────────────────
   io.on('connection', async (socket) => {
     const { sub: agentId, name } = socket.agent;
@@ -58,6 +65,7 @@ function initSocket(httpServer) {
 
     if (wasOffline) {
       await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: 'ONLINE' } });
+      await logStatusChange(agentId, 'ONLINE');
       io.emit('agent:status', { agentId, onlineStatus: 'ONLINE' });
       console.log(`[Assignment] ✅ ${name} ficou ONLINE`);
       const picked = await pickupPendingConversations();
@@ -79,6 +87,7 @@ function initSocket(httpServer) {
     socket.on('agent:set_status', async ({ status }) => {
       if (!['ONLINE', 'BUSY', 'OFFLINE'].includes(status)) return;
       await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: status } });
+      await logStatusChange(agentId, status);
       io.emit('agent:status', { agentId, onlineStatus: status });
       console.log(`[Status] ${name} → ${status} (manual)`);
       if (status === 'ONLINE') {
@@ -93,6 +102,7 @@ function initSocket(httpServer) {
       if (current?.onlineStatus !== 'ONLINE') return; // respeita status manual
 
       await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: 'OFFLINE' } });
+      await logStatusChange(agentId, 'OFFLINE');
       io.emit('agent:status', { agentId, onlineStatus: 'OFFLINE' });
       console.log(`[Inatividade] ⚪ ${name} → OFFLINE por inatividade`);
     });
@@ -101,6 +111,7 @@ function initSocket(httpServer) {
       // Só volta para ONLINE se estava OFFLINE por inatividade (não por escolha manual)
       // O frontend garante isso — só emite agent:back se foi auto-offlinado
       await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: 'ONLINE' } });
+      await logStatusChange(agentId, 'ONLINE');
       io.emit('agent:status', { agentId, onlineStatus: 'ONLINE' });
       console.log(`[Inatividade] 🟢 ${name} voltou — marcado ONLINE`);
       const picked = await pickupPendingConversations();
@@ -134,6 +145,7 @@ function initSocket(httpServer) {
         if (sockets.size === 0) {
           agentConnections.delete(agentId);
           await prisma.agent.update({ where: { id: agentId }, data: { onlineStatus: 'OFFLINE' } });
+          await logStatusChange(agentId, 'OFFLINE');
           io.emit('agent:status', { agentId, onlineStatus: 'OFFLINE' });
           console.log(`[Assignment] ⚪ ${name} ficou OFFLINE`);
         }

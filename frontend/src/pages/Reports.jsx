@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BarChart2, RefreshCw, Clock, MessageSquare, CheckCircle, Zap, Users } from 'lucide-react';
+import { BarChart2, RefreshCw, Clock, MessageSquare, CheckCircle, Zap, Users, ArrowRightLeft, RotateCcw, ShieldCheck, TrendingUp } from 'lucide-react';
 import { api } from '../context/AuthContext';
 import { getInitials } from '../utils/format';
 
 const PERIODS = [
-  { label: 'Hoje',       days: 0 },
-  { label: '7 dias',     days: 7 },
-  { label: '30 dias',    days: 30 },
-  { label: '90 dias',    days: 90 },
+  { label: 'Hoje',    days: 0 },
+  { label: '7 dias',  days: 7 },
+  { label: '30 dias', days: 30 },
+  { label: '90 dias', days: 90 },
 ];
 
 function formatDuration(seconds) {
@@ -23,78 +23,190 @@ function formatDuration(seconds) {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
 
-function AgentAvatar({ name, color, avatarUrl, size = 40 }) {
+function formatMinutes(min) {
+  if (min === null || min === undefined) return '—';
+  if (min < 60) return `${min}min`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m > 0 ? `${h}h ${m}min` : `${h}h`;
+}
+
+function pct(val) {
+  if (val === null || val === undefined) return '—';
+  return `${val}%`;
+}
+
+function AgentAvatar({ name, color, avatarUrl, size = 42 }) {
   const API_URL = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app';
   const bg = color || 'var(--theme-primary)';
-  const fallback = (
+  if (avatarUrl) {
+    const src = avatarUrl.startsWith('http') ? avatarUrl : `${API_URL}${avatarUrl}`;
+    return <img src={src} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />;
+  }
+  return (
     <div style={{ width: size, height: size, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: size * 0.36, flexShrink: 0 }}>
       {getInitials(name || '?')}
     </div>
   );
-  if (!avatarUrl) return fallback;
-  const src = avatarUrl.startsWith('http') ? avatarUrl : `${API_URL}${avatarUrl}`;
+}
+
+function Stat({ icon, label, value, sub, color, highlight }) {
   return (
-    <img src={src} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-      onError={e => { e.target.style.display = 'none'; }} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: '10px 12px', borderRadius: 10, background: highlight ? `${color}18` : 'var(--theme-bg-tertiary)', border: highlight ? `1px solid ${color}40` : '1px solid transparent', flex: 1, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: color || 'var(--theme-text-muted)' }}>
+        {icon}
+        <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</span>
+      </div>
+      <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--theme-text)', lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontSize: 10, color: 'var(--theme-text-muted)' }}>{sub}</div>}
+    </div>
   );
 }
 
-function MetricCard({ icon, label, value, color }) {
+function RateBar({ value, color = 'var(--theme-primary)' }) {
+  if (value === null || value === undefined) return null;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1, minWidth: 0, padding: '12px 8px', borderRadius: 10, background: 'var(--theme-bg-tertiary)' }}>
-      <div style={{ color: color || 'var(--theme-primary)', opacity: 0.85 }}>{icon}</div>
-      <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--theme-text)', lineHeight: 1 }}>{value}</div>
-      <div style={{ fontSize: 11, color: 'var(--theme-text-muted)', textAlign: 'center', lineHeight: 1.3 }}>{label}</div>
+    <div style={{ height: 4, borderRadius: 2, background: 'var(--theme-bg-tertiary)', overflow: 'hidden', marginTop: 2 }}>
+      <div style={{ height: '100%', width: `${Math.min(100, value)}%`, background: color, borderRadius: 2, transition: 'width 0.5s ease' }} />
+    </div>
+  );
+}
+
+function PeakChart({ peakHours }) {
+  if (!peakHours || peakHours.every(v => v === 0)) return <div style={{ fontSize: 12, color: 'var(--theme-text-muted)', textAlign: 'center', padding: '8px 0' }}>Sem dados</div>;
+  const max = Math.max(...peakHours, 1);
+  const businessHours = peakHours.slice(7, 21);
+  const maxB = Math.max(...businessHours, 1);
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 36, paddingTop: 4 }}>
+      {peakHours.map((v, h) => (
+        <div key={h} title={`${h}h: ${v} chats`} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+          <div style={{ width: '100%', background: v > 0 ? 'var(--theme-primary)' : 'var(--theme-bg-tertiary)', borderRadius: 2, height: `${Math.round((v / max) * 28) + 4}px`, opacity: v > 0 ? Math.max(0.3, v / max) : 0.2, transition: 'height 0.3s ease' }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function StatusBar({ dist }) {
+  if (!dist) return null;
+  const total = dist.ONLINE + dist.BUSY + dist.OFFLINE;
+  if (total === 0) return <div style={{ fontSize: 11, color: 'var(--theme-text-muted)' }}>Sem registro de status no período</div>;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ display: 'flex', borderRadius: 4, overflow: 'hidden', height: 8 }}>
+        {dist.ONLINE  > 0 && <div style={{ flex: dist.ONLINE,  background: '#4ade80' }} title={`Online: ${formatMinutes(dist.ONLINE)}`} />}
+        {dist.BUSY    > 0 && <div style={{ flex: dist.BUSY,    background: '#fbbf24' }} title={`Ocupado: ${formatMinutes(dist.BUSY)}`} />}
+        {dist.OFFLINE > 0 && <div style={{ flex: dist.OFFLINE, background: 'var(--theme-bg-tertiary)' }} title={`Offline: ${formatMinutes(dist.OFFLINE)}`} />}
+      </div>
+      <div style={{ display: 'flex', gap: 10, fontSize: 11, color: 'var(--theme-text-muted)' }}>
+        {dist.ONLINE  > 0 && <span><span style={{ color: '#4ade80' }}>●</span> Online {formatMinutes(dist.ONLINE)}</span>}
+        {dist.BUSY    > 0 && <span><span style={{ color: '#fbbf24' }}>●</span> Ocupado {formatMinutes(dist.BUSY)}</span>}
+        {dist.OFFLINE > 0 && <span><span style={{ color: 'var(--theme-text-muted)' }}>●</span> Offline {formatMinutes(dist.OFFLINE)}</span>}
+      </div>
     </div>
   );
 }
 
 function AgentCard({ data }) {
-  const { agent, chatsReceived, messagesSent, firstResponseTimeAvg, resolutionTimeAvg, avgResponseTime } = data;
+  const {
+    agent,
+    chatsReceived, messagesSent,
+    firstResponseTimeAvg, resolutionTimeAvg, avgResponseTime,
+    fcrRate, reopenRate, slaComplianceRate, slaTargetSeconds,
+    transfersOut, transferOutRate, chatsPerHour,
+    statusDistributionMinutes, onlineMinutes, peakHours,
+  } = data;
+
   return (
-    <div style={{ background: 'var(--theme-bg-secondary)', borderRadius: 14, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 14, boxShadow: '0 1px 4px rgba(0,0,0,0.07)', border: '1px solid var(--theme-border)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <AgentAvatar name={agent.name} color={agent.avatarColor} avatarUrl={agent.avatarUrl} size={40} />
+    <div style={{ background: 'var(--theme-bg-secondary)', borderRadius: 16, border: '1px solid var(--theme-border)', overflow: 'hidden' }}>
+      {/* Header do agente */}
+      <div style={{ padding: '16px 18px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--theme-border)' }}>
+        <AgentAvatar name={agent.name} color={agent.avatarColor} avatarUrl={agent.avatarUrl} size={42} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--theme-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{agent.name}</div>
+          <div style={{ fontSize: 11, color: 'var(--theme-text-muted)', marginTop: 2 }}>{agent.role === 'ADMIN' ? 'Admin' : 'Agente'}</div>
+        </div>
+        {chatsPerHour !== null && (
+          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--theme-primary)' }}>{chatsPerHour}</div>
+            <div style={{ fontSize: 10, color: 'var(--theme-text-muted)' }}>chats/hora</div>
+          </div>
+        )}
+      </div>
+
+      <div style={{ padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {/* Volume */}
         <div>
-          <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--theme-text)' }}>{agent.name}</div>
-          <div style={{ fontSize: 11, color: 'var(--theme-text-muted)', marginTop: 2 }}>
-            {agent.role === 'ADMIN' ? 'Admin' : 'Agente'}
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Volume</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Stat icon={<Users size={12} />} label="Chats recebidos" value={chatsReceived} sub="fluxo automático" color="var(--theme-primary)" />
+            <Stat icon={<MessageSquare size={12} />} label="Msgs enviadas" value={messagesSent} color="#6366f1" />
+            <Stat icon={<ArrowRightLeft size={12} />} label="Transferências" value={transfersOut} sub={pct(transferOutRate) !== '—' ? `${pct(transferOutRate)} dos recebidos` : undefined} color="#f59e0b" />
           </div>
         </div>
-      </div>
 
-      <div style={{ display: 'flex', gap: 8 }}>
-        <MetricCard
-          icon={<Users size={16} />}
-          label="Chats recebidos"
-          value={chatsReceived}
-        />
-        <MetricCard
-          icon={<MessageSquare size={16} />}
-          label="Msgs enviadas"
-          value={messagesSent}
-        />
-      </div>
+        {/* Tempos */}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Tempos</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Stat icon={<Zap size={12} />} label="1ª resposta" value={formatDuration(firstResponseTimeAvg)} color="#f59e0b" />
+            <Stat icon={<Clock size={12} />} label="Resp. geral" value={formatDuration(avgResponseTime)} color="#3b82f6" />
+            <Stat icon={<CheckCircle size={12} />} label="Resolução" value={formatDuration(resolutionTimeAvg)} color="#10b981" />
+          </div>
+        </div>
 
-      <div style={{ display: 'flex', gap: 8 }}>
-        <MetricCard
-          icon={<Zap size={16} />}
-          label="1ª resposta"
-          value={formatDuration(firstResponseTimeAvg)}
-          color="#f59e0b"
-        />
-        <MetricCard
-          icon={<Clock size={16} />}
-          label="Resp. geral"
-          value={formatDuration(avgResponseTime)}
-          color="#3b82f6"
-        />
-        <MetricCard
-          icon={<CheckCircle size={16} />}
-          label="Resolução"
-          value={formatDuration(resolutionTimeAvg)}
-          color="#10b981"
-        />
+        {/* Qualidade */}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Qualidade</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', borderRadius: 10, background: fcrRate >= 80 ? '#10b98118' : fcrRate >= 60 ? '#f59e0b18' : fcrRate !== null ? '#ef444418' : 'var(--theme-bg-tertiary)', border: fcrRate !== null ? `1px solid ${fcrRate >= 80 ? '#10b98140' : fcrRate >= 60 ? '#f59e0b40' : '#ef444440'}` : '1px solid transparent' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <ShieldCheck size={12} style={{ color: '#10b981' }} />
+                <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>FCR</span>
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--theme-text)', lineHeight: 1 }}>{pct(fcrRate)}</div>
+              <RateBar value={fcrRate} color="#10b981" />
+              <div style={{ fontSize: 10, color: 'var(--theme-text-muted)' }}>Resolução no 1º contato</div>
+            </div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', borderRadius: 10, background: slaComplianceRate >= 90 ? '#10b98118' : slaComplianceRate >= 70 ? '#f59e0b18' : slaComplianceRate !== null ? '#ef444418' : 'var(--theme-bg-tertiary)', border: slaComplianceRate !== null ? `1px solid ${slaComplianceRate >= 90 ? '#10b98140' : slaComplianceRate >= 70 ? '#f59e0b40' : '#ef444440'}` : '1px solid transparent' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <TrendingUp size={12} style={{ color: '#3b82f6' }} />
+                <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>SLA</span>
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--theme-text)', lineHeight: 1 }}>{pct(slaComplianceRate)}</div>
+              <RateBar value={slaComplianceRate} color="#3b82f6" />
+              <div style={{ fontSize: 10, color: 'var(--theme-text-muted)' }}>1ª resp. em {Math.round(slaTargetSeconds / 60)}min</div>
+            </div>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '10px 12px', borderRadius: 10, background: 'var(--theme-bg-tertiary)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <RotateCcw size={12} style={{ color: '#f59e0b' }} />
+                <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Reabertura</span>
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--theme-text)', lineHeight: 1 }}>{pct(reopenRate)}</div>
+              <RateBar value={reopenRate} color="#f59e0b" />
+              <div style={{ fontSize: 10, color: 'var(--theme-text-muted)' }}>Clientes que voltaram</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Disponibilidade */}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+            Disponibilidade
+            {onlineMinutes > 0 && <span style={{ fontWeight: 400, marginLeft: 6 }}>· {formatMinutes(onlineMinutes)} online</span>}
+          </div>
+          <StatusBar dist={statusDistributionMinutes} />
+        </div>
+
+        {/* Pico */}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Pico de atendimento (por hora)</div>
+          <PeakChart peakHours={peakHours} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--theme-text-muted)', marginTop: 2, padding: '0 1px' }}>
+            <span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -117,10 +229,11 @@ export default function Reports() {
         from.setHours(0, 0, 0, 0);
       } else {
         from.setDate(from.getDate() - period.days);
+        from.setHours(0, 0, 0, 0);
       }
       const res = await api.get(`/reports?from=${from.toISOString()}&to=${to.toISOString()}`);
       setData(res.data);
-    } catch (e) {
+    } catch {
       setError('Erro ao carregar relatório.');
     } finally {
       setLoading(false);
@@ -130,58 +243,47 @@ export default function Reports() {
   useEffect(() => { load(periodIdx); }, [periodIdx, load]);
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--theme-bg)', minWidth: 0, overflowY: 'auto' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--theme-bg)', minWidth: 0 }}>
       {/* Header */}
-      <div style={{ padding: '20px 28px 16px', borderBottom: '1px solid var(--theme-border)', background: 'var(--theme-bg-secondary)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+      <div style={{ padding: '18px 28px 14px', borderBottom: '1px solid var(--theme-border)', background: 'var(--theme-bg-secondary)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
         <BarChart2 size={22} style={{ color: 'var(--theme-primary)' }} />
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 700, fontSize: 17, color: 'var(--theme-text)' }}>Relatórios</div>
           <div style={{ fontSize: 12, color: 'var(--theme-text-muted)', marginTop: 1 }}>Desempenho por agente</div>
         </div>
-        <button
-          onClick={() => load(periodIdx)}
-          disabled={loading}
-          style={{ width: 34, height: 34, borderRadius: '50%', border: 'none', background: 'transparent', cursor: loading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-text-muted)' }}
-          title="Atualizar"
-        >
-          <RefreshCw size={16} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
+        <button onClick={() => load(periodIdx)} disabled={loading}
+          style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'transparent', cursor: loading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-text-muted)' }}
+          title="Atualizar">
+          <RefreshCw size={15} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
         </button>
       </div>
 
       {/* Period selector */}
-      <div style={{ padding: '14px 28px', display: 'flex', gap: 8, flexShrink: 0 }}>
+      <div style={{ padding: '12px 28px', display: 'flex', gap: 8, flexShrink: 0, borderBottom: '1px solid var(--theme-border)', background: 'var(--theme-bg-secondary)' }}>
         {PERIODS.map((p, i) => (
-          <button
-            key={i}
-            onClick={() => setPeriodIdx(i)}
-            style={{
-              padding: '6px 16px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: i === periodIdx ? 700 : 400,
-              background: i === periodIdx ? 'var(--theme-primary)' : 'var(--theme-bg-secondary)',
-              color: i === periodIdx ? 'var(--theme-primary-text)' : 'var(--theme-text-secondary)',
-              border: i === periodIdx ? 'none' : '1px solid var(--theme-border)',
-              transition: 'background 0.15s, color 0.15s',
-            }}
-          >{p.label}</button>
+          <button key={i} onClick={() => setPeriodIdx(i)} style={{
+            padding: '5px 16px', borderRadius: 20, cursor: 'pointer', fontSize: 13, fontWeight: i === periodIdx ? 700 : 400,
+            background: i === periodIdx ? 'var(--theme-primary)' : 'transparent',
+            color: i === periodIdx ? 'var(--theme-primary-text)' : 'var(--theme-text-secondary)',
+            border: i === periodIdx ? 'none' : '1px solid var(--theme-border)',
+          }}>{p.label}</button>
         ))}
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, padding: '0 28px 28px', overflowY: 'auto' }}>
-        {error && (
-          <div style={{ color: '#ef4444', fontSize: 14, padding: '20px 0' }}>{error}</div>
-        )}
-
-        {!error && !loading && data?.agents?.length === 0 && (
-          <div style={{ color: 'var(--theme-text-muted)', fontSize: 14, padding: '40px 0', textAlign: 'center' }}>
-            Nenhum dado para o período selecionado.
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px 32px' }}>
+        {loading && !data && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, color: 'var(--theme-text-muted)', fontSize: 14 }}>
+            Carregando...
           </div>
         )}
-
-        {!error && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16, paddingTop: 4 }}>
-            {(data?.agents || []).map(row => (
-              <AgentCard key={row.agent.id} data={row} />
-            ))}
+        {error && <div style={{ color: '#ef4444', fontSize: 14, padding: '20px 0' }}>{error}</div>}
+        {!error && !loading && data?.agents?.length === 0 && (
+          <div style={{ color: 'var(--theme-text-muted)', fontSize: 14, padding: '60px 0', textAlign: 'center' }}>Nenhum dado para o período selecionado.</div>
+        )}
+        {!error && data?.agents?.length > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 20 }}>
+            {data.agents.map(row => <AgentCard key={row.agent.id} data={{ ...row, slaTargetSeconds: data.slaTargetSeconds }} />)}
           </div>
         )}
       </div>

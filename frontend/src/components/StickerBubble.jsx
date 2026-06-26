@@ -5,14 +5,17 @@ import { formatMsgTime } from '../utils/format';
 const API_URL = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app';
 
 function Ticks({ status }) {
-  const color = status === 'READ' ? '#53bdeb' : 'var(--theme-text-muted)';
   if (status === 'FAILED') return <span style={{ fontSize: 12, color: '#ef4444' }}>✗</span>;
-  if (status === 'DELIVERED' || status === 'READ') return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', color }}>
-      <span style={{ fontSize: 12 }}>✓</span><span style={{ fontSize: 12, marginLeft: -5 }}>✓</span>
-    </span>
-  );
-  if (status === 'SENT') return <span style={{ fontSize: 12, color }}>✓</span>;
+  if (status === 'DELIVERED' || status === 'READ') {
+    const color = status === 'READ' ? '#53bdeb' : 'var(--theme-msg-text-out)';
+    const opacity = status === 'READ' ? 1 : 0.6;
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', color, opacity }}>
+        <span style={{ fontSize: 12 }}>✓</span><span style={{ fontSize: 12, marginLeft: -5 }}>✓</span>
+      </span>
+    );
+  }
+  if (status === 'SENT') return <span style={{ fontSize: 12, color: 'var(--theme-msg-text-out)', opacity: 0.6 }}>✓</span>;
   return null;
 }
 
@@ -125,7 +128,7 @@ export default function StickerBubble({ message, showAgentName, isOut, onSaveSti
       />
 
       <div style={{ background: isOut ? 'var(--theme-bg-bubble-out)' : 'var(--theme-bg-bubble-in)', borderRadius: 10, padding: '2px 8px', display: 'flex', alignItems: 'center', gap: 3, alignSelf: isOut ? 'flex-end' : 'flex-start' }}>
-        <span style={{ fontSize: 11, color: 'var(--theme-text-muted)' }}>{formatMsgTime(message.timestamp)}</span>
+        <span style={{ fontSize: 11, color: isOut ? 'var(--theme-msg-text-out)' : 'var(--theme-msg-text-in)', opacity: 0.6 }}>{formatMsgTime(message.timestamp)}</span>
         {isOut && <Ticks status={message.status} />}
       </div>
 

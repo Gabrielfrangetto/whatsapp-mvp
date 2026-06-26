@@ -78,9 +78,9 @@ const CHART_HEIGHT = 250; // px da área de barras — garante ≥5px para barra
 function PeakChart({ peakHours }) {
   const [hovered, setHovered] = useState(null);
 
-  if (!peakHours || peakHours.every(v => v === 0)) return <div style={{ fontSize: 12, color: 'var(--theme-text-muted)', textAlign: 'center', padding: '16px 0' }}>Sem dados</div>;
-
-  const max = Math.max(...peakHours, 1);
+  const isEmpty = !peakHours || peakHours.every(v => v === 0);
+  const hours = peakHours || Array(24).fill(0);
+  const max = isEmpty ? 0 : Math.max(...hours, 1);
   const yMax = Math.max(Y_TICKS[Y_TICKS.length - 1], max);
 
   return (
@@ -102,7 +102,7 @@ function PeakChart({ peakHours }) {
       </div>
 
       {/* Área do gráfico */}
-      <div style={{ flex: 1, position: 'relative' }}>
+      <div style={{ flex: 1, position: 'relative', height: CHART_HEIGHT }}>
         {/* Linhas de grade horizontais */}
         {Y_TICKS.map(t => (
           <div key={t} style={{
@@ -117,16 +117,16 @@ function PeakChart({ peakHours }) {
 
         {/* Barras */}
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 0, height: CHART_HEIGHT, position: 'relative', zIndex: 1 }}>
-          {peakHours.map((v, h) => {
-            const isHovered = hovered === h;
-            const barH = Math.round((Math.min(v, yMax) / yMax) * CHART_HEIGHT);
+          {hours.map((v, h) => {
+            const isHovered = !isEmpty && hovered === h;
+            const barH = isEmpty ? CHART_HEIGHT : Math.round((Math.min(v, yMax) / yMax) * CHART_HEIGHT);
 
             return (
               <div
                 key={h}
-                onMouseEnter={() => setHovered(h)}
+                onMouseEnter={() => !isEmpty && setHovered(h)}
                 onMouseLeave={() => setHovered(null)}
-                style={{ flex: 1, display: 'flex', alignItems: 'flex-end', height: '100%', position: 'relative', cursor: v > 0 ? 'pointer' : 'default' }}
+                style={{ flex: 1, display: 'flex', alignItems: 'flex-end', height: '100%', position: 'relative', cursor: !isEmpty && v > 0 ? 'pointer' : 'default' }}
               >
                 {/* Linha vertical de crosshair */}
                 {isHovered && (
@@ -172,10 +172,10 @@ function PeakChart({ peakHours }) {
                 {/* Barra */}
                 <div style={{
                   width: '100%',
-                  background: v > 0 ? 'var(--theme-primary)' : 'var(--theme-bg-tertiary)',
+                  background: (isEmpty || v === 0) ? 'var(--theme-bg-tertiary)' : 'var(--theme-primary)',
                   borderRadius: '2px 2px 0 0',
-                  height: `${Math.max(barH, v > 0 ? 5 : 0)}px`,
-                  opacity: v > 0 ? (isHovered ? 1 : Math.max(0.35, v / yMax)) : 0.15,
+                  height: isEmpty ? `${CHART_HEIGHT}px` : `${Math.max(barH, v > 0 ? 5 : 0)}px`,
+                  opacity: isEmpty ? 0.08 : (v > 0 ? (isHovered ? 1 : Math.max(0.35, v / yMax)) : 0.15),
                   filter: isHovered && v > 0 ? 'brightness(1.3)' : 'none',
                   transition: 'opacity 0.15s, filter 0.15s',
                   position: 'relative',
@@ -185,6 +185,15 @@ function PeakChart({ peakHours }) {
             );
           })}
         </div>
+
+        {/* Sem dados overlay */}
+        {isEmpty && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', zIndex: 5 }}>
+            <span style={{ fontSize: 12, color: 'var(--theme-text-muted)', background: 'var(--theme-bg-secondary)', padding: '4px 10px', borderRadius: 6, border: '1px solid var(--theme-border)' }}>
+              Sem dados
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

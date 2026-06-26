@@ -76,15 +76,16 @@ const Y_TICKS = [10, 20, 30, 40, 50];
 const CHART_HEIGHT = 250; // px da área de barras — garante ≥5px para barra de valor 1 (yMax=50)
 
 function PeakChart({ peakHours }) {
+  const [hovered, setHovered] = useState(null);
+
   if (!peakHours || peakHours.every(v => v === 0)) return <div style={{ fontSize: 12, color: 'var(--theme-text-muted)', textAlign: 'center', padding: '16px 0' }}>Sem dados</div>;
 
   const max = Math.max(...peakHours, 1);
-  // yMax é sempre 50 para manter os 4 labels fixos; expande se os dados ultrapassarem
   const yMax = Math.max(Y_TICKS[Y_TICKS.length - 1], max);
 
   return (
     <div style={{ display: 'flex', gap: 8 }}>
-      {/* Eixo Y — sempre mostra todos os ticks */}
+      {/* Eixo Y */}
       <div style={{ position: 'relative', width: 22, flexShrink: 0, height: CHART_HEIGHT + 4 }}>
         {Y_TICKS.map(t => (
           <div key={t} style={{
@@ -102,7 +103,7 @@ function PeakChart({ peakHours }) {
 
       {/* Área do gráfico */}
       <div style={{ flex: 1, position: 'relative' }}>
-        {/* Linhas de grade horizontais — sempre para todos os ticks */}
+        {/* Linhas de grade horizontais */}
         {Y_TICKS.map(t => (
           <div key={t} style={{
             position: 'absolute',
@@ -110,25 +111,79 @@ function PeakChart({ peakHours }) {
             left: 0, right: 0,
             borderTop: '1px dashed var(--theme-border)',
             opacity: 0.6,
+            zIndex: 0,
           }} />
         ))}
 
         {/* Barras */}
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: CHART_HEIGHT, position: 'relative', zIndex: 1 }}>
-          {peakHours.map((v, h) => (
-            <div key={h} title={`${h}h: ${v} chat${v !== 1 ? 's' : ''}`}
-              style={{ flex: 1, display: 'flex', alignItems: 'flex-end', height: '100%' }}>
-              <div style={{
-                width: '100%',
-                background: v > 0 ? 'var(--theme-primary)' : 'var(--theme-bg-tertiary)',
-                borderRadius: '2px 2px 0 0',
-                height: `${Math.round((Math.min(v, yMax) / yMax) * CHART_HEIGHT)}px`,
-                minHeight: v > 0 ? 2 : 0,
-                opacity: v > 0 ? Math.max(0.35, v / yMax) : 0.15,
-                transition: 'height 0.3s ease',
-              }} />
-            </div>
-          ))}
+          {peakHours.map((v, h) => {
+            const isHovered = hovered === h;
+            const barH = Math.round((Math.min(v, yMax) / yMax) * CHART_HEIGHT);
+
+            return (
+              <div
+                key={h}
+                onMouseEnter={() => setHovered(h)}
+                onMouseLeave={() => setHovered(null)}
+                style={{ flex: 1, display: 'flex', alignItems: 'flex-end', height: '100%', position: 'relative', cursor: v > 0 ? 'pointer' : 'default' }}
+              >
+                {/* Linha vertical de crosshair */}
+                {isHovered && (
+                  <div style={{
+                    position: 'absolute',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    top: 0,
+                    bottom: 0,
+                    width: 1,
+                    background: 'var(--theme-primary)',
+                    opacity: 0.35,
+                    pointerEvents: 'none',
+                    zIndex: 2,
+                  }} />
+                )}
+
+                {/* Tooltip */}
+                {isHovered && (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: `${barH + 8}px`,
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: 'var(--theme-bg)',
+                    border: '1px solid var(--theme-border-strong)',
+                    borderRadius: 7,
+                    padding: '5px 9px',
+                    whiteSpace: 'nowrap',
+                    zIndex: 10,
+                    pointerEvents: 'none',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--theme-text)' }}>
+                      {v} chat{v !== 1 ? 's' : ''}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--theme-text-muted)', marginTop: 1 }}>
+                      {String(h).padStart(2, '0')}:00 – {String(h + 1).padStart(2, '0')}:00
+                    </div>
+                  </div>
+                )}
+
+                {/* Barra */}
+                <div style={{
+                  width: '100%',
+                  background: v > 0 ? 'var(--theme-primary)' : 'var(--theme-bg-tertiary)',
+                  borderRadius: '2px 2px 0 0',
+                  height: `${Math.max(barH, v > 0 ? 5 : 0)}px`,
+                  opacity: v > 0 ? (isHovered ? 1 : Math.max(0.35, v / yMax)) : 0.15,
+                  filter: isHovered && v > 0 ? 'brightness(1.3)' : 'none',
+                  transition: 'opacity 0.15s, filter 0.15s',
+                  position: 'relative',
+                  zIndex: 3,
+                }} />
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

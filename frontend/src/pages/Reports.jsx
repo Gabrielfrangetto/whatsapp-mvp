@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { BarChart2, RefreshCw, Clock, MessageSquare, CheckCircle, Zap, Users, ArrowRightLeft, RotateCcw, ShieldCheck, TrendingUp, LayoutGrid, Table2 } from 'lucide-react';
-import { api } from '../context/AuthContext';
+import { api, useAuth } from '../context/AuthContext';
 import { getInitials } from '../utils/format';
 import ReportsTable from '../components/ReportsTable';
 
@@ -325,11 +325,16 @@ function AgentCard({ data }) {
 }
 
 export default function Reports() {
+  const { agent } = useAuth();
+  const storageKey = `reports-view-${agent?.id}`;
+
   const [periodIdx, setPeriodIdx] = useState(1);
   const [loading, setLoading]     = useState(false);
   const [data, setData]           = useState(null);
   const [error, setError]         = useState(null);
-  const [viewMode, setViewMode]   = useState('cards');
+  const [viewMode, setViewMode]   = useState(() => localStorage.getItem(storageKey) || 'cards');
+
+  const setView = (mode) => { setViewMode(mode); localStorage.setItem(storageKey, mode); };
 
   const load = useCallback(async (idx) => {
     setLoading(true);
@@ -370,7 +375,7 @@ export default function Reports() {
             { mode: 'cards', icon: <LayoutGrid size={15} />, title: 'Cards' },
             { mode: 'table', icon: <Table2 size={15} />,     title: 'Tabela' },
           ].map(({ mode, icon, title }) => (
-            <button key={mode} onClick={() => setViewMode(mode)} title={title} style={{
+            <button key={mode} onClick={() => setView(mode)} title={title} style={{
               width: 30, height: 30, borderRadius: 6, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: viewMode === mode ? 'var(--theme-bg-secondary)' : 'transparent',
               color: viewMode === mode ? 'var(--theme-text)' : 'var(--theme-text-muted)',

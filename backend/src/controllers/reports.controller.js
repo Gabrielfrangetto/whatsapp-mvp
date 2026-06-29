@@ -202,14 +202,38 @@ async function getReports(req, res) {
           select: { id: true, name: true, avatarColor: true, avatarUrl: true, role: true },
         })];
 
-    const results = await Promise.all(
-      agents.filter(Boolean).map(async (agent) => {
-        const metrics = await computeAgentMetrics(agent.id, dateFrom, dateTo);
-        return { agent, ...metrics };
-      })
-    );
+    const [results, convsByPeriod] = await Promise.all([
+      Promise.all(
+        agents.filter(Boolean).map(async (agent) => {
+          const metrics = await computeAgentMetrics(agent.id, dateFrom, dateTo);
+          return { agent, ...metrics };
+        })
+      ),
+      prisma.conversation.findMany({
+        where: { openedAt: { gte: dateFrom, lte: dateTo } },
+        select: { openedAt: true },
+      }),
+    ]);
 
-    res.json({ from: dateFrom, to: dateTo, slaTargetSeconds: SLA_TARGET_SECONDS, agents: results });
+    // Build daily trend (one entry per day in the range)
+    const trendMap = {};
+    for (const c of convsByPeriod) {
+      if (!c.openedAt) continue;
+      const d = new Date(c.openedAt).toISOString().slice(0, 10);
+      trendMap[d] = (trendMap[d] || 0) + 1;
+    }
+    const dailyTrend = [];
+    const cursor = new Date(dateFrom);
+    cursor.setHours(0, 0, 0, 0);
+    const endDay = new Date(dateTo);
+    endDay.setHours(0, 0, 0, 0);
+    while (cursor <= endDay) {
+      const d = cursor.toISOString().slice(0, 10);
+      dailyTrend.push({ date: d, count: trendMap[d] || 0 });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    res.json({ from: dateFrom, to: dateTo, slaTargetSeconds: SLA_TARGET_SECONDS, agents: results, dailyTrend });
   } catch (e) {
     console.error('[Reports] Error:', e.message);
     res.status(500).json({ error: 'Erro ao gerar relatório' });

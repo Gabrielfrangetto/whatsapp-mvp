@@ -189,6 +189,7 @@ export default function Inbox() {
         onStatusChange={(s) => { setAgentStatusState(s); socketControls.setAgentStatus(s); }}
         onSettings={() => setShowSettings(true)}
         onLogout={handleLogout}
+        inboxCount={stats.open}
       />
 
       {(section === 'inbox' || section === 'mine') && (

@@ -9,7 +9,7 @@ export const STATUS_META = {
   OFFLINE: { color: '#6b7280', label: 'Offline' },
 };
 
-function NavRailButton({ icon, label, onClick, active }) {
+function NavRailButton({ icon, label, onClick, active, badge, navBg }) {
   return (
     <button
       onClick={onClick}
@@ -23,12 +23,19 @@ function NavRailButton({ icon, label, onClick, active }) {
         transition: 'background 0.15s, color 0.15s',
       }}
     >
-      {icon}
+      <div style={{ position: 'relative' }}>
+        {icon}
+        {badge > 0 && (
+          <span style={{ position: 'absolute', top: -6, right: -8, background: 'var(--theme-primary)', color: 'var(--theme-primary-text)', borderRadius: 20, padding: '1px 4px', fontSize: 9, fontWeight: 700, border: `2px solid ${navBg}`, lineHeight: '13px', minWidth: 14, textAlign: 'center', pointerEvents: 'none' }}>
+            {badge > 99 ? '99+' : badge}
+          </span>
+        )}
+      </div>
     </button>
   );
 }
 
-export default function NavRail({ section, onSection, agent, agentStatus = 'ONLINE', onStatusChange, onSettings, onLogout }) {
+export default function NavRail({ section, onSection, agent, agentStatus = 'ONLINE', onStatusChange, onSettings, onLogout, inboxCount = 0 }) {
   const { color, mode } = useTheme();
   const [statusOpen, setStatusOpen] = useState(false);
   const statusRef = useRef(null);
@@ -58,7 +65,7 @@ export default function NavRail({ section, onSection, agent, agentStatus = 'ONLI
       <div style={{ width: 36, height: 1, background: 'rgba(255,255,255,0.15)', borderRadius: 1, marginBottom: 8, flexShrink: 0 }} />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-        <NavRailButton icon={<InboxIcon size={20} />} label="Inbox" active={section === 'inbox'} onClick={() => onSection('inbox')} />
+        <NavRailButton icon={<InboxIcon size={20} />} label="Inbox" active={section === 'inbox'} onClick={() => onSection('inbox')} badge={inboxCount} navBg={navBg} />
         <NavRailButton icon={<MessageSquareMore size={20} />} label="Meus" active={section === 'mine'} onClick={() => onSection('mine')} />
         <NavRailButton icon={<BarChart2 size={20} />} label="Relatórios" active={section === 'reports'} onClick={() => onSection('reports')} />
         {agent?.role === 'ADMIN' && (

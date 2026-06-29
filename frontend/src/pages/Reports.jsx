@@ -117,7 +117,7 @@ export default function Reports() {
 
         {!error && data?.agents?.length > 0 && (
           <>
-            {multiAgent && <CompanyOverview agents={data.agents} dailyTrend={data.dailyTrend} />}
+            {multiAgent && <CompanyOverview agents={data.agents} dailyTrend={data.dailyTrend} viewMode={viewMode} />}
 
             {viewMode === 'cards' && (
               <>

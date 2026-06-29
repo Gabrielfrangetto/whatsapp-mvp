@@ -61,6 +61,7 @@ function TrendChart({ dailyTrend }) {
           return (
             <div key={d.date} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)}
               style={{ flex: 1, display: 'flex', alignItems: 'flex-end', height: '100%', position: 'relative', cursor: d.count > 0 ? 'pointer' : 'default' }}>
+              {isH && d.count > 0 && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: 0, bottom: 0, width: 1, background: 'var(--theme-primary)', opacity: 0.35, pointerEvents: 'none', zIndex: 2 }} />}
               {isH && d.count > 0 && (
                 <div style={{ position: 'absolute', bottom: barH + 6, left: '50%', transform: 'translateX(-50%)', background: 'var(--theme-bg)', border: '1px solid var(--theme-border-strong)', borderRadius: 7, padding: '4px 8px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
                   <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--theme-text)' }}>{d.count} conversas</div>
@@ -93,6 +94,7 @@ function PeakMini({ peakHours }) {
           return (
             <div key={h} onMouseEnter={() => setHovered(h)} onMouseLeave={() => setHovered(null)}
               style={{ flex: 1, display: 'flex', alignItems: 'flex-end', height: '100%', position: 'relative', cursor: v > 0 ? 'pointer' : 'default' }}>
+              {isH && v > 0 && <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: 0, bottom: 0, width: 1, background: 'var(--theme-primary)', opacity: 0.35, pointerEvents: 'none', zIndex: 2 }} />}
               {isH && v > 0 && (
                 <div style={{ position: 'absolute', bottom: barH + 6, left: '50%', transform: 'translateX(-50%)', background: 'var(--theme-bg)', border: '1px solid var(--theme-border-strong)', borderRadius: 7, padding: '4px 8px', whiteSpace: 'nowrap', zIndex: 10, pointerEvents: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
                   <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--theme-text)' }}>{v} chats</div>

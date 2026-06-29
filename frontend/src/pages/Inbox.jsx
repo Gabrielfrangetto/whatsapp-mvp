@@ -190,6 +190,7 @@ export default function Inbox() {
         onSettings={() => setShowSettings(true)}
         onLogout={handleLogout}
         inboxCount={stats.open}
+        mineCount={conversations.filter(c => c.assignedAgent?.id === agent?.id && c.status === 'OPEN').length}
       />
 
       {(section === 'inbox' || section === 'mine') && (

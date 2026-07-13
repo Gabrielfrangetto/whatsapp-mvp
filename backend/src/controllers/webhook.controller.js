@@ -85,12 +85,11 @@ async function processInbound(msg, contactInfo) {
     const existingConv = !!conv;
 
     if (!conv) {
-      // Verifica se existe uma conversa resolvida recente (últimas 24h)
+      // Reabre a conversa resolvida mais recente, independente do tempo
       const resolved = await prisma.conversation.findFirst({
         where: {
           contactId: contact.id,
           status: 'RESOLVED',
-          updatedAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
         },
         orderBy: { updatedAt: 'desc' },
       });

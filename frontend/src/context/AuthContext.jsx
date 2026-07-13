@@ -46,7 +46,7 @@ export function AuthProvider({ children }) {
     return () => api.interceptors.response.eject(id);
   }, []);
 
-  // Agenda refresh antes do token expirar (a cada 14min para token de 15min)
+  // Agenda refresh antes do token expirar (a cada 7h para token de 8h)
   const scheduleRefresh = useCallback(() => {
     clearTimeout(refreshTimerRef.current);
     refreshTimerRef.current = setTimeout(async () => {
@@ -57,17 +57,22 @@ export function AuthProvider({ children }) {
       } catch {
         logout();
       }
-    }, 14 * 60 * 1000);
+    }, 7 * 60 * 60 * 1000);
+  }, []);
+
+  const doRefresh = useCallback(async () => {
+    const { data } = await axios.post(`${BACKEND_URL}/api/auth/refresh`, {}, { withCredentials: true });
+    setAccessToken(data.accessToken);
+    return data.accessToken;
   }, []);
 
   // Tenta restaurar sessão ao carregar a página
   useEffect(() => {
     async function restoreSession() {
       try {
-        const { data } = await axios.post(`${BACKEND_URL}/api/auth/refresh`, {}, { withCredentials: true });
-        setAccessToken(data.accessToken);
+        const token = await doRefresh();
         const me = await axios.get(`${BACKEND_URL}/api/auth/me`, {
-          headers: { Authorization: `Bearer ${data.accessToken}` },
+          headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         });
         setAgent(me.data);
@@ -79,7 +84,18 @@ export function AuthProvider({ children }) {
       }
     }
     restoreSession();
-    return () => clearTimeout(refreshTimerRef.current);
+
+    // Renova quando o usuário volta à aba (evita logout por throttling de background)
+    function onVisible() {
+      if (document.visibilityState === 'visible') {
+        doRefresh().then(() => scheduleRefresh()).catch(() => {});
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearTimeout(refreshTimerRef.current);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, []);
 
   const login = useCallback(async (email, password) => {

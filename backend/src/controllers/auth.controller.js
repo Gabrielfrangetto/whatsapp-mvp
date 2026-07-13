@@ -7,9 +7,9 @@ const prisma = new PrismaClient();
 
 const ACCESS_SECRET  = process.env.JWT_ACCESS_SECRET  || 'access_secret_change_me';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh_secret_change_me';
-const ACCESS_EXPIRY  = '15m';
-const REFRESH_EXPIRY = '7d';
-const REFRESH_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
+const ACCESS_EXPIRY  = '8h';
+const REFRESH_EXPIRY = '30d';
+const REFRESH_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000;
 
 function generateTokens(agent) {
   const payload = { sub: agent.id, email: agent.email, role: agent.role, name: agent.name };

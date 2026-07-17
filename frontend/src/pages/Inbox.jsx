@@ -34,8 +34,10 @@ export default function Inbox() {
   const selectedRef        = useRef(null);
   const filterDropdownRef  = useRef(null);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [bannerImg, setBannerImg]   = useState(() => localStorage.getItem('sidebar_banner') || null);
-  const bannerInputRef              = useRef(null);
+  const [bannerImg, setBannerImg]     = useState(() => localStorage.getItem('sidebar_banner') || null);
+  const [bannerHover, setBannerHover] = useState(false);
+  const [bannerModal, setBannerModal] = useState(false);
+  const bannerInputRef                = useRef(null);
 
   function handleBannerChange(e) {
     const file = e.target.files?.[0];
@@ -45,15 +47,16 @@ export default function Inbox() {
       const data = ev.target.result;
       localStorage.setItem('sidebar_banner', data);
       setBannerImg(data);
+      setBannerModal(false);
     };
     reader.readAsDataURL(file);
     e.target.value = '';
   }
 
-  function removeBanner(e) {
-    e.stopPropagation();
+  function removeBanner() {
     localStorage.removeItem('sidebar_banner');
     setBannerImg(null);
+    setBannerModal(false);
   }
 
   useEffect(() => {
@@ -224,7 +227,12 @@ export default function Inbox() {
             </div>
 
             {/* Banner de imagem */}
-            <div style={{ position: 'relative', borderBottom: '1px solid var(--theme-border)', height: 96, overflow: 'hidden', flexShrink: 0 }}>
+            <div
+              style={{ position: 'relative', borderBottom: '1px solid var(--theme-border)', height: 96, overflow: 'hidden', flexShrink: 0, cursor: bannerImg ? 'pointer' : 'default' }}
+              onMouseEnter={() => setBannerHover(true)}
+              onMouseLeave={() => setBannerHover(false)}
+              onClick={() => { if (bannerImg) setBannerModal(true); }}
+            >
               {bannerImg ? (
                 <img src={bannerImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               ) : (
@@ -234,18 +242,14 @@ export default function Inbox() {
                   <span style={{ fontSize: 11 }}>Adicionar banner</span>
                 </div>
               )}
-              <div style={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 4 }}>
-                <button onClick={() => bannerInputRef.current?.click()} title="Trocar imagem"
-                  style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 5, padding: '4px 6px', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center' }}>
-                  <Pencil size={11} />
-                </button>
-                {bannerImg && (
-                  <button onClick={removeBanner} title="Remover banner"
+              {bannerImg && bannerHover && (
+                <div style={{ position: 'absolute', top: 6, right: 6 }}>
+                  <button onClick={e => { e.stopPropagation(); setBannerModal(true); }} title="Editar banner"
                     style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 5, padding: '4px 6px', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center' }}>
-                    <X size={11} />
+                    <Pencil size={11} />
                   </button>
-                )}
-              </div>
+                </div>
+              )}
               <input ref={bannerInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleBannerChange} />
             </div>
 
@@ -314,6 +318,36 @@ export default function Inbox() {
       {section === 'reports' && <Reports />}
 
       {showSettings && <Settings onClose={() => setShowSettings(false)} />}
+
+      {bannerModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={() => setBannerModal(false)}>
+          <div style={{ background: 'var(--theme-bg)', borderRadius: 14, padding: 24, width: 360, boxShadow: '0 8px 32px rgba(0,0,0,0.25)', display: 'flex', flexDirection: 'column', gap: 18 }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--theme-text)' }}>Banner da sidebar</span>
+              <button onClick={() => setBannerModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--theme-text-muted)', display: 'flex', padding: 2 }}>
+                <X size={18} />
+              </button>
+            </div>
+            {bannerImg && (
+              <img src={bannerImg} alt="Banner atual" style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 8, display: 'block' }} />
+            )}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => { setBannerModal(false); setTimeout(() => bannerInputRef.current?.click(), 50); }}
+                style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: 'none', background: 'var(--theme-primary)', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                Enviar
+              </button>
+              <button
+                onClick={removeBanner}
+                style={{ flex: 1, padding: '10px 0', borderRadius: 8, border: '1.5px solid #ef4444', background: 'transparent', color: '#ef4444', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                Remover
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

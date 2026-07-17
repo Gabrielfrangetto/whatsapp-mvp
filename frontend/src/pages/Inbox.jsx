@@ -34,29 +34,44 @@ export default function Inbox() {
   const selectedRef        = useRef(null);
   const filterDropdownRef  = useRef(null);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [bannerImg, setBannerImg]     = useState(() => localStorage.getItem('sidebar_banner') || null);
+  const [bannerImg, setBannerImg]     = useState(null);
   const [bannerHover, setBannerHover] = useState(false);
   const [bannerModal, setBannerModal] = useState(false);
+  const [bannerError, setBannerError] = useState('');
   const bannerInputRef                = useRef(null);
+
+  useEffect(() => {
+    if (!accessToken) return;
+    api.get('/settings').then(({ data }) => setBannerImg(data.sidebar_banner || null)).catch(() => {});
+  }, [accessToken]);
 
   function handleBannerChange(e) {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => {
+    reader.onload = async ev => {
       const data = ev.target.result;
-      localStorage.setItem('sidebar_banner', data);
-      setBannerImg(data);
-      setBannerModal(false);
+      try {
+        await api.put('/settings/banner', { image: data });
+        setBannerImg(data);
+        setBannerModal(false);
+        setBannerError('');
+      } catch (err) {
+        setBannerError(err.response?.data?.error || 'Erro ao salvar banner');
+        setBannerModal(true);
+      }
     };
     reader.readAsDataURL(file);
     e.target.value = '';
   }
 
-  function removeBanner() {
-    localStorage.removeItem('sidebar_banner');
+  async function removeBanner() {
+    try {
+      await api.delete('/settings/banner');
+    } catch {}
     setBannerImg(null);
     setBannerModal(false);
+    setBannerError('');
   }
 
   useEffect(() => {
@@ -332,6 +347,9 @@ export default function Inbox() {
             </div>
             {bannerImg && (
               <img src={bannerImg} alt="Banner atual" style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 8, display: 'block' }} />
+            )}
+            {bannerError && (
+              <div style={{ fontSize: 12, color: '#ef4444' }}>{bannerError}</div>
             )}
             <div style={{ display: 'flex', gap: 8 }}>
               <button

@@ -10,9 +10,18 @@ const api = axios.create({ baseURL: `${BACKEND_URL}/api`, withCredentials: true 
 
 export function AuthProvider({ children }) {
   const [agent, setAgent] = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
+  const [accessToken, setAccessToken] = useState(() => sessionStorage.getItem('accessToken'));
   const [loading, setLoading] = useState(true);
   const refreshTimerRef = useRef(null);
+
+  // Mantém o token também em sessionStorage: sobrevive a um reload de página
+  // dentro da mesma aba mesmo quando o cookie de refresh (cross-site) é
+  // bloqueado pelo navegador, como acontece em abas anônimas/privadas.
+  const persistToken = useCallback((token) => {
+    setAccessToken(token);
+    if (token) sessionStorage.setItem('accessToken', token);
+    else sessionStorage.removeItem('accessToken');
+  }, []);
 
   // Injeta token em todas as requests
   useEffect(() => {
@@ -33,7 +42,7 @@ export function AuthProvider({ children }) {
           original._retry = true;
           try {
             const { data } = await axios.post(`${BACKEND_URL}/api/auth/refresh`, {}, { withCredentials: true });
-            setAccessToken(data.accessToken);
+            persistToken(data.accessToken);
             original.headers.Authorization = `Bearer ${data.accessToken}`;
             return api(original);
           } catch {
@@ -52,17 +61,21 @@ export function AuthProvider({ children }) {
     refreshTimerRef.current = setTimeout(async () => {
       try {
         const { data } = await axios.post(`${BACKEND_URL}/api/auth/refresh`, {}, { withCredentials: true });
-        setAccessToken(data.accessToken);
+        persistToken(data.accessToken);
         scheduleRefresh();
       } catch {
-        logout();
+        // Cookie de refresh indisponível (ex: bloqueado em aba anônima) — o
+        // access token em memória/sessionStorage ainda pode ser válido, então
+        // não derruba a sessão aqui. O interceptor de 401 cuida do logout
+        // quando o token realmente expirar e o refresh também falhar.
+        refreshTimerRef.current = setTimeout(() => scheduleRefresh(), 5 * 60 * 1000);
       }
     }, 7 * 60 * 60 * 1000);
   }, []);
 
   const doRefresh = useCallback(async () => {
     const { data } = await axios.post(`${BACKEND_URL}/api/auth/refresh`, {}, { withCredentials: true });
-    setAccessToken(data.accessToken);
+    persistToken(data.accessToken);
     return data.accessToken;
   }, []);
 
@@ -78,7 +91,22 @@ export function AuthProvider({ children }) {
         setAgent(me.data);
         scheduleRefresh();
       } catch {
-        // Sem sessão ativa — vai para login
+        // Refresh via cookie falhou (ex: cookie cross-site bloqueado em aba
+        // anônima). Tenta validar o token já guardado em sessionStorage antes
+        // de desistir e mandar para o login.
+        const stored = sessionStorage.getItem('accessToken');
+        if (stored) {
+          try {
+            const me = await axios.get(`${BACKEND_URL}/api/auth/me`, {
+              headers: { Authorization: `Bearer ${stored}` },
+            });
+            setAccessToken(stored);
+            setAgent(me.data);
+            scheduleRefresh();
+          } catch {
+            persistToken(null);
+          }
+        }
       } finally {
         setLoading(false);
       }
@@ -100,7 +128,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password });
-    setAccessToken(data.accessToken);
+    persistToken(data.accessToken);
     setAgent(data.agent);
     scheduleRefresh();
     return data.agent;
@@ -109,7 +137,7 @@ export function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     clearTimeout(refreshTimerRef.current);
     try { await axios.post(`${BACKEND_URL}/api/auth/logout`, {}, { withCredentials: true }); } catch {}
-    setAccessToken(null);
+    persistToken(null);
     setAgent(null);
   }, []);
 

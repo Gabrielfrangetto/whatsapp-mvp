@@ -49,4 +49,32 @@ async function updateSettings(req, res) {
   }
 }
 
-module.exports = { getSettings, updateSettings };
+async function updateBanner(req, res) {
+  try {
+    const { image } = req.body;
+    if (!image || typeof image !== 'string' || !image.startsWith('data:image/'))
+      return res.status(400).json({ error: 'Imagem inválida' });
+    if (image.length > 4 * 1024 * 1024)
+      return res.status(413).json({ error: 'Imagem muito grande (máx. ~3MB)' });
+
+    await prisma.systemSetting.upsert({
+      where: { key: 'sidebar_banner' },
+      update: { value: image },
+      create: { key: 'sidebar_banner', value: image },
+    });
+    res.json({ sidebar_banner: image });
+  } catch (e) {
+    res.status(500).json({ error: 'Erro ao salvar banner' });
+  }
+}
+
+async function removeBanner(req, res) {
+  try {
+    await prisma.systemSetting.deleteMany({ where: { key: 'sidebar_banner' } });
+    res.json({ sidebar_banner: null });
+  } catch (e) {
+    res.status(500).json({ error: 'Erro ao remover banner' });
+  }
+}
+
+module.exports = { getSettings, updateSettings, updateBanner, removeBanner };

@@ -21,6 +21,7 @@ const favoritesRoutes = require('./routes/favorites.routes');
 const settingsRoutes = require('./routes/settings.routes');
 const reportsRoutes  = require('./routes/reports.routes');
 const adminRoutes    = require('./routes/admin.routes');
+const contactsRoutes = require('./routes/contacts.routes');
 const { requireAuth } = require('./middleware/auth.middleware');
 const { initSocket }  = require('./socket/socket.server');
 
@@ -107,7 +108,8 @@ app.use('/api/favorites', apiLimiter, favoritesRoutes);
 app.use('/api/resolution', apiLimiter, resolutionRoutes);
 app.use('/api/settings', apiLimiter, settingsRoutes);
 app.use('/api/reports',  apiLimiter, reportsRoutes);
-app.use('/api/admin',   apiLimiter, adminRoutes);
+app.use('/api/admin',    apiLimiter, adminRoutes);
+app.use('/api/contacts', apiLimiter, requireAuth, contactsRoutes);
 
 // ─── SPA fallback ────────────────────────────────────────────────────────────
 app.get('*', (req, res) => {

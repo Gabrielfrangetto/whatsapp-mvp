@@ -259,7 +259,11 @@ export default function Inbox() {
           </div>
 
           <ChatPanel conversationId={selected} socketControls={socketControls} onMessageSent={handleMessageSent} />
-          <ContactDetailsPanel conv={selectedConv} />
+          <ContactDetailsPanel conv={selectedConv} onContactUpdate={(contactId, newName) => {
+            setConversations(prev => prev.map(c =>
+              c.contact?.id === contactId ? { ...c, contact: { ...c.contact, name: newName } } : c
+            ));
+          }} />
         </>
       )}
 

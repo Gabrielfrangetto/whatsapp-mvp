@@ -1,9 +1,10 @@
 // src/pages/Settings.jsx
 import { useState, useEffect } from 'react';
-import { Sun, Moon, Check, AlertTriangle, Palette, Zap, Wrench } from 'lucide-react';
+import { Sun, Moon, Check, AlertTriangle, Palette, Zap, Wrench, Filter } from 'lucide-react';
 import { useTheme, PRESETS, getContrastText } from '../context/ThemeContext';
 import { useAuth, api } from '../context/AuthContext';
 import MaintenanceSection from '../components/settings/MaintenanceSection';
+import PipedriveSection from '../components/settings/PipedriveSection';
 
 function isValidHex(hex) {
   return /^#[0-9A-Fa-f]{6}$/.test(hex);
@@ -131,13 +132,14 @@ function AdvancedSection({ draftAutoclose, onToggle }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
       <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '1px solid var(--theme-border)', paddingBottom: 12 }}>
-        {[{ key: 'automations', label: 'Automações', icon: <Zap size={14} /> }, { key: 'maintenance', label: 'Manutenção', icon: <Wrench size={14} /> }].map(s => (
+        {[{ key: 'automations', label: 'Automações', icon: <Zap size={14} /> }, { key: 'sales', label: 'Vendas', icon: <Filter size={14} /> }, { key: 'maintenance', label: 'Manutenção', icon: <Wrench size={14} /> }].map(s => (
           <button key={s.key} onClick={() => setSub(s.key)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 6, border: sub === s.key ? '1px solid var(--theme-primary)' : '1px solid var(--theme-border)', background: sub === s.key ? 'var(--theme-primary-subtle)' : 'none', color: sub === s.key ? 'var(--theme-primary)' : 'var(--theme-text-secondary)', fontWeight: sub === s.key ? 600 : 400, fontSize: 12, fontFamily: 'inherit', cursor: 'pointer', transition: 'all 0.12s' }}>
             {s.icon}{s.label}
           </button>
         ))}
       </div>
       {sub === 'automations'  && <AutomationsSection enabled={draftAutoclose ?? false} onToggle={onToggle} />}
+      {sub === 'sales'        && <PipedriveSection />}
       {sub === 'maintenance'  && <MaintenanceSection />}
     </div>
   );

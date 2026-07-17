@@ -49,6 +49,7 @@ model Contact {
   updatedAt  DateTime @updatedAt
 
   conversations Conversation[]
+  pipedriveDeals PipedriveDeal[]
 }
 
 model Conversation {
@@ -166,6 +167,60 @@ model SystemSetting {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
+}
+
+// ─── Funil de vendas (Pipedrive) ─────────────────────────────────────────────
+
+model PipedriveStage {
+  id         Int      @id // id do estágio no Pipedrive
+  pipelineId Int
+  name       String
+  orderNr    Int
+  updatedAt  DateTime @updatedAt
+}
+
+model PipedriveDeal {
+  id                String              @id @default(uuid())
+  pipedriveDealId   Int                 @unique
+  pipedrivePersonId Int?
+  contactId         String?
+  contact           Contact?            @relation(fields: [contactId], references: [id])
+  title             String
+  value             Float?
+  currency          String?
+  stageId           Int
+  stageName         String
+  status            PipedriveDealStatus @default(OPEN)
+  wonAt             DateTime?
+  lostAt            DateTime?
+  lostReason        String?
+  pipedriveAddedAt  DateTime
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  stageLogs PipedriveDealStageLog[]
+
+  @@index([status])
+  @@index([contactId])
+}
+
+model PipedriveDealStageLog {
+  id        String        @id @default(uuid())
+  dealId    String
+  deal      PipedriveDeal @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  stageId   Int
+  stageName String
+  enteredAt DateTime
+  exitedAt  DateTime?
+
+  @@index([dealId, enteredAt])
+  @@index([stageId, enteredAt])
+}
+
+enum PipedriveDealStatus {
+  OPEN
+  WON
+  LOST
 }
 
 enum AgentRole {

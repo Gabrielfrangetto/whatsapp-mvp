@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ImageIcon, Pencil, X } from 'lucide-react';
 import { useAuth, api } from '../context/AuthContext';
 import { useSocket, disconnectSocket } from '../hooks/useSocket';
 import { useTheme } from '../context/ThemeContext';
@@ -34,6 +34,27 @@ export default function Inbox() {
   const selectedRef        = useRef(null);
   const filterDropdownRef  = useRef(null);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [bannerImg, setBannerImg]   = useState(() => localStorage.getItem('sidebar_banner') || null);
+  const bannerInputRef              = useRef(null);
+
+  function handleBannerChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const data = ev.target.result;
+      localStorage.setItem('sidebar_banner', data);
+      setBannerImg(data);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+
+  function removeBanner(e) {
+    e.stopPropagation();
+    localStorage.removeItem('sidebar_banner');
+    setBannerImg(null);
+  }
 
   useEffect(() => {
     if (!filterOpen) return;
@@ -202,13 +223,30 @@ export default function Inbox() {
               <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--theme-text)' }}>{section === 'mine' ? 'Meus' : 'Inbox'}</div>
             </div>
 
-            <div style={{ display: 'flex', borderBottom: '1px solid var(--theme-border)' }}>
-              {[['Abertas', stats.open, '#25D366'], ['Pendentes', stats.pending, '#F59E0B'], ['Hoje', stats.totalToday, 'var(--theme-text)']].map(([label, val, color]) => (
-                <div key={label} style={{ flex: 1, padding: '10px 0', textAlign: 'center', borderRight: '1px solid var(--theme-border)' }}>
-                  <div style={{ fontWeight: 700, fontSize: 16, color }}>{val}</div>
-                  <div style={{ fontSize: 10, color: 'var(--theme-text-muted)', marginTop: 1 }}>{label}</div>
+            {/* Banner de imagem */}
+            <div style={{ position: 'relative', borderBottom: '1px solid var(--theme-border)', height: 96, overflow: 'hidden', flexShrink: 0 }}>
+              {bannerImg ? (
+                <img src={bannerImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              ) : (
+                <div onClick={() => bannerInputRef.current?.click()}
+                  style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 5, cursor: 'pointer', border: '1.5px dashed var(--theme-border)', boxSizing: 'border-box', color: 'var(--theme-text-muted)', opacity: 0.55 }}>
+                  <ImageIcon size={20} />
+                  <span style={{ fontSize: 11 }}>Adicionar banner</span>
                 </div>
-              ))}
+              )}
+              <div style={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 4 }}>
+                <button onClick={() => bannerInputRef.current?.click()} title="Trocar imagem"
+                  style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 5, padding: '4px 6px', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center' }}>
+                  <Pencil size={11} />
+                </button>
+                {bannerImg && (
+                  <button onClick={removeBanner} title="Remover banner"
+                    style={{ background: 'rgba(0,0,0,0.45)', border: 'none', borderRadius: 5, padding: '4px 6px', cursor: 'pointer', color: '#fff', display: 'flex', alignItems: 'center' }}>
+                    <X size={11} />
+                  </button>
+                )}
+              </div>
+              <input ref={bannerInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleBannerChange} />
             </div>
 
             <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--theme-border)' }}>

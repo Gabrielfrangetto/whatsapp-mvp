@@ -23,6 +23,7 @@ const reportsRoutes  = require('./routes/reports.routes');
 const adminRoutes    = require('./routes/admin.routes');
 const contactsRoutes = require('./routes/contacts.routes');
 const pipedriveRoutes = require('./routes/pipedrive.routes');
+const callsRoutes = require('./routes/calls.routes');
 const { requireAuth } = require('./middleware/auth.middleware');
 const { initSocket }  = require('./socket/socket.server');
 
@@ -112,6 +113,7 @@ app.use('/api/reports',  apiLimiter, reportsRoutes);
 app.use('/api/admin',    apiLimiter, adminRoutes);
 app.use('/api/contacts', apiLimiter, requireAuth, contactsRoutes);
 app.use('/api/pipedrive', apiLimiter, pipedriveRoutes);
+app.use('/api/calls', apiLimiter, callsRoutes);
 
 // ─── SPA fallback ────────────────────────────────────────────────────────────
 app.get('*', (req, res) => {

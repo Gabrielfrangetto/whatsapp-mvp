@@ -3,6 +3,7 @@ const { PrismaClient } = require('@prisma/client');
 const whatsappService = require('../services/whatsapp.service');
 const { emitNewMessage, emitMessageStatus, emitMessageReaction, emitConversationUpdate, emitNewConversation } = require('../socket/socket.server');
 const { assignConversation, pickAgent } = require('../services/assignment.service');
+const callsService = require('../services/calls.service');
 
 const prisma = new PrismaClient();
 
@@ -27,6 +28,10 @@ async function receiveWebhook(req, res) {
 
   for (const entry of body.entry || []) {
     for (const change of entry.changes || []) {
+      if (change.field === 'calls') {
+        await callsService.handleCallWebhook(change.value);
+        continue;
+      }
       if (change.field !== 'messages') continue;
       const value = change.value;
       if (value.messages) {

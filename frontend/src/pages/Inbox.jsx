@@ -39,10 +39,12 @@ export default function Inbox() {
   const [bannerModal, setBannerModal] = useState(false);
   const [bannerError, setBannerError] = useState('');
   const bannerInputRef                = useRef(null);
+  const [liveCalls, setLiveCalls]     = useState([]);
 
   useEffect(() => {
     if (!accessToken) return;
     api.get('/settings').then(({ data }) => setBannerImg(data.sidebar_banner || null)).catch(() => {});
+    api.get('/calls/active').then(({ data }) => setLiveCalls(data.calls || [])).catch(() => {});
   }, [accessToken]);
 
   function handleBannerChange(e) {
@@ -147,6 +149,12 @@ export default function Inbox() {
         c.id === conversationId ? { ...c, pinCount, pinnedBy } : c
       ));
     },
+    onCallIncoming: (call) => {
+      setLiveCalls(prev => prev.some(c => c.id === call.id) ? prev.map(c => c.id === call.id ? call : c) : [...prev, call]);
+    },
+    onCallUpdate: (call) => {
+      setLiveCalls(prev => prev.filter(c => c.id !== call.id));
+    },
   });
 
   socketControls._registerChatHandlers = (handlers) => { chatHandlersRef.current = handlers; };
@@ -230,6 +238,7 @@ export default function Inbox() {
         onLogout={handleLogout}
         inboxCount={stats.open}
         mineCount={conversations.filter(c => c.assignedAgent?.id === agent?.id && c.status === 'OPEN').length}
+        liveCalls={liveCalls}
       />
 
       {(section === 'inbox' || section === 'mine') && (

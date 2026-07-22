@@ -8,23 +8,23 @@ datasource db {
 }
 
 model Agent {
-  id           String    @id @default(uuid())
+  id           String            @id @default(uuid())
   name         String
-  email        String    @unique
+  email        String            @unique
   passwordHash String
-  role         AgentRole @default(AGENT)
-  avatarColor  String    @default("#25D366")
-  isActive     Boolean   @default(true)
+  role         AgentRole         @default(AGENT)
+  avatarColor  String            @default("#25D366")
+  isActive     Boolean           @default(true)
   lastLoginAt  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
   themeColor   String?           @default("#075E54")
   themeMode    String?           @default("light")
   avatarUrl    String?
-  onlineStatus  AgentOnlineStatus @default(OFFLINE)
-  workSchedule  Json?
+  onlineStatus AgentOnlineStatus @default(OFFLINE)
+  workSchedule Json?
 
-  conversations    Conversation[] @relation("AssignedAgent")
+  conversations    Conversation[]    @relation("AssignedAgent")
   refreshTokens    RefreshToken[]
   conversationPins ConversationPin[]
   stickerFavorites StickerFavorite[]
@@ -48,17 +48,18 @@ model Contact {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  conversations Conversation[]
+  conversations  Conversation[]
   pipedriveDeals PipedriveDeal[]
+  calls          Call[]
 }
 
 model Conversation {
-  id            String     @id @default(uuid())
-  contactId     String
-  contact       Contact    @relation(fields: [contactId], references: [id])
-  status        ConvStatus @default(OPEN)
-  assignedToId  String?
-  assignedAgent Agent?     @relation("AssignedAgent", fields: [assignedToId], references: [id])
+  id                   String     @id @default(uuid())
+  contactId            String
+  contact              Contact    @relation(fields: [contactId], references: [id])
+  status               ConvStatus @default(OPEN)
+  assignedToId         String?
+  assignedAgent        Agent?     @relation("AssignedAgent", fields: [assignedToId], references: [id])
   lastMessage          String?
   lastMessageAt        DateTime?
   lastMessageDirection String?
@@ -68,32 +69,32 @@ model Conversation {
   resolvedByAgentId    String?
   assignmentSource     String?
   firstResponseAt      DateTime?
-  reopenCount          Int       @default(0)
+  reopenCount          Int        @default(0)
   transferredFromId    String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
 
   messages Message[]
   pins     ConversationPin[]
 }
 
 model Message {
-  id             String      @id @default(uuid())
-  waMessageId    String?     @unique
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
-  direction      Direction
-  type           MessageType @default(TEXT)
-  content        String
-  mediaUrl       String?
-  status         MsgStatus   @default(SENT)
-  sentByAgentId  String?
-  timestamp      DateTime    @default(now())
-  createdAt      DateTime    @default(now())
-  reactions      Json?
+  id                String       @id @default(uuid())
+  waMessageId       String?      @unique
+  conversationId    String
+  conversation      Conversation @relation(fields: [conversationId], references: [id])
+  direction         Direction
+  type              MessageType  @default(TEXT)
+  content           String
+  mediaUrl          String?
+  status            MsgStatus    @default(SENT)
+  sentByAgentId     String?
+  timestamp         DateTime     @default(now())
+  createdAt         DateTime     @default(now())
+  reactions         Json?
   quotedMessageId   String?
-  quotedMessage     Message?  @relation("MessageQuotes", fields: [quotedMessageId], references: [id])
-  quotedBy          Message[] @relation("MessageQuotes")
+  quotedMessage     Message?     @relation("MessageQuotes", fields: [quotedMessageId], references: [id])
+  quotedBy          Message[]    @relation("MessageQuotes")
   quotedWaMessageId String?
 }
 
@@ -267,5 +268,33 @@ enum MsgStatus {
 enum TemplateStatus {
   PENDING
   APPROVED
+  REJECTED
+}
+
+// ─── Chamadas de voz (WhatsApp Calling API) ──────────────────────────────────
+
+model Call {
+  id              String     @id @default(uuid())
+  waCallId        String     @unique // id da chamada no WhatsApp
+  contactId       String?
+  contact         Contact?   @relation(fields: [contactId], references: [id])
+  phone           String
+  status          CallStatus @default(RINGING)
+  startedAt       DateTime
+  endedAt         DateTime?
+  durationSeconds Int?
+  rawEvent        Json?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([status])
+  @@index([contactId])
+  @@index([startedAt])
+}
+
+enum CallStatus {
+  RINGING
+  ANSWERED
+  MISSED
   REJECTED
 }

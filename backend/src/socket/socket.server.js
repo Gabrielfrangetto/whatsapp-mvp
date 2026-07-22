@@ -204,4 +204,18 @@ function emitMessageReaction(conversationId, messageId, reactions) {
   getIO().to(`conv:${conversationId}`).emit('message:reaction', { messageId, reactions });
 }
 
-module.exports = { initSocket, getIO, emitNewMessage, emitMessageStatus, emitMessageReaction, emitConversationUpdate, emitNewConversation, emitPinUpdate };
+/**
+ * Emite uma chamada de voz tocando (WhatsApp Calling) para todos os agentes
+ */
+function emitCallIncoming(call) {
+  getIO().emit('call:incoming', call);
+}
+
+/**
+ * Emite atualização de uma chamada (atendida, perdida, rejeitada)
+ */
+function emitCallUpdate(call) {
+  getIO().emit('call:update', call);
+}
+
+module.exports = { initSocket, getIO, emitNewMessage, emitMessageStatus, emitMessageReaction, emitConversationUpdate, emitNewConversation, emitPinUpdate, emitCallIncoming, emitCallUpdate };

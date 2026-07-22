@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { BarChart2, RefreshCw, LayoutGrid, Table2, Users, Filter, Phone } from 'lucide-react';
+import { BarChart2, RefreshCw, LayoutGrid, Table2, Users, Filter, Phone, MessageSquare } from 'lucide-react';
 import { api, useAuth } from '../context/AuthContext';
 import AgentCard from '../components/reports/AgentCard';
 import CompanyOverview from '../components/reports/CompanyOverview';
 import ReportsTable from '../components/ReportsTable';
 import SalesFunnel from '../components/reports/SalesFunnel';
 import CallsReport from '../components/reports/CallsReport';
+import ConversationsReport from '../components/reports/ConversationsReport';
 
 const PERIODS = [
   { label: 'Hoje',    days: 0 },
@@ -72,7 +73,7 @@ export default function Reports() {
   const [data, setData]           = useState(null);
   const [error, setError]         = useState(null);
   const [viewMode, setViewMode]   = useState(() => localStorage.getItem(storageKey) || 'cards');
-  const [tab, setTab]             = useState('performance'); // 'performance' | 'funnel' | 'calls'
+  const [tab, setTab]             = useState('performance'); // 'performance' | 'funnel' | 'calls' | 'conversas'
 
   const setView = (mode) => { setViewMode(mode); localStorage.setItem(storageKey, mode); };
   const bests = data?.agents?.length > 1 ? computeBests(data.agents) : {};
@@ -102,7 +103,7 @@ export default function Reports() {
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 700, fontSize: 17, color: 'var(--theme-text)' }}>Relatórios</div>
           <div style={{ fontSize: 12, color: 'var(--theme-text-muted)', marginTop: 1 }}>
-            {tab === 'performance' ? 'Desempenho por agente' : tab === 'funnel' ? 'Ciclo de vida e conversão dos contatos' : 'Quem tentou ligar via WhatsApp'}
+            {tab === 'performance' ? 'Desempenho por agente' : tab === 'funnel' ? 'Ciclo de vida e conversão dos contatos' : tab === 'calls' ? 'Quem tentou ligar via WhatsApp' : 'Motivos de fechamento e detalhes das conversas'}
           </div>
         </div>
         {tab === 'performance' && (
@@ -124,7 +125,7 @@ export default function Reports() {
           ))}
         </div>
         <div style={{ display: 'flex', gap: 2, background: 'var(--theme-bg-tertiary)', borderRadius: 8, padding: 3 }}>
-          {[{ key: 'performance', icon: <Users size={13} />, label: 'Desempenho' }, { key: 'funnel', icon: <Filter size={13} />, label: 'Funil de Vendas' }, { key: 'calls', icon: <Phone size={13} />, label: 'Chamadas' }].map(t => (
+          {[{ key: 'performance', icon: <Users size={13} />, label: 'Desempenho' }, { key: 'funnel', icon: <Filter size={13} />, label: 'Funil de Vendas' }, { key: 'calls', icon: <Phone size={13} />, label: 'Chamadas' }, { key: 'conversas', icon: <MessageSquare size={13} />, label: 'Conversas' }].map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: tab === t.key ? 700 : 400, background: tab === t.key ? 'var(--theme-bg-secondary)' : 'transparent', color: tab === t.key ? 'var(--theme-text)' : 'var(--theme-text-muted)', boxShadow: tab === t.key ? '0 1px 3px rgba(0,0,0,0.12)' : 'none', transition: 'background 0.15s, color 0.15s' }}>
               {t.icon}{t.label}
             </button>
@@ -135,6 +136,7 @@ export default function Reports() {
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px 32px' }}>
         {tab === 'funnel' && <SalesFunnel from={periodFrom} to={periodTo} />}
         {tab === 'calls' && <CallsReport from={periodFrom} to={periodTo} />}
+        {tab === 'conversas' && <ConversationsReport from={periodFrom} to={periodTo} />}
 
         {tab === 'performance' && (
           <>

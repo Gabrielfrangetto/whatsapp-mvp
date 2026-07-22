@@ -35,7 +35,7 @@ async function receiveWebhook(req, res) {
       if (change.field !== 'messages') continue;
       const value = change.value;
       if (value.messages) {
-        for (const msg of value.messages) await processInbound(msg, value.contacts?.[0]);
+        for (const msg of value.messages) await processInbound(msg, value.contacts?.[0], value.metadata?.display_phone_number);
       }
       if (value.statuses) {
         for (const s of value.statuses) await processStatus(s);
@@ -66,7 +66,7 @@ async function processReaction(msg) {
   }
 }
 
-async function processInbound(msg, contactInfo) {
+async function processInbound(msg, contactInfo, channelPhone) {
   try {
     if (msg.type === 'reaction') return processReaction(msg);
 
@@ -102,11 +102,11 @@ async function processInbound(msg, contactInfo) {
       if (resolved) {
         conv = await prisma.conversation.update({
           where: { id: resolved.id },
-          data: { status: 'OPEN', assignedToId: null, unreadCount: 1, lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND', openedAt: timestamp, resolvedAt: null, resolvedByAgentId: null, assignmentSource: null, firstResponseAt: null, reopenCount: { increment: 1 }, transferredFromId: null },
+          data: { status: 'OPEN', assignedToId: null, unreadCount: 1, lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND', openedAt: timestamp, resolvedAt: null, resolvedByAgentId: null, assignmentSource: null, firstResponseAt: null, reopenCount: { increment: 1 }, transferredFromId: null, resolutionReasonId: null, channelPhone: channelPhone || resolved.channelPhone, initiatedBy: 'CLIENTE' },
         });
       } else {
         conv = await prisma.conversation.create({
-          data: { contactId: contact.id, status: 'OPEN', lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND', unreadCount: 1, openedAt: timestamp },
+          data: { contactId: contact.id, status: 'OPEN', lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND', unreadCount: 1, openedAt: timestamp, channelPhone, initiatedBy: 'CLIENTE' },
         });
       }
 

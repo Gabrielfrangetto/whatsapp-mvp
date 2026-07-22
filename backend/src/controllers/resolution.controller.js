@@ -117,6 +117,7 @@ async function resolveConversation(req, res) {
         lastMessageAt: now,
         resolvedAt: now,
         resolvedByAgentId: req.agent.sub,
+        resolutionReasonId: reason.id,
       },
       include: { contact: true },
     });

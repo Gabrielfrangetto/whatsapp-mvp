@@ -54,28 +54,35 @@ model Contact {
 }
 
 model Conversation {
-  id                   String     @id @default(uuid())
+  id                   String            @id @default(uuid())
   contactId            String
-  contact              Contact    @relation(fields: [contactId], references: [id])
-  status               ConvStatus @default(OPEN)
+  contact              Contact           @relation(fields: [contactId], references: [id])
+  status               ConvStatus        @default(OPEN)
   assignedToId         String?
-  assignedAgent        Agent?     @relation("AssignedAgent", fields: [assignedToId], references: [id])
+  assignedAgent        Agent?            @relation("AssignedAgent", fields: [assignedToId], references: [id])
   lastMessage          String?
   lastMessageAt        DateTime?
   lastMessageDirection String?
-  unreadCount          Int        @default(0)
+  unreadCount          Int               @default(0)
   openedAt             DateTime?
   resolvedAt           DateTime?
   resolvedByAgentId    String?
   assignmentSource     String?
   firstResponseAt      DateTime?
-  reopenCount          Int        @default(0)
+  reopenCount          Int               @default(0)
   transferredFromId    String?
-  createdAt            DateTime   @default(now())
-  updatedAt            DateTime   @updatedAt
+  resolutionReasonId   String?
+  resolutionReason     ResolutionReason? @relation(fields: [resolutionReasonId], references: [id])
+  channelPhone         String?
+  initiatedBy          String            @default("CLIENTE") // CLIENTE | NOS
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
 
   messages Message[]
   pins     ConversationPin[]
+
+  @@index([resolvedAt])
+  @@index([resolutionReasonId])
 }
 
 model Message {
@@ -151,6 +158,8 @@ model ResolutionReason {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  conversations Conversation[]
 }
 
 model AgentStatusLog {

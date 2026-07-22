@@ -91,10 +91,12 @@ async function runAutoClose(inactivityHours = 24) {
         const dateStr = now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Sao_Paulo' });
 
         let reasonLabel = 'Inatividade de 24h';
+        let resolutionReasonId = null;
         if (reasons.length > 0) {
           try {
             const chosen = await pickReason(reasons, messages);
             reasonLabel = chosen.label;
+            resolutionReasonId = chosen.id;
             console.log(`[AutoClose] IA escolheu: "${reasonLabel}"`);
           } catch (aiErr) {
             result.aiError = aiErr.message;
@@ -116,7 +118,7 @@ async function runAutoClose(inactivityHours = 24) {
 
         const updatedConv = await prisma.conversation.update({
           where: { id: conv.id },
-          data: { status: 'RESOLVED', lastMessage: internalContent, lastMessageAt: now },
+          data: { status: 'RESOLVED', lastMessage: internalContent, lastMessageAt: now, resolvedAt: now, resolutionReasonId },
           include: { contact: true },
         });
 

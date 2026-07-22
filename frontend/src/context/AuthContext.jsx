@@ -8,9 +8,24 @@ const AuthContext = createContext(null);
 
 const api = axios.create({ baseURL: `${BACKEND_URL}/api`, withCredentials: true });
 
+// Guardado fora do estado do React: quando login/restoreSession atualizam
+// accessToken e agent em sequência (sem await entre eles), o React agrupa as
+// duas mudanças no mesmo commit. Os effects dos componentes filhos que
+// acabam de montar (ex: fetch do banner, fetch de agentes para transferência)
+// rodam antes do effect deste contexto que atualizaria o interceptor via
+// closure de `accessToken` — então a request saía sem o header Authorization,
+// levava 401 e falhava silenciosamente (sem retry) até um F5. Ler o token de
+// uma variável mutável, atualizada de forma síncrona, elimina essa corrida.
+let currentAccessToken = sessionStorage.getItem('accessToken');
+
+api.interceptors.request.use((config) => {
+  if (currentAccessToken) config.headers.Authorization = `Bearer ${currentAccessToken}`;
+  return config;
+});
+
 export function AuthProvider({ children }) {
   const [agent, setAgent] = useState(null);
-  const [accessToken, setAccessToken] = useState(() => sessionStorage.getItem('accessToken'));
+  const [accessToken, setAccessToken] = useState(() => currentAccessToken);
   const [loading, setLoading] = useState(true);
   const refreshTimerRef = useRef(null);
 
@@ -18,19 +33,11 @@ export function AuthProvider({ children }) {
   // dentro da mesma aba mesmo quando o cookie de refresh (cross-site) é
   // bloqueado pelo navegador, como acontece em abas anônimas/privadas.
   const persistToken = useCallback((token) => {
+    currentAccessToken = token;
     setAccessToken(token);
     if (token) sessionStorage.setItem('accessToken', token);
     else sessionStorage.removeItem('accessToken');
   }, []);
-
-  // Injeta token em todas as requests
-  useEffect(() => {
-    const id = api.interceptors.request.use((config) => {
-      if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
-      return config;
-    });
-    return () => api.interceptors.request.eject(id);
-  }, [accessToken]);
 
   // Interceptor: tenta refresh automático em 401
   useEffect(() => {
@@ -100,7 +107,7 @@ export function AuthProvider({ children }) {
             const me = await axios.get(`${BACKEND_URL}/api/auth/me`, {
               headers: { Authorization: `Bearer ${stored}` },
             });
-            setAccessToken(stored);
+            persistToken(stored);
             setAgent(me.data);
             scheduleRefresh();
           } catch {

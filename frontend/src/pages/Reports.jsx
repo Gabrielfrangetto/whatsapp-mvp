@@ -7,6 +7,7 @@ import ReportsTable from '../components/ReportsTable';
 import SalesFunnel from '../components/reports/SalesFunnel';
 import CallsReport from '../components/reports/CallsReport';
 import ConversationsReport from '../components/reports/ConversationsReport';
+import PeriodFilter from '../components/reports/PeriodFilter';
 
 const PERIODS = [
   { label: 'Hoje',    days: 0 },
@@ -22,6 +23,12 @@ function periodRange(idx) {
   if (period.days === 0) { from.setHours(0, 0, 0, 0); }
   else { from.setDate(from.getDate() - period.days); from.setHours(0, 0, 0, 0); }
   return { from, to };
+}
+
+// idx === -1 significa período personalizado (usa customRange em vez dos presets)
+function activeRange(idx, customRange) {
+  if (idx === -1 && customRange) return customRange;
+  return periodRange(idx);
 }
 
 function computeBests(agents) {
@@ -68,7 +75,8 @@ export default function Reports() {
   const { agent } = useAuth();
   const storageKey = `reports-view-${agent?.id}`;
 
-  const [periodIdx, setPeriodIdx] = useState(1);
+  const [periodIdx, setPeriodIdx]   = useState(1); // -1 = período personalizado
+  const [customRange, setCustomRange] = useState(null); // { from: Date, to: Date }
   const [loading, setLoading]     = useState(false);
   const [data, setData]           = useState(null);
   const [error, setError]         = useState(null);
@@ -78,13 +86,14 @@ export default function Reports() {
   const setView = (mode) => { setViewMode(mode); localStorage.setItem(storageKey, mode); };
   const bests = data?.agents?.length > 1 ? computeBests(data.agents) : {};
   const multiAgent = (data?.agents?.length || 0) > 1;
-  const { from: periodFrom, to: periodTo } = useMemo(() => periodRange(periodIdx), [periodIdx]);
+  const { from: periodFrom, to: periodTo } = useMemo(() => activeRange(periodIdx, customRange), [periodIdx, customRange]);
 
-  const load = useCallback(async (idx) => {
+  const load = useCallback(async (idx, custom) => {
+    if (idx === -1 && !custom) return; // aguarda usuário escolher o período personalizado
     setLoading(true);
     setError(null);
     try {
-      const { from, to } = periodRange(idx);
+      const { from, to } = activeRange(idx, custom);
       const res = await api.get(`/reports?from=${from.toISOString()}&to=${to.toISOString()}`);
       setData(res.data);
     } catch {
@@ -94,7 +103,10 @@ export default function Reports() {
     }
   }, []);
 
-  useEffect(() => { load(periodIdx); }, [periodIdx, load]);
+  useEffect(() => { load(periodIdx, customRange); }, [periodIdx, customRange, load]);
+
+  const selectPreset = (idx) => { setCustomRange(null); setPeriodIdx(idx); };
+  const applyCustom = (range) => { setCustomRange(range); setPeriodIdx(-1); };
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--theme-bg)', minWidth: 0 }}>
@@ -113,17 +125,13 @@ export default function Reports() {
             ))}
           </div>
         )}
-        <button onClick={() => load(periodIdx)} disabled={loading} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'transparent', cursor: loading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-text-muted)' }} title="Atualizar">
+        <button onClick={() => load(periodIdx, customRange)} disabled={loading} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: 'transparent', cursor: loading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-text-muted)' }} title="Atualizar">
           <RefreshCw size={15} style={{ animation: loading ? 'spin 0.8s linear infinite' : 'none' }} />
         </button>
       </div>
 
       <div style={{ padding: '12px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexShrink: 0, borderBottom: '1px solid var(--theme-border)', background: 'var(--theme-bg-secondary)' }}>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {PERIODS.map((p, i) => (
-            <button key={i} onClick={() => setPeriodIdx(i)} style={{ padding: '5px 16px', borderRadius: 20, cursor: 'pointer', fontSize: 13, fontWeight: i === periodIdx ? 700 : 400, background: i === periodIdx ? 'var(--theme-primary)' : 'transparent', color: i === periodIdx ? 'var(--theme-primary-text)' : 'var(--theme-text-secondary)', border: i === periodIdx ? 'none' : '1px solid var(--theme-border)' }}>{p.label}</button>
-          ))}
-        </div>
+        <PeriodFilter periods={PERIODS} activeIdx={periodIdx} onSelectPreset={selectPreset} customRange={customRange} onApplyCustom={applyCustom} />
         <div style={{ display: 'flex', gap: 2, background: 'var(--theme-bg-tertiary)', borderRadius: 8, padding: 3 }}>
           {[{ key: 'performance', icon: <Users size={13} />, label: 'Desempenho' }, { key: 'funnel', icon: <Filter size={13} />, label: 'Funil de Vendas' }, { key: 'calls', icon: <Phone size={13} />, label: 'Chamadas' }, { key: 'conversas', icon: <MessageSquare size={13} />, label: 'Conversas' }].map(t => (
             <button key={t.key} onClick={() => setTab(t.key)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: tab === t.key ? 700 : 400, background: tab === t.key ? 'var(--theme-bg-secondary)' : 'transparent', color: tab === t.key ? 'var(--theme-text)' : 'var(--theme-text-muted)', boxShadow: tab === t.key ? '0 1px 3px rgba(0,0,0,0.12)' : 'none', transition: 'background 0.15s, color 0.15s' }}>

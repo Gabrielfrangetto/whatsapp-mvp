@@ -13,6 +13,65 @@ function clampToRange(ts, from, to) {
   return Math.min(Math.max(ts, from.getTime()), to.getTime());
 }
 
+// Deriva 1ª resposta e resposta geral a partir de conversas com mensagens ordenadas.
+function computeResponseTimes(assignedConvs, agentId) {
+  let firstResponseTotal = 0;
+  let firstResponseCount = 0;
+  let avgResponseTotal = 0;
+  let avgResponseCount = 0;
+
+  for (const conv of assignedConvs) {
+    let lastInboundTime = null;
+    let firstResponseDone = false;
+
+    for (const msg of conv.messages) {
+      const ts = new Date(msg.timestamp).getTime();
+      if (msg.direction === 'INBOUND') {
+        lastInboundTime = ts;
+      } else if (msg.direction === 'OUTBOUND' && msg.sentByAgentId === agentId && lastInboundTime !== null) {
+        const diff = ts - lastInboundTime;
+        if (diff >= 0) {
+          avgResponseTotal += diff;
+          avgResponseCount++;
+          if (!firstResponseDone) {
+            firstResponseTotal += diff;
+            firstResponseCount++;
+            firstResponseDone = true;
+          }
+        }
+        lastInboundTime = null;
+      }
+    }
+  }
+
+  return {
+    firstResponseTimeAvg: firstResponseCount > 0 ? msToSeconds(firstResponseTotal / firstResponseCount) : null,
+    avgResponseTime: avgResponseCount > 0 ? msToSeconds(avgResponseTotal / avgResponseCount) : null,
+  };
+}
+
+// Período imediatamente anterior, com a mesma duração do período selecionado.
+function previousPeriod(from, to) {
+  const durationMs = to.getTime() - from.getTime();
+  const prevTo = new Date(from.getTime() - 1);
+  const prevFrom = new Date(prevTo.getTime() - durationMs);
+  return { prevFrom, prevTo };
+}
+
+async function computePrevResponseTimes(agentId, prevFrom, prevTo) {
+  const assignedConvs = await prisma.conversation.findMany({
+    where: { assignedToId: agentId, openedAt: { gte: prevFrom, lte: prevTo } },
+    select: {
+      messages: {
+        where: { direction: { in: ['INBOUND', 'OUTBOUND'] } },
+        orderBy: { timestamp: 'asc' },
+        select: { direction: true, timestamp: true, sentByAgentId: true },
+      },
+    },
+  });
+  return computeResponseTimes(assignedConvs, agentId);
+}
+
 async function computeAgentMetrics(agentId, from, to) {
   const [
     chatsReceived,
@@ -97,40 +156,7 @@ async function computeAgentMetrics(agentId, from, to) {
     ? Math.round((slaOk / convsWithFirstResponse.length) * 100) : null;
 
   // ─── Tempos de resposta (primeira e geral) ───────────────────────────────────
-  let firstResponseTotal = 0;
-  let firstResponseCount = 0;
-  let avgResponseTotal = 0;
-  let avgResponseCount = 0;
-
-  for (const conv of assignedConvs) {
-    if (!conv.openedAt) continue;
-    let lastInboundTime = null;
-    let firstResponseDone = false;
-
-    for (const msg of conv.messages) {
-      const ts = new Date(msg.timestamp).getTime();
-      if (msg.direction === 'INBOUND') {
-        lastInboundTime = ts;
-      } else if (msg.direction === 'OUTBOUND' && msg.sentByAgentId === agentId && lastInboundTime !== null) {
-        const diff = ts - lastInboundTime;
-        if (diff >= 0) {
-          avgResponseTotal += diff;
-          avgResponseCount++;
-          if (!firstResponseDone) {
-            firstResponseTotal += diff;
-            firstResponseCount++;
-            firstResponseDone = true;
-          }
-        }
-        lastInboundTime = null;
-      }
-    }
-  }
-
-  const firstResponseTimeAvg = firstResponseCount > 0
-    ? msToSeconds(firstResponseTotal / firstResponseCount) : null;
-  const avgResponseTime = avgResponseCount > 0
-    ? msToSeconds(avgResponseTotal / avgResponseCount) : null;
+  const { firstResponseTimeAvg, avgResponseTime } = computeResponseTimes(assignedConvs, agentId);
 
   // ─── Distribuição de status e disponibilidade ────────────────────────────────
   const statusDist = { ONLINE: 0, BUSY: 0, OFFLINE: 0 };
@@ -188,6 +214,7 @@ async function getReports(req, res) {
     const dateTo   = to   ? new Date(to)   : new Date();
     const dateFrom = from ? new Date(from) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     dateTo.setHours(23, 59, 59, 999);
+    const { prevFrom, prevTo } = previousPeriod(dateFrom, dateTo);
 
     const isAdmin = req.agent.role === 'ADMIN';
 
@@ -205,8 +232,16 @@ async function getReports(req, res) {
     const [results, convsByPeriod] = await Promise.all([
       Promise.all(
         agents.filter(Boolean).map(async (agent) => {
-          const metrics = await computeAgentMetrics(agent.id, dateFrom, dateTo);
-          return { agent, ...metrics };
+          const [metrics, prevResponseTimes] = await Promise.all([
+            computeAgentMetrics(agent.id, dateFrom, dateTo),
+            computePrevResponseTimes(agent.id, prevFrom, prevTo),
+          ]);
+          return {
+            agent,
+            ...metrics,
+            firstResponseTimeAvgPrev: prevResponseTimes.firstResponseTimeAvg,
+            avgResponseTimePrev: prevResponseTimes.avgResponseTime,
+          };
         })
       ),
       prisma.conversation.findMany({

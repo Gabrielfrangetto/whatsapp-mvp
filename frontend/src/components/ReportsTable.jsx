@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { getInitials } from '../utils/format';
+import TrendArrow from './reports/TrendArrow';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app';
 
@@ -42,8 +43,8 @@ export default function ReportsTable({ agents, slaTargetSeconds, bests = {} }) {
     { key: 'transfersOut',          label: 'Transferências',                                                    highIsGood: false },
     { key: 'transferOutRate',       label: '% Transf.',        fmt: pct,                                       highIsGood: false },
     { key: 'chatsPerHour',          label: 'Chats/hora',                                                       highIsGood: true  },
-    { key: 'firstResponseTimeAvg',  label: '1ª Resposta',      fmt: fmtDuration,                               highIsGood: false },
-    { key: 'avgResponseTime',       label: 'Resp. Geral',      fmt: fmtDuration,                               highIsGood: false },
+    { key: 'firstResponseTimeAvg',  label: '1ª Resposta',      fmt: fmtDuration, prevKey: 'firstResponseTimeAvgPrev', highIsGood: false },
+    { key: 'avgResponseTime',       label: 'Resp. Geral',      fmt: fmtDuration, prevKey: 'avgResponseTimePrev',      highIsGood: false },
     { key: 'resolutionTimeAvg',     label: 'Resolução',        fmt: fmtDuration,                               highIsGood: false },
     { key: 'fcrRate',               label: 'FCR',              fmt: pct,                                       highIsGood: true  },
     { key: 'slaComplianceRate',     label: 'SLA', sub: `≤ ${Math.round((slaTargetSeconds || 300) / 60)}min`, fmt: pct, highIsGood: true  },
@@ -111,7 +112,10 @@ export default function ReportsTable({ agents, slaTargetSeconds, bests = {} }) {
                   const isBestVal = bests[col.key] === row.agent.id;
                   return (
                     <td key={col.key} style={{ padding: '10px 14px', textAlign: 'right', fontSize: 13, fontWeight: isBestVal ? 800 : 600, color: isBestVal ? 'var(--theme-primary)' : 'var(--theme-text)', borderBottom: '1px solid var(--theme-border)', borderRight: '1px solid var(--theme-border)', whiteSpace: 'nowrap' }}>
-                      {displayed}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
+                        {displayed}
+                        {col.prevKey && <TrendArrow current={val} previous={row[col.prevKey]} />}
+                      </div>
                     </td>
                   );
                 })}

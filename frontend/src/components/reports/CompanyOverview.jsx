@@ -2,9 +2,7 @@ import { useMemo } from 'react';
 import { Users, ShieldCheck, TrendingUp, RotateCcw, Zap, Clock, ArrowRightLeft } from 'lucide-react';
 import TrendArrow from './TrendArrow';
 import { TrendChart, PeakMini, TrendTable, PeakTable, AgentBar, WorkloadTable } from './CompanyOverviewCharts';
-import ResolutionTimeDistribution from './ResolutionTimeDistribution';
-
-const RESOLUTION_BUCKET_KEYS = ['b0_15', 'b15_30', 'b30_45', 'b45_60', 'b60plus'];
+import ResolutionTimePieChart from './ResolutionTimePieChart';
 
 function avg(agents, key) {
   const vals = agents.map(a => a[key]).filter(v => v !== null && v !== undefined);
@@ -67,15 +65,6 @@ export default function CompanyOverview({ agents, dailyTrend, viewMode = 'cards'
     return total;
   }, [agents]);
 
-  const resolutionBucketsTotal = useMemo(() => {
-    const total = { b0_15: 0, b15_30: 0, b30_45: 0, b45_60: 0, b60plus: 0 };
-    for (const a of agents) {
-      if (!a.resolutionTimeBuckets) continue;
-      for (const key of RESOLUTION_BUCKET_KEYS) total[key] += a.resolutionTimeBuckets[key] || 0;
-    }
-    return total;
-  }, [agents]);
-
   const sorted   = [...agents].sort((a, b) => (b.chatsReceived || 0) - (a.chatsReceived || 0));
   const maxChats = Math.max(...agents.map(a => a.chatsReceived || 0), 1);
 
@@ -124,7 +113,7 @@ export default function CompanyOverview({ agents, dailyTrend, viewMode = 'cards'
 
         <div>
           <SectionLabel>Distribuição do Tempo de Resolução</SectionLabel>
-          <ResolutionTimeDistribution buckets={resolutionBucketsTotal} />
+          <ResolutionTimePieChart agents={agents} />
         </div>
       </div>
     </div>

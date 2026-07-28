@@ -179,6 +179,17 @@ model SystemSetting {
   updatedAt DateTime @updatedAt
 }
 
+// Histórico de metas de SLA (1ª resposta). Cada alteração do admin insere uma
+// nova linha em vez de sobrescrever, preservando qual meta valia em cada período.
+model SlaTargetHistory {
+  id            String   @id @default(uuid())
+  targetSeconds Int
+  effectiveFrom DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([effectiveFrom])
+}
+
 // ─── Funil de vendas (Pipedrive) ─────────────────────────────────────────────
 
 model PipedriveStage {

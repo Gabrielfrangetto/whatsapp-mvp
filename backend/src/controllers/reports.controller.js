@@ -1,9 +1,8 @@
 // src/controllers/reports.controller.js
 const { PrismaClient } = require('@prisma/client');
+const { getSlaTargetHistory, resolveSlaTargetAt, currentTargetFromHistory } = require('./slaTarget.controller');
 
 const prisma = new PrismaClient();
-
-const SLA_TARGET_SECONDS = 300; // 5 min — configurável futuramente via SystemSettings
 
 function msToSeconds(ms) {
   return ms > 0 ? Math.round(ms / 1000) : null;
@@ -72,7 +71,7 @@ async function computePrevResponseTimes(agentId, prevFrom, prevTo) {
   return computeResponseTimes(assignedConvs, agentId);
 }
 
-async function computeAgentMetrics(agentId, from, to) {
+async function computeAgentMetrics(agentId, from, to, slaHistory) {
   const [
     chatsReceived,
     messagesSent,
@@ -146,11 +145,14 @@ async function computeAgentMetrics(agentId, from, to) {
   const reopenRate = resolvedConvs.length > 0
     ? Math.round(((resolvedConvs.length - fcrCount) / resolvedConvs.length) * 100) : null;
 
-  // ─── SLA compliance (firstResponseAt - openedAt < SLA_TARGET) ───────────────
+  // ─── SLA compliance (firstResponseAt - openedAt < meta vigente na abertura) ──
+  // Usa a meta que estava ativa quando a conversa abriu, para não reavaliar
+  // conversas antigas com uma meta que só passou a valer depois.
   const convsWithFirstResponse = assignedConvs.filter(c => c.firstResponseAt && c.openedAt);
   const slaOk = convsWithFirstResponse.filter(c => {
     const secs = (new Date(c.firstResponseAt) - new Date(c.openedAt)) / 1000;
-    return secs <= SLA_TARGET_SECONDS;
+    const targetForConv = resolveSlaTargetAt(slaHistory, new Date(c.openedAt));
+    return secs <= targetForConv;
   }).length;
   const slaComplianceRate = convsWithFirstResponse.length > 0
     ? Math.round((slaOk / convsWithFirstResponse.length) * 100) : null;
@@ -193,7 +195,6 @@ async function computeAgentMetrics(agentId, from, to) {
     fcrRate,
     reopenRate,
     slaComplianceRate,
-    slaTargetSeconds: SLA_TARGET_SECONDS,
     transfersOut,
     transferOutRate,
     chatsPerHour,
@@ -215,6 +216,7 @@ async function getReports(req, res) {
     const dateFrom = from ? new Date(from) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     dateTo.setHours(23, 59, 59, 999);
     const { prevFrom, prevTo } = previousPeriod(dateFrom, dateTo);
+    const slaHistory = await getSlaTargetHistory();
 
     const isAdmin = req.agent.role === 'ADMIN';
 
@@ -233,7 +235,7 @@ async function getReports(req, res) {
       Promise.all(
         agents.filter(Boolean).map(async (agent) => {
           const [metrics, prevResponseTimes] = await Promise.all([
-            computeAgentMetrics(agent.id, dateFrom, dateTo),
+            computeAgentMetrics(agent.id, dateFrom, dateTo, slaHistory),
             computePrevResponseTimes(agent.id, prevFrom, prevTo),
           ]);
           return {
@@ -268,7 +270,7 @@ async function getReports(req, res) {
       cursor.setDate(cursor.getDate() + 1);
     }
 
-    res.json({ from: dateFrom, to: dateTo, slaTargetSeconds: SLA_TARGET_SECONDS, agents: results, dailyTrend });
+    res.json({ from: dateFrom, to: dateTo, slaTargetSeconds: currentTargetFromHistory(slaHistory), agents: results, dailyTrend });
   } catch (e) {
     console.error('[Reports] Error:', e.message);
     res.status(500).json({ error: 'Erro ao gerar relatório' });

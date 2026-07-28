@@ -13,10 +13,28 @@ let io;
 // Contador de conexões por agente (suporta múltiplas abas/dispositivos)
 const agentConnections = new Map(); // agentId -> Set<socketId>
 
+// Ao subir o processo (deploy/restart/crash), qualquer status ainda "aberto"
+// no banco é órfão de uma conexão que já morreu junto com o processo anterior
+// — sem isso, ele só seria fechado no próximo login do agente, contando todo
+// o tempo em que o servidor ficou fora do ar como se o agente estivesse online.
+async function closeOrphanedStatusLogs() {
+  try {
+    const { count } = await prisma.agentStatusLog.updateMany({
+      where: { endedAt: null },
+      data: { endedAt: new Date() },
+    });
+    if (count > 0) console.log(`[Socket] 🧹 ${count} registro(s) de status órfão(s) fechado(s) na inicialização`);
+  } catch (err) {
+    console.error('[Socket] Erro ao fechar status órfãos:', err.message);
+  }
+}
+
 /**
  * Inicializa o servidor Socket.io atrelado ao HTTP server do Express
  */
 function initSocket(httpServer) {
+  closeOrphanedStatusLogs();
+
   io = new Server(httpServer, {
     cors: {
       origin: (process.env.FRONTEND_URL || 'http://localhost:5173')

@@ -165,7 +165,7 @@ async function computeAgentMetrics(agentId, from, to, slaHistory) {
 
   for (const log of statusLogs) {
     const start = clampToRange(new Date(log.startedAt).getTime(), from, to);
-    const end   = clampToRange(log.endedAt ? new Date(log.endedAt).getTime() : to.getTime(), from, to);
+    const end   = clampToRange(log.endedAt ? new Date(log.endedAt).getTime() : Date.now(), from, to);
     const ms    = Math.max(0, end - start);
     if (statusDist[log.status] !== undefined) statusDist[log.status] += ms;
   }

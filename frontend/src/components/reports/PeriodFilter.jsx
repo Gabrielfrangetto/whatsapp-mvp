@@ -1,9 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Calendar } from 'lucide-react';
-
-function toInputValue(date) {
-  return date.toISOString().slice(0, 10);
-}
+import DateRangeCalendar, { startOfDay } from './DateRangeCalendar';
 
 function pillStyle(active) {
   return {
@@ -16,12 +13,11 @@ function pillStyle(active) {
   };
 }
 
-const inputStyle = { padding: '6px 8px', borderRadius: 6, border: '1px solid var(--theme-border)', background: 'var(--theme-bg)', color: 'var(--theme-text)', fontSize: 13 };
-
 export default function PeriodFilter({ periods, activeIdx, onSelectPreset, customRange, onApplyCustom }) {
-  const [open, setOpen]     = useState(false);
-  const [fromStr, setFromStr] = useState(customRange ? toInputValue(customRange.from) : '');
-  const [toStr, setToStr]     = useState(customRange ? toInputValue(customRange.to) : '');
+  const [open, setOpen] = useState(false);
+  const [range, setRange] = useState(() => customRange
+    ? { from: startOfDay(customRange.from), to: startOfDay(customRange.to) }
+    : { from: null, to: null });
   const boxRef = useRef(null);
 
   useEffect(() => {
@@ -31,10 +27,11 @@ export default function PeriodFilter({ periods, activeIdx, onSelectPreset, custo
   }, [open]);
 
   function apply() {
-    if (!fromStr || !toStr) return;
-    const from = new Date(`${fromStr}T00:00:00`);
-    const to   = new Date(`${toStr}T23:59:59.999`);
-    if (from > to) return;
+    if (!range.from || !range.to) return;
+    const from = new Date(range.from);
+    from.setHours(0, 0, 0, 0);
+    const to = new Date(range.to);
+    to.setHours(23, 59, 59, 999);
     onApplyCustom({ from, to });
     setOpen(false);
   }
@@ -55,19 +52,17 @@ export default function PeriodFilter({ periods, activeIdx, onSelectPreset, custo
       </button>
 
       {open && (
-        <div style={{ position: 'absolute', top: '110%', right: 0, zIndex: 20, background: 'var(--theme-bg-secondary)', border: '1px solid var(--theme-border-strong)', borderRadius: 10, padding: 14, boxShadow: '0 4px 16px rgba(0,0,0,0.18)', display: 'flex', flexDirection: 'column', gap: 10, minWidth: 220 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={{ fontSize: 11, color: 'var(--theme-text-muted)' }}>De</label>
-            <input type="date" value={fromStr} max={toStr || toInputValue(new Date())} onChange={e => setFromStr(e.target.value)} style={inputStyle} />
+        <div style={{ position: 'absolute', top: '110%', right: 0, zIndex: 20, background: 'var(--theme-bg-secondary)', border: '1px solid var(--theme-border-strong)', borderRadius: 10, padding: 14, boxShadow: '0 4px 16px rgba(0,0,0,0.18)', display: 'flex', flexDirection: 'column', gap: 10, minWidth: 240 }}>
+          <div style={{ fontSize: 11, color: 'var(--theme-text-muted)' }}>
+            {range.from && !range.to && 'Selecione a data final'}
+            {!range.from && 'Selecione a data inicial'}
+            {range.from && range.to && `${range.from.toLocaleDateString('pt-BR')} – ${range.to.toLocaleDateString('pt-BR')}`}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <label style={{ fontSize: 11, color: 'var(--theme-text-muted)' }}>Até</label>
-            <input type="date" value={toStr} min={fromStr || undefined} max={toInputValue(new Date())} onChange={e => setToStr(e.target.value)} style={inputStyle} />
-          </div>
+          <DateRangeCalendar from={range.from} to={range.to} onChange={(from, to) => setRange({ from, to })} />
           <button
             onClick={apply}
-            disabled={!fromStr || !toStr}
-            style={{ padding: '7px 0', borderRadius: 6, border: 'none', background: 'var(--theme-primary)', color: 'var(--theme-primary-text)', fontWeight: 700, fontSize: 13, cursor: (!fromStr || !toStr) ? 'default' : 'pointer', opacity: (!fromStr || !toStr) ? 0.5 : 1 }}
+            disabled={!range.from || !range.to}
+            style={{ padding: '7px 0', borderRadius: 6, border: 'none', background: 'var(--theme-primary)', color: 'var(--theme-primary-text)', fontWeight: 700, fontSize: 13, cursor: (!range.from || !range.to) ? 'default' : 'pointer', opacity: (!range.from || !range.to) ? 0.5 : 1 }}
           >
             Aplicar
           </button>

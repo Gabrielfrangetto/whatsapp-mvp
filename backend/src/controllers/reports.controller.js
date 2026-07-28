@@ -131,10 +131,19 @@ async function computeAgentMetrics(agentId, from, to, slaHistory) {
   let resolutionTimeTotal = 0;
   let resolutionTimeCount = 0;
   let fcrCount = 0; // resolved without reopens
+  const resolutionTimeBuckets = { b0_15: 0, b15_30: 0, b30_45: 0, b45_60: 0, b60plus: 0 };
 
   for (const c of resolvedConvs) {
     const diff = new Date(c.resolvedAt) - new Date(c.openedAt);
-    if (diff > 0) { resolutionTimeTotal += diff; resolutionTimeCount++; }
+    if (diff > 0) {
+      resolutionTimeTotal += diff; resolutionTimeCount++;
+      const minutes = diff / 60000;
+      if (minutes <= 15) resolutionTimeBuckets.b0_15++;
+      else if (minutes <= 30) resolutionTimeBuckets.b15_30++;
+      else if (minutes <= 45) resolutionTimeBuckets.b30_45++;
+      else if (minutes <= 60) resolutionTimeBuckets.b45_60++;
+      else resolutionTimeBuckets.b60plus++;
+    }
     if (c.reopenCount === 0) fcrCount++;
   }
 
@@ -191,6 +200,7 @@ async function computeAgentMetrics(agentId, from, to, slaHistory) {
     messagesSent,
     firstResponseTimeAvg,
     resolutionTimeAvg,
+    resolutionTimeBuckets,
     avgResponseTime,
     fcrRate,
     reopenRate,

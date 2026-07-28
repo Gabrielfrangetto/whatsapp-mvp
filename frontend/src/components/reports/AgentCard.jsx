@@ -2,6 +2,7 @@ import { Clock, MessageSquare, CheckCircle, Zap, Users, ArrowRightLeft, RotateCc
 import { getInitials } from '../../utils/format';
 import PeakChart from './PeakChart';
 import TrendArrow from './TrendArrow';
+import ResolutionTimeDistribution from './ResolutionTimeDistribution';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://whatsapp-mvp-production.up.railway.app';
 
@@ -92,7 +93,7 @@ function QualityCard({ icon, label, iconColor, value, bar, barColor, sub, highli
 }
 
 export default function AgentCard({ data, bests = {} }) {
-  const { agent, chatsReceived, messagesSent, firstResponseTimeAvg, firstResponseTimeAvgPrev, resolutionTimeAvg, avgResponseTime, avgResponseTimePrev, fcrRate, reopenRate, slaComplianceRate, slaTargetSeconds, transfersOut, transferOutRate, chatsPerHour, statusDistributionMinutes, onlineMinutes, peakHours } = data;
+  const { agent, chatsReceived, messagesSent, firstResponseTimeAvg, firstResponseTimeAvgPrev, resolutionTimeAvg, resolutionTimeBuckets, avgResponseTime, avgResponseTimePrev, fcrRate, reopenRate, slaComplianceRate, slaTargetSeconds, transfersOut, transferOutRate, chatsPerHour, statusDistributionMinutes, onlineMinutes, peakHours } = data;
   const isBest = (key) => bests[key] === agent.id;
 
   return (
@@ -128,6 +129,11 @@ export default function AgentCard({ data, bests = {} }) {
             <Stat icon={<Clock size={12} />} label="Resp. geral" value={formatDuration(avgResponseTime)} sub={<TrendArrow current={avgResponseTime} previous={avgResponseTimePrev} />} color="#3b82f6" highlight={isBest('avgResponseTime')} />
             <Stat icon={<CheckCircle size={12} />} label="Resolução" value={formatDuration(resolutionTimeAvg)} color="#10b981" highlight={isBest('resolutionTimeAvg')} />
           </div>
+        </div>
+
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>Distribuição do tempo de resolução</div>
+          <ResolutionTimeDistribution buckets={resolutionTimeBuckets} />
         </div>
 
         <div>

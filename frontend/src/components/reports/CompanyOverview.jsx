@@ -72,6 +72,13 @@ export default function CompanyOverview({ agents, dailyTrend, viewMode = 'cards'
     <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--theme-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>{children}</div>
   );
 
+  const Quadrant = ({ label, children }) => (
+    <div style={{ background: 'var(--theme-bg-tertiary)', border: '1px solid var(--theme-border)', borderRadius: 12, padding: '14px 16px', minWidth: 0 }}>
+      <SectionLabel>{label}</SectionLabel>
+      {children}
+    </div>
+  );
+
   return (
     <div style={{ marginBottom: 24, background: 'var(--theme-bg-secondary)', borderRadius: 16, border: '1px solid var(--theme-border)', overflow: 'hidden' }}>
       <div style={{ padding: '12px 18px', borderBottom: '1px solid var(--theme-border)' }}>
@@ -90,30 +97,28 @@ export default function CompanyOverview({ agents, dailyTrend, viewMode = 'cards'
           <KpiCard icon={<Users size={13} />}          label="Online Total"   value={fmtMin(totalOnlineMin)}                       color="var(--theme-text-muted)" />
         </div>
 
-        {viewMode === 'table' ? (
-          <>
-            <div><SectionLabel>Volume Diário</SectionLabel><TrendTable dailyTrend={dailyTrend} /></div>
-            <div><SectionLabel>Pico de Demanda Agregado</SectionLabel><PeakTable peakHours={peakHoursTotal} /></div>
-            <div><SectionLabel>Distribuição de Carga</SectionLabel><WorkloadTable agents={sorted} totalChats={totalChats} /></div>
-          </>
-        ) : (
-          <>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <div><SectionLabel>Volume Diário</SectionLabel><TrendChart dailyTrend={dailyTrend} /></div>
-              <div><SectionLabel>Pico de Demanda Agregado</SectionLabel><PeakMini peakHours={peakHoursTotal} /></div>
-            </div>
-            <div>
-              <SectionLabel>Distribuição de Carga</SectionLabel>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16 }}>
+          <Quadrant label="Volume Diário">
+            {viewMode === 'table' ? <TrendTable dailyTrend={dailyTrend} /> : <TrendChart dailyTrend={dailyTrend} />}
+          </Quadrant>
+
+          <Quadrant label="Pico de Demanda Agregado">
+            {viewMode === 'table' ? <PeakTable peakHours={peakHoursTotal} /> : <PeakMini peakHours={peakHoursTotal} />}
+          </Quadrant>
+
+          <Quadrant label="Distribuição de Carga">
+            {viewMode === 'table' ? (
+              <WorkloadTable agents={sorted} totalChats={totalChats} />
+            ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {sorted.map(a => <AgentBar key={a.agent.id} agent={a.agent} count={a.chatsReceived || 0} max={maxChats} />)}
               </div>
-            </div>
-          </>
-        )}
+            )}
+          </Quadrant>
 
-        <div>
-          <SectionLabel>Distribuição do Tempo de Resolução</SectionLabel>
-          <ResolutionTimePieChart agents={agents} />
+          <Quadrant label="Distribuição do Tempo de Resolução">
+            <ResolutionTimePieChart agents={agents} />
+          </Quadrant>
         </div>
       </div>
     </div>

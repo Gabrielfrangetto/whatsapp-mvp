@@ -230,7 +230,10 @@ export default function MessageBubble({ message, showAvatar, showAgentName, show
         )}
         {isOut && replyBtn}
         {isOut && reactBtn}
-        <StickerBubble message={message} showAgentName={showAgentName} isOut={isOut} onSaveSticker={onSaveSticker} onFavorite={onFavorite} isFavorited={isFavorited} />
+        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: hasReactions ? 8 : 0 }}>
+          <StickerBubble message={message} showAgentName={showAgentName} isOut={isOut} onSaveSticker={onSaveSticker} onFavorite={onFavorite} isFavorited={isFavorited} />
+          <ReactionBubble reactions={message.reactions} isOut={isOut} />
+        </div>
         {!isOut && reactBtn}
         {!isOut && replyBtn}
         {isOut && (

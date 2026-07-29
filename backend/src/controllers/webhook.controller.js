@@ -93,7 +93,7 @@ async function processInbound(msg, contactInfo, channelPhone) {
       // Só reabre a conversa resolvida mais recente se o cliente voltar dentro da
       // janela de reabertura — passado isso, é mais provável que seja um assunto
       // novo, então tratamos como uma conversa nova (mantendo a resolvida intacta).
-      const REOPEN_WINDOW_MS = 12 * 60 * 60 * 1000; // 12h
+      const REOPEN_WINDOW_MS = 60 * 60 * 1000; // 1h
       const resolved = await prisma.conversation.findFirst({
         where: {
           contactId: contact.id,

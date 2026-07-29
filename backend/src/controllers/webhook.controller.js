@@ -90,7 +90,10 @@ async function processInbound(msg, contactInfo, channelPhone) {
     const existingConv = !!conv;
 
     if (!conv) {
-      // Reabre a conversa resolvida mais recente, independente do tempo
+      // Só reabre a conversa resolvida mais recente se o cliente voltar dentro da
+      // janela de reabertura — passado isso, é mais provável que seja um assunto
+      // novo, então tratamos como uma conversa nova (mantendo a resolvida intacta).
+      const REOPEN_WINDOW_MS = 12 * 60 * 60 * 1000; // 12h
       const resolved = await prisma.conversation.findFirst({
         where: {
           contactId: contact.id,
@@ -98,8 +101,10 @@ async function processInbound(msg, contactInfo, channelPhone) {
         },
         orderBy: { updatedAt: 'desc' },
       });
+      const withinReopenWindow = resolved?.resolvedAt
+        && (timestamp.getTime() - new Date(resolved.resolvedAt).getTime()) <= REOPEN_WINDOW_MS;
 
-      if (resolved) {
+      if (resolved && withinReopenWindow) {
         conv = await prisma.conversation.update({
           where: { id: resolved.id },
           data: { status: 'OPEN', assignedToId: null, unreadCount: 1, lastMessage: content, lastMessageAt: timestamp, lastMessageDirection: 'INBOUND', openedAt: timestamp, resolvedAt: null, resolvedByAgentId: null, assignmentSource: null, firstResponseAt: null, reopenCount: { increment: 1 }, transferredFromId: null, resolutionReasonId: null, channelPhone: channelPhone || resolved.channelPhone, initiatedBy: 'CLIENTE' },

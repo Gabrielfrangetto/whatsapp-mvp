@@ -1,9 +1,13 @@
 // src/hooks/useAchievements.js
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../context/AuthContext';
+import { levelInfo } from '../utils/xpLevel';
+
+const DEFAULT_XP = levelInfo(0);
 
 export function useAchievements(accessToken) {
   const [achievements, setAchievements] = useState([]);
+  const [xp, setXp] = useState(DEFAULT_XP);
   const [toastQueue, setToastQueue] = useState([]);
 
   const load = useCallback(async () => {
@@ -11,6 +15,7 @@ export function useAchievements(accessToken) {
     try {
       const { data } = await api.get('/achievements/me');
       setAchievements(data.achievements || []);
+      setXp(data.xp || DEFAULT_XP);
     } catch {}
   }, [accessToken]);
 
@@ -20,6 +25,7 @@ export function useAchievements(accessToken) {
     setAchievements(prev => prev.map(a => a.key === achievement.key
       ? { ...a, unlocked: true, unlockedAt: new Date().toISOString(), progress: a.threshold }
       : a));
+    setXp(prev => levelInfo(prev.totalXp + (achievement.xp || 0)));
     setToastQueue(prev => [...prev, { ...achievement, _toastId: `${achievement.key}-${Date.now()}` }]);
   }, []);
 
@@ -35,5 +41,5 @@ export function useAchievements(accessToken) {
 
   const unseenCount = achievements.filter(a => a.unlocked && !a.seenAt).length;
 
-  return { achievements, unseenCount, toastQueue, handleAchievementUnlocked, dismissToast, markSeen };
+  return { achievements, xp, unseenCount, toastQueue, handleAchievementUnlocked, dismissToast, markSeen };
 }

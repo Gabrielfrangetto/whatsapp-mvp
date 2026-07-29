@@ -15,7 +15,10 @@ function AchievementCard({ a }) {
     }}>
       <div style={{ fontSize: 26, flexShrink: 0, lineHeight: 1, filter: a.unlocked ? 'none' : 'grayscale(1)' }}>{a.icon}</div>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--theme-text)' }}>{a.title}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--theme-text)' }}>{a.title}</div>
+          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--theme-primary)', background: 'var(--theme-primary-subtle)', borderRadius: 8, padding: '1px 7px', flexShrink: 0 }}>+{a.xp} XP</span>
+        </div>
         <div style={{ fontSize: 12, color: 'var(--theme-text-muted)', marginTop: 2, lineHeight: 1.4 }}>{a.description}</div>
         {a.unlocked ? (
           <div style={{ fontSize: 11, color: 'var(--theme-primary)', fontWeight: 600, marginTop: 6 }}>
@@ -49,11 +52,12 @@ export default function AchievementsSection() {
 
   const categories = [...new Set(achievements.map(a => a.category))];
   const unlockedCount = achievements.filter(a => a.unlocked).length;
+  const earnedXp = achievements.filter(a => a.unlocked).reduce((sum, a) => sum + a.xp, 0);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div style={{ fontSize: 12, color: 'var(--theme-text-muted)' }}>
-        {unlockedCount} de {achievements.length} conquistas desbloqueadas
+        {unlockedCount} de {achievements.length} conquistas desbloqueadas · {earnedXp} XP conquistado
       </div>
       {categories.map(cat => (
         <div key={cat}>

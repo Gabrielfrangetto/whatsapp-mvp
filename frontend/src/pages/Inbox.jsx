@@ -352,7 +352,7 @@ export default function Inbox() {
 
       {section === 'reports' && <Reports />}
 
-      {section === 'achievements' && <Achievements />}
+      {section === 'achievements' && <Achievements xp={achievementsState.xp} />}
 
       {showSettings && <Settings onClose={() => setShowSettings(false)} />}
 

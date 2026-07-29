@@ -1,6 +1,7 @@
 // src/controllers/achievements.controller.js
 const { PrismaClient } = require('@prisma/client');
 const { CATALOG } = require('../achievements/catalog');
+const { levelInfo } = require('../achievements/leveling');
 
 const prisma = new PrismaClient();
 
@@ -28,7 +29,9 @@ async function getMyAchievements(req, res) {
       };
     });
 
-    res.json({ achievements });
+    const totalXp = unlocked.reduce((sum, u) => sum + (CATALOG.find(c => c.key === u.key)?.xp ?? 0), 0);
+
+    res.json({ achievements, xp: levelInfo(totalXp) });
   } catch (e) {
     console.error('[Achievements] getMyAchievements error:', e.message);
     res.status(500).json({ error: 'Erro ao carregar conquistas' });

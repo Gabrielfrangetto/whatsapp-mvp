@@ -12,6 +12,7 @@ import ChatPanel from '../components/ChatPanel';
 import Agents from './Agents';
 import Settings from './Settings';
 import Reports from './Reports';
+import Achievements from './Achievements';
 
 export default function Inbox() {
   const { agent, accessToken, logout } = useAuth();
@@ -88,6 +89,11 @@ export default function Inbox() {
 
   useEffect(() => { selectedRef.current = selected; }, [selected]);
   useEffect(() => { if (agent) loadPreferences(agent); }, [agent]);
+
+  useEffect(() => {
+    if (section !== 'achievements' || achievementsState.unseenCount === 0) return;
+    achievementsState.markSeen(achievementsState.achievements.filter(a => a.unlocked && !a.seenAt).map(a => a.key));
+  }, [section, achievementsState.unseenCount]);
 
   useEffect(() => {
     const n = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
@@ -243,9 +249,7 @@ export default function Inbox() {
         inboxCount={stats.open}
         mineCount={conversations.filter(c => c.assignedAgent?.id === agent?.id && c.status === 'OPEN').length}
         liveCalls={liveCalls}
-        achievements={achievementsState.achievements}
         unseenAchievements={achievementsState.unseenCount}
-        onOpenAchievements={achievementsState.markSeen}
       />
 
       {(section === 'inbox' || section === 'mine') && (
@@ -347,6 +351,8 @@ export default function Inbox() {
       )}
 
       {section === 'reports' && <Reports />}
+
+      {section === 'achievements' && <Achievements />}
 
       {showSettings && <Settings onClose={() => setShowSettings(false)} />}
 

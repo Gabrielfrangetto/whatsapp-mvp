@@ -1,6 +1,7 @@
 // src/controllers/resolution.controller.js
 const { PrismaClient } = require('@prisma/client');
 const { emitNewMessage, emitConversationUpdate } = require('../socket/socket.server');
+const { onResolution } = require('../achievements/engine');
 
 const prisma = new PrismaClient();
 
@@ -125,6 +126,13 @@ async function resolveConversation(req, res) {
     // Emite em tempo real
     emitNewMessage(id, internalMessage);
     emitConversationUpdate(updatedConv);
+
+    onResolution({
+      agentId: req.agent.sub,
+      openedAt: updatedConv.openedAt,
+      resolvedAt: updatedConv.resolvedAt,
+      reopenCount: updatedConv.reopenCount,
+    });
 
     res.json({ conversation: updatedConv, message: internalMessage });
   } catch (e) {

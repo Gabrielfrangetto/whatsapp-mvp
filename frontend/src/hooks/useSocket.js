@@ -91,6 +91,7 @@ export function useSocket(accessToken, handlers = {}) {
     on('pin:update',           (data) => handlersRef.current.onPinUpdate?.(data));
     on('call:incoming',        (call) => handlersRef.current.onCallIncoming?.(call));
     on('call:update',          (call) => handlersRef.current.onCallUpdate?.(call));
+    on('achievement:unlocked', (achievement) => handlersRef.current.onAchievementUnlocked?.(achievement));
 
     ACTIVITY_EVENTS.forEach(e => document.addEventListener(e, handleActivity, { passive: true }));
     scheduleAutoAway();

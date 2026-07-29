@@ -3,6 +3,7 @@ import { MessageSquare, Inbox as InboxIcon, MessageSquareMore, Users, Settings a
 import { useTheme } from '../context/ThemeContext';
 import { getInitials } from '../utils/format';
 import CallsQueueButton from './CallsQueueButton';
+import AchievementsButton from './achievements/AchievementsButton';
 
 export const STATUS_META = {
   ONLINE:  { color: '#4ade80', label: 'Online' },
@@ -36,7 +37,7 @@ function NavRailButton({ icon, label, onClick, active, badge, navBg }) {
   );
 }
 
-export default function NavRail({ section, onSection, agent, agentStatus = 'ONLINE', onStatusChange, onSettings, onLogout, inboxCount = 0, mineCount = 0, liveCalls = [] }) {
+export default function NavRail({ section, onSection, agent, agentStatus = 'ONLINE', onStatusChange, onSettings, onLogout, inboxCount = 0, mineCount = 0, liveCalls = [], achievements = [], unseenAchievements = 0, onOpenAchievements }) {
   const { color, mode } = useTheme();
   const [statusOpen, setStatusOpen] = useState(false);
   const statusRef = useRef(null);
@@ -69,6 +70,7 @@ export default function NavRail({ section, onSection, agent, agentStatus = 'ONLI
         <NavRailButton icon={<InboxIcon size={20} />} label="Inbox" active={section === 'inbox'} onClick={() => onSection('inbox')} badge={inboxCount} navBg={navBg} />
         <NavRailButton icon={<MessageSquareMore size={20} />} label="Meus" active={section === 'mine'} onClick={() => onSection('mine')} badge={mineCount} navBg={navBg} />
         <CallsQueueButton calls={liveCalls} navBg={navBg} />
+        <AchievementsButton achievements={achievements} unseenCount={unseenAchievements} onOpen={onOpenAchievements} navBg={navBg} />
         <NavRailButton icon={<BarChart2 size={20} />} label="Relatórios" active={section === 'reports'} onClick={() => onSection('reports')} />
         {agent?.role === 'ADMIN' && (
           <NavRailButton icon={<Users size={20} />} label="Agentes" active={section === 'agents'} onClick={() => onSection('agents')} />

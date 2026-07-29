@@ -223,6 +223,20 @@ function emitMessageReaction(conversationId, messageId, reactions) {
 }
 
 /**
+ * Emite um evento apenas para as abas/dispositivos de um agente específico
+ */
+function emitToAgent(agentId, event, payload) {
+  getIO().to(`agent:${agentId}`).emit(event, payload);
+}
+
+/**
+ * Emite uma conquista desbloqueada para o agente dono dela
+ */
+function emitAchievementUnlocked(agentId, achievement) {
+  emitToAgent(agentId, 'achievement:unlocked', achievement);
+}
+
+/**
  * Emite uma chamada de voz tocando (WhatsApp Calling) para todos os agentes
  */
 function emitCallIncoming(call) {
@@ -236,4 +250,4 @@ function emitCallUpdate(call) {
   getIO().emit('call:update', call);
 }
 
-module.exports = { initSocket, getIO, emitNewMessage, emitMessageStatus, emitMessageReaction, emitConversationUpdate, emitNewConversation, emitPinUpdate, emitCallIncoming, emitCallUpdate };
+module.exports = { initSocket, getIO, emitNewMessage, emitMessageStatus, emitMessageReaction, emitConversationUpdate, emitNewConversation, emitPinUpdate, emitToAgent, emitAchievementUnlocked, emitCallIncoming, emitCallUpdate };

@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const whatsappService = require('../services/whatsapp.service');
 const { emitNewMessage, emitConversationUpdate, emitPinUpdate, emitMessageReaction } = require('../socket/socket.server');
+const { onFirstResponse } = require('../achievements/engine');
 
 const prisma = new PrismaClient();
 
@@ -136,6 +137,9 @@ async function sendMessage(req, res) {
       },
     });
 
+    const isFirstResponse = !conversation.firstResponseAt;
+    const firstResponseAt = new Date();
+
     await prisma.conversation.update({
       where: { id },
       data: {
@@ -143,9 +147,13 @@ async function sendMessage(req, res) {
         lastMessageAt: new Date(),
         lastMessageDirection: 'OUTBOUND',
         status: 'OPEN',
-        ...(!conversation.firstResponseAt && { firstResponseAt: new Date() }),
+        ...(isFirstResponse && { firstResponseAt }),
       },
     });
+
+    if (isFirstResponse && req.agent?.sub && conversation.openedAt) {
+      onFirstResponse({ agentId: req.agent.sub, openedAt: conversation.openedAt, firstResponseAt });
+    }
 
     const agentInfo = req.agent?.sub ? await prisma.agent.findUnique({
       where: { id: req.agent.sub },

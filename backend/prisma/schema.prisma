@@ -24,11 +24,13 @@ model Agent {
   onlineStatus AgentOnlineStatus @default(OFFLINE)
   workSchedule Json?
 
-  conversations    Conversation[]    @relation("AssignedAgent")
-  refreshTokens    RefreshToken[]
-  conversationPins ConversationPin[]
-  stickerFavorites StickerFavorite[]
-  statusLogs       AgentStatusLog[]
+  conversations       Conversation[]             @relation("AssignedAgent")
+  refreshTokens       RefreshToken[]
+  conversationPins    ConversationPin[]
+  stickerFavorites    StickerFavorite[]
+  statusLogs          AgentStatusLog[]
+  achievements        AgentAchievement[]
+  achievementProgress AgentAchievementProgress[]
 }
 
 model RefreshToken {
@@ -171,6 +173,35 @@ model AgentStatusLog {
   endedAt   DateTime?
 
   @@index([agentId, startedAt])
+}
+
+// ─── Gamificação (conquistas de atendentes) ─────────────────────────────────
+// Catálogo de conquistas vive em código (backend/src/achievements/catalog.js);
+// aqui só ficam as instâncias desbloqueadas e o progresso corrente de cada agente.
+model AgentAchievement {
+  id         String    @id @default(uuid())
+  agentId    String
+  agent      Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  key        String // chave do catálogo, ex "sla_streak_gold"
+  unlockedAt DateTime  @default(now())
+  seenAt     DateTime?
+  value      Int // valor que disparou o desbloqueio (ex: 50)
+
+  @@unique([agentId, key])
+  @@index([agentId])
+}
+
+model AgentAchievementProgress {
+  id            String   @id @default(uuid())
+  agentId       String
+  agent         Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  type          String // SLA_STREAK, FCR_STREAK, RESOLVED_TOTAL, ACTIVE_DAYS, ...
+  value         Int      @default(0)
+  best          Int      @default(0)
+  lastEventDate String? // yyyy-mm-dd, só usado por ACTIVE_DAYS
+  updatedAt     DateTime @updatedAt
+
+  @@unique([agentId, type])
 }
 
 model SystemSetting {

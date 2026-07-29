@@ -1,11 +1,12 @@
 // src/pages/Settings.jsx
 import { useState, useEffect } from 'react';
-import { Sun, Moon, Check, AlertTriangle, Palette, Zap, Wrench, Filter, Timer } from 'lucide-react';
+import { Sun, Moon, Check, AlertTriangle, Palette, Zap, Wrench, Filter, Timer, Trophy } from 'lucide-react';
 import { useTheme, PRESETS, getContrastText } from '../context/ThemeContext';
 import { useAuth, api } from '../context/AuthContext';
 import MaintenanceSection from '../components/settings/MaintenanceSection';
 import PipedriveSection from '../components/settings/PipedriveSection';
 import SlaSection from '../components/settings/SlaSection';
+import AchievementsSection from '../components/settings/AchievementsSection';
 
 function isValidHex(hex) {
   return /^#[0-9A-Fa-f]{6}$/.test(hex);
@@ -148,8 +149,9 @@ function AdvancedSection({ draftAutoclose, onToggle }) {
 }
 
 const SECTIONS_ALL = [
-  { key: 'theme',    label: 'Tema',     icon: <Palette size={16} /> },
-  { key: 'advanced', label: 'Avançado', icon: <Zap size={16} />, adminOnly: true },
+  { key: 'theme',        label: 'Tema',       icon: <Palette size={16} /> },
+  { key: 'achievements', label: 'Conquistas', icon: <Trophy size={16} /> },
+  { key: 'advanced',     label: 'Avançado',   icon: <Zap size={16} />, adminOnly: true },
 ];
 
 const navBtn = (active) => ({
@@ -245,8 +247,9 @@ export default function Settings({ onClose }) {
             )}
           </div>
           <div style={{ flex: 1, minWidth: 0, padding: '20px 24px', overflowY: 'scroll', overflowX: 'hidden' }}>
-            {active === 'theme'    && <ThemeSection draft={draftTheme} onDraft={setDraftTheme} />}
-            {active === 'advanced' && <AdvancedSection draftAutoclose={draftAutoclose} onToggle={() => setDraftAutoclose(v => !v)} />}
+            {active === 'theme'        && <ThemeSection draft={draftTheme} onDraft={setDraftTheme} />}
+            {active === 'achievements' && <AchievementsSection />}
+            {active === 'advanced'     && <AdvancedSection draftAutoclose={draftAutoclose} onToggle={() => setDraftAutoclose(v => !v)} />}
           </div>
         </div>
 

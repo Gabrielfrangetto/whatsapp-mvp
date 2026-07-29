@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, ImageIcon, Pencil, X } from 'lucide-react';
 import { useAuth, api } from '../context/AuthContext';
 import { useSocket, disconnectSocket } from '../hooks/useSocket';
+import { useAchievements } from '../hooks/useAchievements';
+import AchievementToast from '../components/achievements/AchievementToast';
 import { useTheme } from '../context/ThemeContext';
 import NavRail, { STATUS_META } from '../components/NavRail';
 import ConversationItem from '../components/ConversationItem';
@@ -40,6 +42,7 @@ export default function Inbox() {
   const [bannerError, setBannerError] = useState('');
   const bannerInputRef                = useRef(null);
   const [liveCalls, setLiveCalls]     = useState([]);
+  const achievementsState = useAchievements(accessToken);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -155,6 +158,7 @@ export default function Inbox() {
     onCallUpdate: (call) => {
       setLiveCalls(prev => prev.filter(c => c.id !== call.id));
     },
+    onAchievementUnlocked: achievementsState.handleAchievementUnlocked,
   });
 
   socketControls._registerChatHandlers = (handlers) => { chatHandlersRef.current = handlers; };
@@ -239,6 +243,9 @@ export default function Inbox() {
         inboxCount={stats.open}
         mineCount={conversations.filter(c => c.assignedAgent?.id === agent?.id && c.status === 'OPEN').length}
         liveCalls={liveCalls}
+        achievements={achievementsState.achievements}
+        unseenAchievements={achievementsState.unseenCount}
+        onOpenAchievements={achievementsState.markSeen}
       />
 
       {(section === 'inbox' || section === 'mine') && (
@@ -342,6 +349,10 @@ export default function Inbox() {
       {section === 'reports' && <Reports />}
 
       {showSettings && <Settings onClose={() => setShowSettings(false)} />}
+
+      {achievementsState.toastQueue.map((t, i) => (
+        <AchievementToast key={t._toastId} achievement={t} index={i} onDismiss={() => achievementsState.dismissToast(t._toastId)} />
+      ))}
 
       {bannerModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
